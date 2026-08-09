@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  color-scheme: light;
+}
+
+input[type='radio'] {
+  accent-color: #4a3319;
+}
+
+/* Used by the Dashboard's Export PDF button, which triggers the browser's
+   native print dialog (no PDF library needed). This hides everything
+   except whatever is marked .print-area so the output is a clean report
+   instead of a screenshot of the whole app chrome. */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  .print-area {
+    padding: 0 !important;
+  }
+}
