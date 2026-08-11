@@ -10,6 +10,7 @@ export const TABS = {
   contacts: 'Contacts',
   meetings: 'Meetings',
   finance: 'Finance',
+  announcements: 'Announcements',
 };
 
 // Columns for the Meeting ID linked Attendance schema (see upsertMeetingAttendance).
@@ -152,6 +153,31 @@ export async function updateRow(tabName, rowNumber, headers, rowObject) {
     range: `${tabName}!A${rowNumber}`,
     valueInputOption: 'USER_ENTERED',
     requestBody: { values: [headers.map((h) => rowObject[h] ?? '')] },
+  });
+  invalidateTab(tabName);
+}
+
+// Deletes one row outright. Used only where the app's philosophy has a
+// confirmed exception to add-and-edit-never-delete (Announcements).
+export async function deleteRow(tabName, rowNumber) {
+  const sheets = getSheetsClient();
+  const sheetMeta = await sheets.spreadsheets.get({
+    spreadsheetId: SHEET_ID,
+    fields: 'sheets(properties(sheetId,title))',
+  });
+  const sheetProps = sheetMeta.data.sheets.find((s) => s.properties.title === tabName);
+  if (!sheetProps) return;
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId: SHEET_ID,
+    requestBody: {
+      requests: [
+        {
+          deleteDimension: {
+            range: { sheetId: sheetProps.properties.sheetId, dimension: 'ROWS', startIndex: rowNumber - 1, endIndex: rowNumber },
+          },
+        },
+      ],
+    },
   });
   invalidateTab(tabName);
 }

@@ -91,6 +91,20 @@ export function canAccessFinance(session) {
   return isAdmin(session);
 }
 
+// Everyone signed in can view announcements targeted at them, only
+// manager/admin can draft, send, edit, or delete.
+export function canManageAnnouncements(session) {
+  return isManagerOrAdmin(session);
+}
+
+// Announcement audience values map onto roles: "All" always matches,
+// otherwise the audience label is the plural of one specific role.
+export function announcementMatchesRole(audience, role) {
+  if (!audience || audience === 'All') return true;
+  const map = { admin: 'Admins', manager: 'Managers', member: 'Members' };
+  return audience === map[role];
+}
+
 // Dashboard was admin only; managers now get full access to all 3 view
 // modes too, same tier as Roster/Recruitment/attendance marking.
 export function canViewDashboard(session) {

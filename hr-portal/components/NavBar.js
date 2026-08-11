@@ -10,6 +10,7 @@ import { usePathname, useRouter } from 'next/navigation';
 const MEMBER_TABS = [
   { href: '/attendance', label: 'Attendance' },
   { href: '/contacts', label: 'Contact Us' },
+  { href: '/announcements', label: 'Announcements' },
 ];
 
 const MANAGER_TABS = [
@@ -17,6 +18,7 @@ const MANAGER_TABS = [
   { href: '/recruitment', label: 'Recruitment' },
   { href: '/roster', label: 'Roster' },
   { href: '/contacts', label: 'Contact Us' },
+  { href: '/announcements', label: 'Announcements' },
   { href: '/dashboard', label: 'Dashboard' },
 ];
 
