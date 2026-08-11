@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { toast } from '@/lib/toast';
 
 const EMPTY_FORM = { fullName: '', position: '', phone: '', email: '' };
 
@@ -82,6 +84,7 @@ export default function ContactsPage() {
       setFormError(data.error || 'Could not save this contact.');
       return;
     }
+    toast(isEdit ? 'Contact updated' : 'Contact added');
     setFormOpen(false);
     load();
   }
@@ -169,7 +172,15 @@ export default function ContactsPage() {
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
         {loading ? (
-          <p className="text-brand-400">Loading…</p>
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex items-center justify-between gap-4 rounded-xl border border-brand-200 bg-white p-4">
+              <div className="flex-1">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="mt-2 h-3 w-20" />
+              </div>
+              <Skeleton className="h-4 w-24" />
+            </div>
+          ))
         ) : loadError ? (
           <p className="text-red-700">{loadError}</p>
         ) : contacts.length === 0 ? (

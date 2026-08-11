@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import { toCSV, downloadCSV } from '@/lib/csv';
 import Pill from '@/components/ui/Pill';
 import { toast } from '@/lib/toast';
+import { SkeletonTableRows } from '@/components/ui/Skeleton';
 
 const STATUSES = ['Present', 'Absent', 'Leave'];
 
@@ -278,7 +279,7 @@ export default function AttendancePage() {
   }, [loadAttendance]);
 
   function handleMeetingCreated(newMeetingId) {
-    setMessage('Meeting created.');
+    toast('Meeting created');
     loadMeetings();
     setSelectedMeetingId(newMeetingId);
   }
@@ -485,11 +486,7 @@ export default function AttendancePage() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr>
-                    <td colSpan={3} className="px-4 py-6 text-center text-brand-400">
-                      Loading…
-                    </td>
-                  </tr>
+                  <SkeletonTableRows rows={5} columns={3} widths={['w-2/3', 'w-1/2', 'w-24']} />
                 ) : people.length === 0 ? (
                   <tr>
                     <td colSpan={3} className="px-4 py-6 text-center text-brand-400">

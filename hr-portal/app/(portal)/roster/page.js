@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { toCSV, downloadCSV, parseCSV } from '@/lib/csv';
 import { dedupePortfolios } from '@/lib/portfolio';
+import { SkeletonTableRows } from '@/components/ui/Skeleton';
+import { toast } from '@/lib/toast';
 
 const NEW_PORTFOLIO_OPTION = '__new_portfolio__';
 
@@ -153,6 +155,7 @@ export default function RosterPage() {
       setFormError(data.error || 'Could not save this member.');
       return;
     }
+    toast(isEdit ? 'Member updated' : 'Member added');
     setFormOpen(false);
     load();
   }
@@ -210,6 +213,7 @@ export default function RosterPage() {
       setImportError(data.error || 'Could not import.');
       return;
     }
+    toast(`Imported ${data.imported ?? importRows.length} member${data.imported === 1 ? '' : 's'}`);
     setImportPreview(null);
     setImportRows(null);
     load();
@@ -452,11 +456,11 @@ export default function RosterPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-brand-400">
-                  Loading…
-                </td>
-              </tr>
+              <SkeletonTableRows
+                rows={6}
+                columns={7}
+                widths={['w-2/3', 'w-16', 'w-20', 'w-20', 'w-12', 'w-24', 'w-10']}
+              />
             ) : filtered.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-4 py-6 text-center text-brand-400">

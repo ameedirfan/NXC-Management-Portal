@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { toCSV, downloadCSV } from '@/lib/csv';
+import { SkeletonTableRows } from '@/components/ui/Skeleton';
 
 export default function RecruitmentPage() {
   const [portfolios, setPortfolios] = useState([]);
@@ -155,11 +156,11 @@ export default function RecruitmentPage() {
             </thead>
             <tbody>
               {loading ? (
-                <tr>
-                  <td colSpan={showPortfolioColumn ? 6 : 5} className="py-6 text-center text-brand-400">
-                    Loading…
-                  </td>
-                </tr>
+                <SkeletonTableRows
+                  rows={5}
+                  columns={showPortfolioColumn ? 6 : 5}
+                  cellClassName="py-2 pr-4"
+                />
               ) : applicants.length === 0 ? (
                 <tr>
                   <td colSpan={showPortfolioColumn ? 6 : 5} className="py-6 text-center text-brand-400">

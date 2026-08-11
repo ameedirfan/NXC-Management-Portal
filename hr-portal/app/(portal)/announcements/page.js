@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { renderAnnouncementHtml } from '@/lib/markdown';
 import Pill from '@/components/ui/Pill';
 import { toast } from '@/lib/toast';
+import { Skeleton } from '@/components/ui/Skeleton';
 
 const AUDIENCES = ['All', 'Members', 'Managers', 'Admins'];
 
@@ -243,7 +244,13 @@ export default function AnnouncementsPage() {
 
       <div className="mt-6 space-y-4">
         {loading ? (
-          <p className="text-brand-400">Loading…</p>
+          Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="rounded-xl border border-brand-200 bg-white p-5">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="mt-2 h-4 w-2/3" />
+              <Skeleton className="mt-4 h-3 w-40" />
+            </div>
+          ))
         ) : loadError ? (
           <p className="text-red-700">{loadError}</p>
         ) : announcements.length === 0 ? (

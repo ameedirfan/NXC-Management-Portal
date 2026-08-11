@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import { SkeletonCard } from '@/components/ui/Skeleton';
+import { toast } from '@/lib/toast';
 
 const EMPTY_FORM = { location: '', days: '', participantCount: '' };
 
@@ -55,6 +57,7 @@ export default function TripsPage() {
       setFormError(data.error || 'Could not add this trip.');
       return;
     }
+    toast('Trip added');
     setForm(EMPTY_FORM);
     setFormOpen(false);
     load();
@@ -142,7 +145,11 @@ export default function TripsPage() {
 
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {loading ? (
-          <p className="text-brand-400">Loading…</p>
+          <>
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </>
         ) : loadError ? (
           <p className="text-red-700">{loadError}</p>
         ) : trips.length === 0 ? (

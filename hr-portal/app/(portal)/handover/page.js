@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import { toCSV, downloadCSV } from '@/lib/csv';
+import { Skeleton } from '@/components/ui/Skeleton';
+import AnimatedNumber from '@/components/ui/AnimatedNumber';
 
 function formatMoney(n) {
   return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -174,15 +176,28 @@ export default function HandoverPage() {
       </div>
 
       {loading || !data ? (
-        <p className={`mt-6 ${loadError ? 'text-red-700' : 'text-brand-400'}`}>
-          {loading ? 'Loading…' : loadError || 'Could not load handover data.'}
-        </p>
+        loadError ? (
+          <p className="mt-6 text-red-700">{loadError}</p>
+        ) : (
+          <div className="mt-6 space-y-6">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="rounded-xl border border-brand-200 bg-white p-6">
+                <Skeleton className="h-5 w-48" />
+                <div className="mt-4 space-y-2">
+                  {Array.from({ length: 3 }).map((_, r) => (
+                    <Skeleton key={r} className="h-4 w-full" />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )
       ) : (
         <div className="mt-6 space-y-6">
           <div className="rounded-xl border border-brand-200 bg-white p-6">
             <p className="text-xs uppercase tracking-wide text-brand-500">Treasury Balance</p>
             <p className="mt-1 font-serif text-3xl font-bold tabular-nums text-brand-900">
-              {formatMoney(data.finance.treasuryBalance)}
+              <AnimatedNumber value={data.finance.treasuryBalance} format={formatMoney} />
             </p>
             <p className="mt-1 text-sm text-brand-500">
               Opening {formatMoney(data.finance.openingBalance)}, income {formatMoney(data.finance.totalIncome)},

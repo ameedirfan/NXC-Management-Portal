@@ -61,7 +61,7 @@ function roleLabel(role) {
   return null;
 }
 
-export default function NavBar({ session }) {
+export default function NavBar({ session, supportsViewTransitions = false }) {
   const pathname = usePathname();
   const router = useRouter();
   const tabs = tabsForRole(session.role);
@@ -70,6 +70,18 @@ export default function NavBar({ session }) {
     await fetch('/api/auth/logout', { method: 'POST' });
     router.push('/login');
     router.refresh();
+  }
+
+  // Progressive enhancement: plain Link navigation always works. Where
+  // the browser supports it, wrap the same navigation in the native View
+  // Transitions API for a soft crossfade instead of a hard cut. Left
+  // untouched (mid-click, new-tab, etc. all fall through to the default
+  // <a> behavior) if a modifier key or non-primary button is used.
+  function handleNavClick(e, href) {
+    if (!supportsViewTransitions) return;
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+    e.preventDefault();
+    document.startViewTransition(() => router.push(href));
   }
 
   return (
@@ -91,6 +103,7 @@ export default function NavBar({ session }) {
               <Link
                 key={t.href}
                 href={t.href}
+                onClick={(e) => handleNavClick(e, t.href)}
                 className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition ${
                   pathname?.startsWith(t.href)
                     ? 'bg-brand-900 text-brand-50'

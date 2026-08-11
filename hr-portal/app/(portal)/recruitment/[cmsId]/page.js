@@ -3,6 +3,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { toast } from '@/lib/toast';
 
 const STATUSES = ['Pending', 'Interviewing', 'Recommended', 'Not recommended', 'Hired'];
 const RECOMMENDATIONS = ['Strong yes', 'Yes', 'Neutral', 'No', 'Strong no'];
@@ -47,6 +49,7 @@ export default function ApplicantPage() {
       body: JSON.stringify({ status }),
     });
     setStatusSaving(false);
+    toast('Status updated');
     load();
   }
 
@@ -60,10 +63,26 @@ export default function ApplicantPage() {
     });
     setReviewText('');
     setSubmitting(false);
+    toast('Review submitted');
     load();
   }
 
-  if (loading) return <p className="text-brand-400">Loading…</p>;
+  if (loading) {
+    return (
+      <div>
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="mt-4 h-9 w-64" />
+        <div className="mt-6 grid gap-4 rounded-xl border border-brand-200 bg-white p-6 sm:grid-cols-2">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i}>
+              <Skeleton className="h-3 w-20" />
+              <Skeleton className="mt-2 h-5 w-32" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
   if (error) return <p className="text-red-700">{error}</p>;
   if (!applicant) return null;
 

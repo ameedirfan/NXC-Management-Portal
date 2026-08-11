@@ -3,6 +3,9 @@
 import { useEffect, useState, useCallback } from 'react';
 import { toCSV, downloadCSV } from '@/lib/csv';
 import Pill from '@/components/ui/Pill';
+import { Skeleton, SkeletonTableRows } from '@/components/ui/Skeleton';
+import { toast } from '@/lib/toast';
+import AnimatedNumber from '@/components/ui/AnimatedNumber';
 
 const EMPTY_FORM = { date: '', description: '', amount: '', type: '' };
 
@@ -94,6 +97,7 @@ export default function FinancePage() {
       setFormError(data.error || 'Could not save this entry.');
       return;
     }
+    toast(isEdit ? 'Entry updated' : 'Entry added');
     setFormOpen(false);
     load();
   }
@@ -142,11 +146,19 @@ export default function FinancePage() {
 
       {loadError && <p className="mt-6 text-red-700">{loadError}</p>}
 
+      {loading && !summary && !loadError && (
+        <div className="mt-6 rounded-xl border border-brand-200 bg-white p-6">
+          <Skeleton className="h-3 w-28" />
+          <Skeleton className="mt-2 h-10 w-48" />
+          <Skeleton className="mt-3 h-4 w-full max-w-md" />
+        </div>
+      )}
+
       {summary && (
         <div className="mt-6 rounded-xl border border-brand-200 bg-white p-6">
           <p className="text-xs uppercase tracking-wide text-brand-500">Treasury Balance</p>
           <p className="mt-1 font-serif text-4xl font-bold tabular-nums text-brand-900">
-            {formatMoney(summary.treasuryBalance)}
+            <AnimatedNumber value={summary.treasuryBalance} format={formatMoney} />
           </p>
           <p className="mt-2 text-sm text-brand-500">
             Opening balance <span className="tabular-nums">{formatMoney(summary.openingBalance)}</span>, plus{' '}
@@ -248,11 +260,11 @@ export default function FinancePage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-brand-400">
-                  Loading…
-                </td>
-              </tr>
+              <SkeletonTableRows
+                rows={5}
+                columns={6}
+                widths={['w-16', 'w-2/3', 'w-16', 'w-14', 'w-24', 'w-8']}
+              />
             ) : entries.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-4 py-6 text-center text-brand-400">

@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { dedupePortfolios } from '@/lib/portfolio';
 import { toCSV, downloadCSV } from '@/lib/csv';
+import { SkeletonTableRows } from '@/components/ui/Skeleton';
+import { toast } from '@/lib/toast';
 
 const CUSTOM_OPTION = '__custom__';
 const ROLES = ['member', 'manager', 'admin'];
@@ -180,6 +182,7 @@ export default function LoginsPage() {
       setBulkError(data.error || 'Could not create these logins.');
       return;
     }
+    toast(`Created ${data.created} login${data.created === 1 ? '' : 's'}`);
     setBulkCreated(data);
     load();
   }
@@ -244,6 +247,7 @@ export default function LoginsPage() {
       setFormError(data.error || 'Could not save this login.');
       return;
     }
+    toast(isEdit ? 'Login updated' : 'Login added');
     setFormOpen(false);
     load();
   }
@@ -634,11 +638,11 @@ export default function LoginsPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-brand-400">
-                  Loading…
-                </td>
-              </tr>
+              <SkeletonTableRows
+                rows={5}
+                columns={6}
+                widths={['w-24', 'w-32', 'w-16', 'w-20', 'w-14', 'w-8']}
+              />
             ) : logins.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-4 py-6 text-center text-brand-400">

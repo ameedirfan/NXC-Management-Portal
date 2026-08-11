@@ -3,6 +3,8 @@
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { Skeleton } from '@/components/ui/Skeleton';
+import { toast } from '@/lib/toast';
 
 const SLOTS = [
   { key: 'itinerary', label: 'Itinerary', linkKey: 'itineraryLink', accept: 'application/pdf' },
@@ -60,10 +62,27 @@ export default function TripDetailPage() {
       setUploadError(data.error || 'Could not upload this file.');
       return;
     }
+    toast('File uploaded');
     load();
   }
 
-  if (loading) return <p className="text-brand-400">Loading…</p>;
+  if (loading) {
+    return (
+      <div>
+        <Skeleton className="h-4 w-40" />
+        <Skeleton className="mt-3 h-9 w-56" />
+        <Skeleton className="mt-2 h-4 w-64" />
+        <div className="mt-6 grid gap-6 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="rounded-xl border border-brand-200 bg-white p-5">
+              <Skeleton className="h-5 w-24" />
+              <Skeleton className="mt-3 h-48 w-full" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
   if (!trip) return <p className="text-red-700">Trip not found.</p>;
 
   return (
