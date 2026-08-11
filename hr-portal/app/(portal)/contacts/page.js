@@ -8,6 +8,7 @@ export default function ContactsPage() {
   const [contacts, setContacts] = useState([]);
   const [canManage, setCanManage] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [formOpen, setFormOpen] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -16,12 +17,18 @@ export default function ContactsPage() {
 
   const load = useCallback(() => {
     setLoading(true);
+    setLoadError('');
     fetch('/api/contacts')
       .then((res) => res.json())
       .then((data) => {
+        if (data.error) {
+          setLoadError(data.error);
+          return;
+        }
         setContacts(data.contacts || []);
         setCanManage(!!data.canManage);
       })
+      .catch(() => setLoadError('Could not reach the server. Try again.'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -163,6 +170,8 @@ export default function ContactsPage() {
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
         {loading ? (
           <p className="text-brand-400">Loading…</p>
+        ) : loadError ? (
+          <p className="text-red-700">{loadError}</p>
         ) : contacts.length === 0 ? (
           <p className="text-brand-400">No contacts yet.</p>
         ) : (

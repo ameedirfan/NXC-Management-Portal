@@ -3,6 +3,7 @@ import { getSession } from '@/lib/auth';
 import { readSheet, TABS } from '@/lib/sheets';
 import { canViewDashboard } from '@/lib/authz';
 import { normalizePortfolio, dedupePortfolios, canonicalPortfolioName } from '@/lib/portfolio';
+import { friendlyReadError } from '@/lib/apiError';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,10 +19,13 @@ export async function GET() {
     return NextResponse.json({ error: 'Manager or Admin access required.' }, { status: 403 });
   }
 
-  const [{ records: roster }, { records: applicants }] = await Promise.all([
-    readSheet(TABS.roster),
-    readSheet(TABS.applicants),
-  ]);
+  let roster, applicants;
+  try {
+    ({ records: roster } = await readSheet(TABS.roster));
+    ({ records: applicants } = await readSheet(TABS.applicants));
+  } catch (err) {
+    return NextResponse.json({ error: friendlyReadError(err) }, { status: 500 });
+  }
 
   const portfolios = dedupePortfolios(roster.map((r) => r['Portfolio']));
   const canon = (name) => canonicalPortfolioName(name, portfolios);

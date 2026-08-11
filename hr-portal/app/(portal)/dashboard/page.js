@@ -217,9 +217,11 @@ export default function DashboardPage() {
   const [councilData, setCouncilData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
   const load = useCallback(() => {
     setLoading(true);
+    setLoadError('');
     Promise.all([
       fetch('/api/dashboard'),
       fetch('/api/dashboard/data-quality'),
@@ -237,6 +239,11 @@ export default function DashboardPage() {
           rosterRes.json(),
           councilRes.json(),
         ]);
+        const firstError = dash.error || dq.error || rosterData.error || council.error;
+        if (firstError) {
+          setLoadError(firstError);
+          return;
+        }
         setPortfolios(dash.portfolios || []);
         setApplicants(dash.applicants || null);
         setDataQuality(dq);
@@ -245,6 +252,7 @@ export default function DashboardPage() {
         setCouncilData(council);
         setAccessDenied(false);
       })
+      .catch(() => setLoadError('Could not reach the server. Try again.'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -312,8 +320,10 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {loading && !applicants ? (
-        <p className="mt-6 text-brand-400">Loading…</p>
+      {loading || !applicants ? (
+        <p className={`mt-6 ${loadError ? 'text-red-700' : 'text-brand-400'}`}>
+          {loading ? 'Loading…' : loadError || 'Could not load dashboard data.'}
+        </p>
       ) : (
         <div className="mt-6 space-y-6">
           <div className="no-print flex flex-wrap gap-2">

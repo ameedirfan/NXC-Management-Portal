@@ -155,18 +155,25 @@ export default function AnnouncementsPage() {
   const [announcements, setAnnouncements] = useState([]);
   const [canManage, setCanManage] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [composeOpen, setComposeOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState(null);
 
   const load = useCallback(() => {
     setLoading(true);
+    setLoadError('');
     fetch('/api/announcements')
       .then((res) => res.json())
       .then((data) => {
+        if (data.error) {
+          setLoadError(data.error);
+          return;
+        }
         setAnnouncements(data.announcements || []);
         setCanManage(!!data.canManage);
       })
+      .catch(() => setLoadError('Could not reach the server. Try again.'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -216,6 +223,8 @@ export default function AnnouncementsPage() {
       <div className="mt-6 space-y-4">
         {loading ? (
           <p className="text-brand-400">Loading…</p>
+        ) : loadError ? (
+          <p className="text-red-700">{loadError}</p>
         ) : announcements.length === 0 ? (
           <p className="text-brand-400">No announcements yet.</p>
         ) : (

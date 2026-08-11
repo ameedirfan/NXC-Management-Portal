@@ -3,6 +3,7 @@ import { getSession } from '@/lib/auth';
 import { readSheet, TABS } from '@/lib/sheets';
 import { isAdmin } from '@/lib/authz';
 import { toRosterMember } from '@/lib/rosterFields';
+import { friendlyReadError } from '@/lib/apiError';
 
 export const dynamic = 'force-dynamic';
 
@@ -23,19 +24,24 @@ export async function GET() {
     return NextResponse.json({ error: 'Admin access required.' }, { status: 403 });
   }
 
-  const [
-    { records: rosterRecords },
-    { records: financeRecords },
-    { records: attendanceRecords },
-    { records: meetingRecords },
-    { records: tripRecords },
-  ] = await Promise.all([
-    readSheet(TABS.roster),
-    readSheet(TABS.finance),
-    readSheet(TABS.attendance),
-    readSheet(TABS.meetings),
-    readSheet(TABS.trips),
-  ]);
+  let rosterRecords, financeRecords, attendanceRecords, meetingRecords, tripRecords;
+  try {
+    [
+      { records: rosterRecords },
+      { records: financeRecords },
+      { records: attendanceRecords },
+      { records: meetingRecords },
+      { records: tripRecords },
+    ] = await Promise.all([
+      readSheet(TABS.roster),
+      readSheet(TABS.finance),
+      readSheet(TABS.attendance),
+      readSheet(TABS.meetings),
+      readSheet(TABS.trips),
+    ]);
+  } catch (err) {
+    return NextResponse.json({ error: friendlyReadError(err) }, { status: 500 });
+  }
 
   const roster = rosterRecords.map(toRosterMember);
 

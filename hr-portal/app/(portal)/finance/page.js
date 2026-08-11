@@ -14,6 +14,7 @@ export default function FinancePage() {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
+  const [loadError, setLoadError] = useState('');
   const [formOpen, setFormOpen] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -22,6 +23,7 @@ export default function FinancePage() {
 
   const load = useCallback(() => {
     setLoading(true);
+    setLoadError('');
     fetch('/api/finance')
       .then(async (res) => {
         if (res.status === 403) {
@@ -29,10 +31,15 @@ export default function FinancePage() {
           return;
         }
         const data = await res.json();
+        if (data.error) {
+          setLoadError(data.error);
+          return;
+        }
         setEntries(data.entries || []);
         setSummary(data);
         setAccessDenied(false);
       })
+      .catch(() => setLoadError('Could not reach the server. Try again.'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -132,6 +139,8 @@ export default function FinancePage() {
         </div>
       </div>
 
+      {loadError && <p className="mt-6 text-red-700">{loadError}</p>}
+
       {summary && (
         <div className="mt-6 rounded-xl border border-brand-200 bg-white p-6">
           <p className="text-xs uppercase tracking-wide text-brand-500">Treasury Balance</p>
@@ -140,8 +149,12 @@ export default function FinancePage() {
           </p>
           <p className="mt-2 text-sm text-brand-500">
             Opening balance {formatMoney(summary.openingBalance)}, plus {formatMoney(summary.totalIncome)}{' '}
-            income, minus {formatMoney(summary.totalExpense)} expense. Opening balance is set directly in
-            the Finance sheet.
+            income, minus {formatMoney(summary.totalExpense)} expense.
+          </p>
+          <p className="mt-2 text-xs text-brand-400">
+            To set the opening balance, add a row directly in the Finance sheet with Type = "Opening
+            Balance" and Amount = the starting figure. There's no app-side field for it on purpose,
+            whatever's in that row is what every calculation starts from.
           </p>
         </div>
       )}

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { readSheet, appendRow, TABS } from '@/lib/sheets';
 import { canAccessFinance } from '@/lib/authz';
+import { friendlyReadError } from '@/lib/apiError';
 
 export const dynamic = 'force-dynamic';
 
@@ -30,7 +31,12 @@ export async function GET() {
     return NextResponse.json({ error: 'Admin access required.' }, { status: 403 });
   }
 
-  const { records } = await readSheet(TABS.finance);
+  let records;
+  try {
+    ({ records } = await readSheet(TABS.finance));
+  } catch (err) {
+    return NextResponse.json({ error: friendlyReadError(err) }, { status: 500 });
+  }
 
   // Opening Balance lives directly in the sheet as a designated row (Type
   // = "Opening Balance"), not something entered through the app. If more
@@ -69,16 +75,20 @@ export async function POST(request) {
   }
   if (!type) type = amount < 0 ? 'Expense' : 'Income';
 
-  const { headers } = await readSheet(TABS.finance, 'A:ZZ', { fresh: true });
-  const effectiveHeaders = headers.length ? headers : ['Date', 'Description', 'Amount', 'Type', 'Recorded By'];
+  try {
+    const { headers } = await readSheet(TABS.finance, 'A:ZZ', { fresh: true });
+    const effectiveHeaders = headers.length ? headers : ['Date', 'Description', 'Amount', 'Type', 'Recorded By'];
 
-  await appendRow(TABS.finance, effectiveHeaders, {
-    Date: date,
-    Description: description,
-    Amount: amount,
-    Type: type,
-    'Recorded By': session.fullName || session.username,
-  });
+    await appendRow(TABS.finance, effectiveHeaders, {
+      Date: date,
+      Description: description,
+      Amount: amount,
+      Type: type,
+      'Recorded By': session.fullName || session.username,
+    });
+  } catch (err) {
+    return NextResponse.json({ error: friendlyReadError(err) }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true });
 }

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { readSheet, appendRow, TABS } from '@/lib/sheets';
 import { canManageAnnouncements, announcementMatchesRole } from '@/lib/authz';
+import { friendlyReadError } from '@/lib/apiError';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,7 +23,12 @@ export async function GET() {
   const session = getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
 
-  const { records } = await readSheet(TABS.announcements);
+  let records;
+  try {
+    ({ records } = await readSheet(TABS.announcements));
+  } catch (err) {
+    return NextResponse.json({ error: friendlyReadError(err) }, { status: 500 });
+  }
   const announcements = records
     .map(toAnnouncement)
     .filter((a) => announcementMatchesRole(a.audience, session.role))
@@ -49,17 +55,21 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Invalid audience.' }, { status: 400 });
   }
 
-  const { headers } = await readSheet(TABS.announcements, 'A:ZZ', { fresh: true });
-  const effectiveHeaders = headers.length ? headers : ['ID', 'Message', 'Author', 'Audience', 'Timestamp'];
-
   const id = `A${Date.now()}`;
-  await appendRow(TABS.announcements, effectiveHeaders, {
-    ID: id,
-    Message: message,
-    Author: session.fullName || session.username,
-    Audience: audience,
-    Timestamp: new Date().toISOString(),
-  });
+  try {
+    const { headers } = await readSheet(TABS.announcements, 'A:ZZ', { fresh: true });
+    const effectiveHeaders = headers.length ? headers : ['ID', 'Message', 'Author', 'Audience', 'Timestamp'];
+
+    await appendRow(TABS.announcements, effectiveHeaders, {
+      ID: id,
+      Message: message,
+      Author: session.fullName || session.username,
+      Audience: audience,
+      Timestamp: new Date().toISOString(),
+    });
+  } catch (err) {
+    return NextResponse.json({ error: friendlyReadError(err) }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true, id });
 }
