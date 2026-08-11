@@ -11,6 +11,7 @@ const MEMBER_TABS = [
   { href: '/attendance', label: 'Attendance' },
   { href: '/contacts', label: 'Contact Us' },
   { href: '/announcements', label: 'Announcements' },
+  { href: '/trips', label: 'Trip Itineraries' },
 ];
 
 const MANAGER_TABS = [
@@ -19,6 +20,7 @@ const MANAGER_TABS = [
   { href: '/roster', label: 'Roster' },
   { href: '/contacts', label: 'Contact Us' },
   { href: '/announcements', label: 'Announcements' },
+  { href: '/trips', label: 'Trip Itineraries' },
   { href: '/dashboard', label: 'Dashboard' },
 ];
 

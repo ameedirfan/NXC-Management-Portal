@@ -105,6 +105,13 @@ export function announcementMatchesRole(audience, role) {
   return audience === map[role];
 }
 
+// Trip Itineraries is the other explicit exception to "managers = admins":
+// everyone signed in can view/preview, but only admin can add trips or
+// upload/replace files. Managers are view-only here, same as members.
+export function canManageTrips(session) {
+  return isAdmin(session);
+}
+
 // Dashboard was admin only; managers now get full access to all 3 view
 // modes too, same tier as Roster/Recruitment/attendance marking.
 export function canViewDashboard(session) {

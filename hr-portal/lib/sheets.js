@@ -11,6 +11,7 @@ export const TABS = {
   meetings: 'Meetings',
   finance: 'Finance',
   announcements: 'Announcements',
+  trips: 'Trips',
 };
 
 // Columns for the Meeting ID linked Attendance schema (see upsertMeetingAttendance).
