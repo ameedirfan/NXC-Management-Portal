@@ -16,7 +16,12 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const wantsFull = searchParams.get('view') === 'full';
 
-  const { records } = await readSheet(TABS.roster);
+  let records;
+  try {
+    ({ records } = await readSheet(TABS.roster));
+  } catch (err) {
+    return NextResponse.json({ error: friendlyReadError(err) }, { status: 500 });
+  }
   const allPortfolios = dedupePortfolios(records.map((r) => r['Portfolio']));
 
   const canonicalOwnPortfolio = session.portfolio

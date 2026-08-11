@@ -2,7 +2,10 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
+import { MapPinned } from 'lucide-react';
 import { SkeletonCard } from '@/components/ui/Skeleton';
+import EmptyState from '@/components/ui/EmptyState';
+import ErrorRetry from '@/components/ui/ErrorRetry';
 import { toast } from '@/lib/toast';
 
 const EMPTY_FORM = { location: '', days: '', participantCount: '' };
@@ -14,7 +17,7 @@ export default function TripsPage() {
   const [loadError, setLoadError] = useState('');
   const [formOpen, setFormOpen] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
-  const [formError, setFormError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(() => {
@@ -40,12 +43,16 @@ export default function TripsPage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!form.location.trim() || !form.days || !form.participantCount) {
-      setFormError('Location, Number of Days, and Total Participant Count are required.');
+    const errors = {};
+    if (!form.location.trim()) errors.location = 'Location is required.';
+    if (!form.days) errors.days = 'Number of Days is required.';
+    if (!form.participantCount) errors.participantCount = 'Total Participant Count is required.';
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
     setSaving(true);
-    setFormError('');
+    setFieldErrors({});
     const res = await fetch('/api/trips', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -54,7 +61,7 @@ export default function TripsPage() {
     const data = await res.json();
     setSaving(false);
     if (!res.ok) {
-      setFormError(data.error || 'Could not add this trip.');
+      setFieldErrors({ form: data.error || 'Could not add this trip.' });
       return;
     }
     toast('Trip added');
@@ -92,8 +99,10 @@ export default function TripsPage() {
                 value={form.location}
                 onChange={(e) => setForm((prev) => ({ ...prev, location: e.target.value }))}
                 placeholder="e.g. Hunza"
-                className="mt-1 w-full rounded-lg border border-brand-300 px-3 py-2"
+                aria-invalid={!!fieldErrors.location}
+                className={`mt-1 w-full rounded-lg border px-3 py-2 ${fieldErrors.location ? 'border-red-400' : 'border-brand-300'}`}
               />
+              {fieldErrors.location && <p className="mt-1 text-xs text-red-700">{fieldErrors.location}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-brand-800">
@@ -104,8 +113,10 @@ export default function TripsPage() {
                 min="1"
                 value={form.days}
                 onChange={(e) => setForm((prev) => ({ ...prev, days: e.target.value }))}
-                className="mt-1 w-full rounded-lg border border-brand-300 px-3 py-2"
+                aria-invalid={!!fieldErrors.days}
+                className={`mt-1 w-full rounded-lg border px-3 py-2 ${fieldErrors.days ? 'border-red-400' : 'border-brand-300'}`}
               />
+              {fieldErrors.days && <p className="mt-1 text-xs text-red-700">{fieldErrors.days}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-brand-800">
@@ -116,11 +127,13 @@ export default function TripsPage() {
                 min="0"
                 value={form.participantCount}
                 onChange={(e) => setForm((prev) => ({ ...prev, participantCount: e.target.value }))}
-                className="mt-1 w-full rounded-lg border border-brand-300 px-3 py-2"
+                aria-invalid={!!fieldErrors.participantCount}
+                className={`mt-1 w-full rounded-lg border px-3 py-2 ${fieldErrors.participantCount ? 'border-red-400' : 'border-brand-300'}`}
               />
+              {fieldErrors.participantCount && <p className="mt-1 text-xs text-red-700">{fieldErrors.participantCount}</p>}
             </div>
           </div>
-          {formError && <p className="mt-3 text-sm text-red-700">{formError}</p>}
+          {fieldErrors.form && <p className="mt-3 text-sm text-red-700">{fieldErrors.form}</p>}
           <div className="mt-4 flex items-center gap-3">
             <button
               type="submit"
@@ -151,9 +164,19 @@ export default function TripsPage() {
             <SkeletonCard />
           </>
         ) : loadError ? (
-          <p className="text-red-700">{loadError}</p>
+          <ErrorRetry className="col-span-full" message={loadError} onRetry={load} />
         ) : trips.length === 0 ? (
-          <p className="text-brand-400">No trips yet.</p>
+          <EmptyState
+            icon={MapPinned}
+            title="No trips yet"
+            description={
+              canManage
+                ? "Add the club's first trip to start building the itinerary archive."
+                : 'Trips will show up here once an admin adds one.'
+            }
+            actionLabel={canManage ? 'Add your first trip' : undefined}
+            onAction={canManage ? () => setFormOpen(true) : undefined}
+          />
         ) : (
           trips.map((t) => (
             <Link

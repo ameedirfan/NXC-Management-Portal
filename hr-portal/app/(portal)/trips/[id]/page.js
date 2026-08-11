@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Skeleton } from '@/components/ui/Skeleton';
+import ErrorRetry from '@/components/ui/ErrorRetry';
 import { toast } from '@/lib/toast';
 
 const SLOTS = [
@@ -33,15 +34,22 @@ export default function TripDetailPage() {
   const [loading, setLoading] = useState(true);
   const [uploadingSlot, setUploadingSlot] = useState(null);
   const [uploadError, setUploadError] = useState('');
+  const [loadError, setLoadError] = useState('');
 
   const load = useCallback(() => {
     setLoading(true);
+    setLoadError('');
     fetch('/api/trips')
       .then((res) => res.json())
       .then((data) => {
+        if (data.error) {
+          setLoadError(data.error);
+          return;
+        }
         setCanManage(!!data.canManage);
         setTrip((data.trips || []).find((t) => t.id === id) || null);
       })
+      .catch(() => setLoadError('Could not reach the server. Try again.'))
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -83,6 +91,7 @@ export default function TripDetailPage() {
       </div>
     );
   }
+  if (loadError) return <ErrorRetry message={loadError} onRetry={load} />;
   if (!trip) return <p className="text-red-700">Trip not found.</p>;
 
   return (

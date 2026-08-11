@@ -10,6 +10,16 @@ input[type='radio'] {
   accent-color: #4a3319;
 }
 
+/* Accessibility floor: one consistent, on-brand, visible focus ring for
+   every interactive element, keyboard-only (not on mouse click) via
+   :focus-visible. Applies everywhere by default so no individual button,
+   link, or form field has to opt in. */
+:focus-visible {
+  outline: 2px solid #7d5a2c;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
 /* Used by the Dashboard's Export PDF button, which triggers the browser's
    native print dialog (no PDF library needed). This hides everything
    except whatever is marked .print-area so the output is a clean report

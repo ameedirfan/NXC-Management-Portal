@@ -1,9 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { toCSV, downloadCSV } from '@/lib/csv';
 import { Skeleton } from '@/components/ui/Skeleton';
 import AnimatedNumber from '@/components/ui/AnimatedNumber';
+import ErrorRetry from '@/components/ui/ErrorRetry';
+import AccessDenied from '@/components/ui/AccessDenied';
 
 function formatMoney(n) {
   return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -87,7 +89,9 @@ export default function HandoverPage() {
   const [accessDenied, setAccessDenied] = useState(false);
   const [loadError, setLoadError] = useState('');
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setLoading(true);
+    setLoadError('');
     fetch('/api/handover')
       .then(async (res) => {
         if (res.status === 403) {
@@ -104,6 +108,10 @@ export default function HandoverPage() {
       .catch(() => setLoadError('Could not reach the server. Try again.'))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   function exportCSV() {
     if (!data) return;
@@ -144,7 +152,7 @@ export default function HandoverPage() {
   }
 
   if (accessDenied) {
-    return <p className="text-red-700">Admin access required for the Year-End Handover Export.</p>;
+    return <AccessDenied message="The Year-End Handover Export is admin only." />;
   }
 
   return (
@@ -177,7 +185,7 @@ export default function HandoverPage() {
 
       {loading || !data ? (
         loadError ? (
-          <p className="mt-6 text-red-700">{loadError}</p>
+          <ErrorRetry className="mt-6" message={loadError} onRetry={load} />
         ) : (
           <div className="mt-6 space-y-6">
             {Array.from({ length: 4 }).map((_, i) => (

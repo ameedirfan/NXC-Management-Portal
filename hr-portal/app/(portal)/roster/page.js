@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { toCSV, downloadCSV, parseCSV } from '@/lib/csv';
 import { dedupePortfolios } from '@/lib/portfolio';
 import { SkeletonTableRows } from '@/components/ui/Skeleton';
+import ErrorRetry from '@/components/ui/ErrorRetry';
+import AccessDenied from '@/components/ui/AccessDenied';
 import { toast } from '@/lib/toast';
 
 const NEW_PORTFOLIO_OPTION = '__new_portfolio__';
@@ -54,9 +56,11 @@ export default function RosterPage() {
   const [importRows, setImportRows] = useState(null);
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState('');
+  const [loadError, setLoadError] = useState('');
 
   const load = useCallback(() => {
     setLoading(true);
+    setLoadError('');
     fetch('/api/roster?view=full')
       .then(async (res) => {
         if (res.status === 403) {
@@ -64,11 +68,16 @@ export default function RosterPage() {
           return;
         }
         const data = await res.json();
+        if (data.error) {
+          setLoadError(data.error);
+          return;
+        }
         setMembers(data.members || []);
         setPortfolioStats(data.portfolioStats || []);
         setRole(data.role || null);
         setAccessDenied(false);
       })
+      .catch(() => setLoadError('Could not reach the server. Try again.'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -226,7 +235,10 @@ export default function RosterPage() {
   }
 
   if (accessDenied) {
-    return <p className="text-red-700">Manager or Admin access required to manage the roster.</p>;
+    return <AccessDenied message="Roster management is for managers and admins." />;
+  }
+  if (loadError && !loading) {
+    return <ErrorRetry message={loadError} onRetry={load} />;
   }
 
   return (

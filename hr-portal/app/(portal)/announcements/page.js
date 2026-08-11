@@ -4,7 +4,10 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { renderAnnouncementHtml } from '@/lib/markdown';
 import Pill from '@/components/ui/Pill';
 import { toast } from '@/lib/toast';
+import { Megaphone } from 'lucide-react';
 import { Skeleton } from '@/components/ui/Skeleton';
+import EmptyState from '@/components/ui/EmptyState';
+import ErrorRetry from '@/components/ui/ErrorRetry';
 
 const AUDIENCES = ['All', 'Members', 'Managers', 'Admins'];
 
@@ -19,6 +22,14 @@ function ComposePanel({ initial, onClose, onSent, onSendConfirmed, onSendFailed 
   const [audience, setAudience] = useState(initial?.audience || 'All');
   const [error, setError] = useState('');
   const textareaRef = useRef(null);
+
+  useEffect(() => {
+    function onKeyDown(e) {
+      if (e.key === 'Escape') onClose();
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
 
   function wrapSelection(before, after = before) {
     const el = textareaRef.current;
@@ -75,7 +86,12 @@ function ComposePanel({ initial, onClose, onSent, onSendConfirmed, onSendFailed 
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-end bg-black/20 p-4 sm:items-center sm:justify-center">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={initial ? 'Edit announcement' : 'New announcement'}
+      className="fixed inset-0 z-50 flex items-end justify-end bg-black/20 p-4 sm:items-center sm:justify-center"
+    >
       <div className="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-brand-200 bg-white shadow-2xl">
         <div className="flex items-center justify-between border-b border-brand-200 px-5 py-3">
           <h2 className="font-serif text-lg font-semibold text-brand-900">
@@ -252,9 +268,19 @@ export default function AnnouncementsPage() {
             </div>
           ))
         ) : loadError ? (
-          <p className="text-red-700">{loadError}</p>
+          <ErrorRetry message={loadError} onRetry={load} />
         ) : announcements.length === 0 ? (
-          <p className="text-brand-400">No announcements yet.</p>
+          <EmptyState
+            icon={Megaphone}
+            title="No announcements yet"
+            description={
+              canManage
+                ? 'Send the first announcement to your members.'
+                : 'Announcements aimed at you will show up here.'
+            }
+            actionLabel={canManage ? 'Write the first announcement' : undefined}
+            onAction={canManage ? openCompose : undefined}
+          />
         ) : (
           announcements.map((a) => (
             <div key={a.id} className="rounded-xl border border-brand-200 bg-white p-5">

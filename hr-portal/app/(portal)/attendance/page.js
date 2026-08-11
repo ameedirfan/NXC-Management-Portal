@@ -5,6 +5,7 @@ import { toCSV, downloadCSV } from '@/lib/csv';
 import Pill from '@/components/ui/Pill';
 import { toast } from '@/lib/toast';
 import { SkeletonTableRows } from '@/components/ui/Skeleton';
+import ErrorRetry from '@/components/ui/ErrorRetry';
 
 const STATUSES = ['Present', 'Absent', 'Leave'];
 
@@ -226,6 +227,7 @@ export default function AttendancePage() {
   const [message, setMessage] = useState('');
   const [voidBusy, setVoidBusy] = useState(false);
   const [voidConfirming, setVoidConfirming] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     fetch('/api/roster')
@@ -244,13 +246,19 @@ export default function AttendancePage() {
   const loadMeetings = useCallback(() => {
     if (!canMark || !date) return;
     setMeetingsLoading(true);
+    setLoadError('');
     fetch(`/api/meetings?date=${date}`)
-      .then((res) => res.json())
-      .then((data) => {
+      .then(async (res) => {
+        const data = await res.json();
+        if (data.error) {
+          setLoadError(data.error);
+          return;
+        }
         const list = data.meetings || [];
         setMeetings(list);
         setSelectedMeetingId(list.length === 1 ? list[0].id : '');
       })
+      .catch(() => setLoadError('Could not reach the server. Try again.'))
       .finally(() => setMeetingsLoading(false));
   }, [canMark, date]);
 
@@ -377,7 +385,9 @@ export default function AttendancePage() {
         />
       </div>
 
-      {!meetingsLoading && meetings.length > 1 && (
+      {loadError && <ErrorRetry className="mt-6" message={loadError} onRetry={loadMeetings} />}
+
+      {!loadError && !meetingsLoading && meetings.length > 1 && (
         <div className="mt-4 max-w-md">
           <label className="block text-sm font-medium text-brand-800">Meeting</label>
           <select
@@ -398,9 +408,11 @@ export default function AttendancePage() {
         </div>
       )}
 
-      {canCreateMeeting && <CreateMeetingSection portfolios={portfolios} date={date} onCreated={handleMeetingCreated} />}
+      {!loadError && canCreateMeeting && (
+        <CreateMeetingSection portfolios={portfolios} date={date} onCreated={handleMeetingCreated} />
+      )}
 
-      {!meetingsLoading && meetings.length === 0 && !canCreateMeeting && (
+      {!loadError && !meetingsLoading && meetings.length === 0 && !canCreateMeeting && (
         <p className="mt-6 text-brand-400">No meeting exists for this date yet. Ask an Admin to create one.</p>
       )}
 

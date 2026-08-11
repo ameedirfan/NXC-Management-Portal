@@ -4,6 +4,8 @@ import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { toCSV, downloadCSV } from '@/lib/csv';
 import { SkeletonTableRows } from '@/components/ui/Skeleton';
+import ErrorRetry from '@/components/ui/ErrorRetry';
+import AccessDenied from '@/components/ui/AccessDenied';
 
 export default function RecruitmentPage() {
   const [portfolios, setPortfolios] = useState([]);
@@ -14,6 +16,7 @@ export default function RecruitmentPage() {
   const [cmsLookup, setCmsLookup] = useState('');
   const [applicants, setApplicants] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
 
   const canView = role === 'admin' || role === 'manager';
 
@@ -37,6 +40,7 @@ export default function RecruitmentPage() {
   const loadApplicants = useCallback(() => {
     if (portfolio === undefined || !canView) return;
     setLoading(true);
+    setLoadError('');
     const params = new URLSearchParams({ portfolio, search });
     fetch(`/api/applicants?${params}`)
       .then(async (res) => {
@@ -46,7 +50,16 @@ export default function RecruitmentPage() {
           return;
         }
         const data = await res.json();
+        if (data.error) {
+          setLoadError(data.error);
+          setLoading(false);
+          return;
+        }
         setApplicants(data.applicants || []);
+        setLoading(false);
+      })
+      .catch(() => {
+        setLoadError('Could not reach the server. Try again.');
         setLoading(false);
       });
   }, [portfolio, search, canView]);
@@ -78,10 +91,10 @@ export default function RecruitmentPage() {
   const showPortfolioColumn = canView && !portfolio;
 
   if (role !== null && !canView) {
-    return <p className="text-red-700">Manager or Admin access required to view Recruitment.</p>;
+    return <AccessDenied message="Recruitment is for managers and admins." />;
   }
   if (accessDenied) {
-    return <p className="text-red-700">Manager or Admin access required to view Recruitment.</p>;
+    return <AccessDenied message="Recruitment is for managers and admins." />;
   }
 
   return (
@@ -161,6 +174,12 @@ export default function RecruitmentPage() {
                   columns={showPortfolioColumn ? 6 : 5}
                   cellClassName="py-2 pr-4"
                 />
+              ) : loadError ? (
+                <tr>
+                  <td colSpan={showPortfolioColumn ? 6 : 5} className="py-6">
+                    <ErrorRetry message={loadError} onRetry={loadApplicants} />
+                  </td>
+                </tr>
               ) : applicants.length === 0 ? (
                 <tr>
                   <td colSpan={showPortfolioColumn ? 6 : 5} className="py-6 text-center text-brand-400">

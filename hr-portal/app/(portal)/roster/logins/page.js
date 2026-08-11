@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { dedupePortfolios } from '@/lib/portfolio';
 import { toCSV, downloadCSV } from '@/lib/csv';
 import { SkeletonTableRows } from '@/components/ui/Skeleton';
+import ErrorRetry from '@/components/ui/ErrorRetry';
+import AccessDenied from '@/components/ui/AccessDenied';
 import { toast } from '@/lib/toast';
 
 const CUSTOM_OPTION = '__custom__';
@@ -39,9 +41,11 @@ export default function LoginsPage() {
   const [bulkCreated, setBulkCreated] = useState(null);
   const [bulkBusy, setBulkBusy] = useState(false);
   const [bulkError, setBulkError] = useState('');
+  const [loadError, setLoadError] = useState('');
 
   const load = useCallback(() => {
     setLoading(true);
+    setLoadError('');
     Promise.all([
       fetch('/api/logins').then((res) => (res.status === 403 ? null : res.json())),
       fetch('/api/roster?view=full').then((res) => (res.status === 403 ? null : res.json())),
@@ -51,10 +55,16 @@ export default function LoginsPage() {
           setAccessDenied(true);
           return;
         }
+        const firstError = loginsData.error || rosterData.error;
+        if (firstError) {
+          setLoadError(firstError);
+          return;
+        }
         setLogins(loginsData.logins || []);
         setRosterMembers(rosterData.members || []);
         setAccessDenied(false);
       })
+      .catch(() => setLoadError('Could not reach the server. Try again.'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -253,7 +263,10 @@ export default function LoginsPage() {
   }
 
   if (accessDenied) {
-    return <p className="text-red-700">Manager or Admin access required to manage logins.</p>;
+    return <AccessDenied message="Logins are managed by managers and admins." />;
+  }
+  if (loadError && !loading) {
+    return <ErrorRetry message={loadError} onRetry={load} />;
   }
 
   return (
@@ -645,8 +658,12 @@ export default function LoginsPage() {
               />
             ) : logins.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-brand-400">
-                  No logins found.
+                <td colSpan={6} className="px-4 py-10 text-center text-brand-400">
+                  No logins yet.{' '}
+                  <button onClick={openAddForm} className="font-medium text-brand-900 hover:underline">
+                    Add the first one
+                  </button>
+                  .
                 </td>
               </tr>
             ) : (

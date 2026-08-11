@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { toCSV, downloadCSV } from '@/lib/csv';
 import { Skeleton } from '@/components/ui/Skeleton';
 import AnimatedNumber from '@/components/ui/AnimatedNumber';
+import ErrorRetry from '@/components/ui/ErrorRetry';
 
 const VIEWS = [
   { key: 'individual', label: 'Individual' },
@@ -323,7 +324,7 @@ export default function DashboardPage() {
   }
 
   if (accessDenied) {
-    return <p className="text-red-700">Manager or Admin access required to view the dashboard.</p>;
+    return <AccessDenied message="The Dashboard is for managers and admins." />;
   }
 
   return (
@@ -362,7 +363,7 @@ export default function DashboardPage() {
 
       {loading || !applicants ? (
         loadError ? (
-          <p className="mt-6 text-red-700">{loadError}</p>
+          <ErrorRetry className="mt-6" message={loadError} onRetry={load} />
         ) : (
           <div className="mt-6 space-y-6">
             <DashboardCardSkeleton tiles={3} />

@@ -3,6 +3,7 @@ import { getSession } from '@/lib/auth';
 import { readSheet, TABS } from '@/lib/sheets';
 import { isManagerOrAdmin } from '@/lib/authz';
 import { normalizePortfolio } from '@/lib/portfolio';
+import { friendlyReadError } from '@/lib/apiError';
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +18,12 @@ export async function GET(request) {
   const portfolio = searchParams.get('portfolio') || '';
   const search = (searchParams.get('search') || '').trim().toLowerCase();
 
-  const { records } = await readSheet(TABS.applicants);
+  let records;
+  try {
+    ({ records } = await readSheet(TABS.applicants));
+  } catch (err) {
+    return NextResponse.json({ error: friendlyReadError(err) }, { status: 500 });
+  }
 
   let filtered = records;
   if (portfolio) {

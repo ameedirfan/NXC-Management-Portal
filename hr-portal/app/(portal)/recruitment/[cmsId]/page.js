@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/Skeleton';
+import ErrorRetry from '@/components/ui/ErrorRetry';
 import { toast } from '@/lib/toast';
 
 const STATUSES = ['Pending', 'Interviewing', 'Recommended', 'Not recommended', 'Hired'];
@@ -83,7 +84,7 @@ export default function ApplicantPage() {
       </div>
     );
   }
-  if (error) return <p className="text-red-700">{error}</p>;
+  if (error) return <ErrorRetry message={error} onRetry={load} />;
   if (!applicant) return null;
 
   return (
