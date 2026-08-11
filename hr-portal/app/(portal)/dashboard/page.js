@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import Link from 'next/link';
 import { toCSV, downloadCSV } from '@/lib/csv';
 
 const VIEWS = [
@@ -208,6 +209,7 @@ function CouncilView({ data, loading }) {
 
 export default function DashboardPage() {
   const [viewMode, setViewMode] = useState('council');
+  const [role, setRole] = useState(null);
   const [portfolios, setPortfolios] = useState([]);
   const [rosterMembers, setRosterMembers] = useState([]);
   const [applicants, setApplicants] = useState(null);
@@ -239,6 +241,7 @@ export default function DashboardPage() {
         setApplicants(dash.applicants || null);
         setDataQuality(dq);
         setRosterMembers(rosterData.members || []);
+        setRole(rosterData.role || null);
         setCouncilData(council);
         setAccessDenied(false);
       })
@@ -283,6 +286,14 @@ export default function DashboardPage() {
           <p className="mt-1 text-brand-500">Attendance across three views, and the recruitment funnel.</p>
         </div>
         <div className="flex gap-2">
+          {role === 'admin' && (
+            <Link
+              href="/handover"
+              className="rounded-lg border border-brand-300 px-4 py-2 text-sm font-medium text-brand-700 hover:bg-brand-100"
+            >
+              Year-End Handover Export
+            </Link>
+          )}
           <button
             onClick={exportAllCSV}
             disabled={!applicants}
