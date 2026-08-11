@@ -48,6 +48,7 @@ export default function NavBar({ session }) {
           <div>
             <p className="font-serif text-lg font-bold leading-tight text-brand-900">NXC Portal</p>
             <p className="text-xs uppercase tracking-wide text-brand-500">Management Portal</p>
+            <p className="text-xs font-medium text-brand-600">Portal made by Ameed Irfan</p>
           </div>
         </div>
 
