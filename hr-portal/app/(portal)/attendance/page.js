@@ -397,7 +397,14 @@ export default function AttendancePage() {
             <h2 className="font-serif text-lg font-semibold text-brand-900">
               {meetingLabel(meeting)}, {meeting.date}
             </h2>
-            {canVoid && meeting.status !== 'Voided' && (
+            <div className="flex items-center gap-4">
+              <a
+                href={`/api/meetings/${encodeURIComponent(meeting.id)}/minutes`}
+                className="text-sm font-medium text-brand-900 hover:underline"
+              >
+                Generate minute sheet (.docx)
+              </a>
+              {canVoid && meeting.status !== 'Voided' && (
               <div>
                 {voidConfirming ? (
                   <div className="flex items-center gap-2">
@@ -425,7 +432,8 @@ export default function AttendancePage() {
                   </button>
                 )}
               </div>
-            )}
+              )}
+            </div>
           </div>
 
           {canGenerateQr && <CheckinQrSection meeting={meeting} />}
