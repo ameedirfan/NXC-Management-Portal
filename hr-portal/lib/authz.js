@@ -85,8 +85,10 @@ export function canManageContacts(session) {
   return isManagerOrAdmin(session);
 }
 
+// Dashboard was admin only; managers now get full access to all 3 view
+// modes too, same tier as Roster/Recruitment/attendance marking.
 export function canViewDashboard(session) {
-  return isAdmin(session);
+  return isManagerOrAdmin(session);
 }
 
 // Bulk CSV import, same tier as Roster add and edit.

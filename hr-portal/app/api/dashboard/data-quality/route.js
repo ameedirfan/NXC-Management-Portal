@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { readSheet, TABS } from '@/lib/sheets';
-import { isAdmin } from '@/lib/authz';
+import { canViewDashboard } from '@/lib/authz';
 import { normalizePortfolio, dedupePortfolios } from '@/lib/portfolio';
 
 export const dynamic = 'force-dynamic';
@@ -9,8 +9,8 @@ export const dynamic = 'force-dynamic';
 export async function GET() {
   const session = getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
-  if (!isAdmin(session)) {
-    return NextResponse.json({ error: 'Admin access required.' }, { status: 403 });
+  if (!canViewDashboard(session)) {
+    return NextResponse.json({ error: 'Manager or Admin access required.' }, { status: 403 });
   }
 
   const [{ records: roster }, { records: logins }, { records: applicants }] = await Promise.all([

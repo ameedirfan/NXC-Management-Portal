@@ -17,9 +17,10 @@ const MANAGER_TABS = [
   { href: '/recruitment', label: 'Recruitment' },
   { href: '/roster', label: 'Roster' },
   { href: '/contacts', label: 'Contact Us' },
+  { href: '/dashboard', label: 'Dashboard' },
 ];
 
-const ADMIN_TABS = [...MANAGER_TABS, { href: '/dashboard', label: 'Dashboard' }];
+const ADMIN_TABS = MANAGER_TABS;
 
 function tabsForRole(role) {
   if (role === 'admin') return ADMIN_TABS;
