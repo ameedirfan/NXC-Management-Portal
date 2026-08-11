@@ -16,10 +16,8 @@ function getSecret() {
   return secret;
 }
 
-export function createCheckinToken({ portfolio, date }) {
-  const body = Buffer.from(JSON.stringify({ portfolio, date, iat: Date.now() })).toString(
-    'base64url'
-  );
+export function createCheckinToken({ meetingId }) {
+  const body = Buffer.from(JSON.stringify({ meetingId, iat: Date.now() })).toString('base64url');
   const sig = crypto.createHmac('sha256', getSecret()).update(body).digest('base64url');
   return `${body}.${sig}`;
 }
@@ -40,7 +38,7 @@ export function verifyCheckinToken(token) {
   try {
     const payload = JSON.parse(Buffer.from(body, 'base64url').toString());
     if (Date.now() - payload.iat > CHECKIN_TOKEN_MAX_AGE_MS) return null;
-    if (!payload.portfolio || !payload.date) return null;
+    if (!payload.meetingId) return null;
     return payload;
   } catch {
     return null;

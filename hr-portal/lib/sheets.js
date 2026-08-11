@@ -7,7 +7,24 @@ export const TABS = {
   applicants: 'Applicants',
   reviews: 'Reviews',
   statusHistory: 'Status History',
+  contacts: 'Contacts',
+  meetings: 'Meetings',
+  finance: 'Finance',
+  announcements: 'Announcements',
+  trips: 'Trips',
 };
+
+// Columns for the Meeting ID linked Attendance schema (see upsertMeetingAttendance).
+export const MEETING_ATTENDANCE_HEADERS = [
+  'Meeting ID',
+  'CMS ID',
+  'Full Name',
+  'Status',
+  'Marked By',
+  'Timestamp',
+];
+
+export const MEETING_HEADERS = ['Meeting ID', 'Date', 'Scope', 'Portfolio', 'Created By', 'Status'];
 
 // The Applicants tab can have any number of extra columns beyond these
 // core ones (interview questions, ratings, whatever a club adds) — those
@@ -141,23 +158,54 @@ export async function updateRow(tabName, rowNumber, headers, rowObject) {
   invalidateTab(tabName);
 }
 
-// Attendance-specific: one row per (date, person). Re-marking the same
-// person on the same date updates their existing row instead of appending
-// a duplicate. If a race between two saves ever leaves more than one row
-// behind for the same (date, person) pair, this also cleans that up by
-// merging into the most recently written one and deleting the rest, so
-// the sheet is self-healing rather than accumulating drift.
-export async function upsertAttendance(records) {
-  const headers = [
-    'Date',
-    'Portfolio',
-    'CMS ID',
-    'Full Name',
-    'Designation',
-    'Status',
-    'Marked By',
-    'Timestamp',
-  ];
+// Deletes one row outright. Used only where the app's philosophy has a
+// confirmed exception to add-and-edit-never-delete (Announcements).
+export async function deleteRow(tabName, rowNumber) {
+  const sheets = getSheetsClient();
+  const sheetMeta = await sheets.spreadsheets.get({
+    spreadsheetId: SHEET_ID,
+    fields: 'sheets(properties(sheetId,title))',
+  });
+  const sheetProps = sheetMeta.data.sheets.find((s) => s.properties.title === tabName);
+  if (!sheetProps) return;
+  await sheets.spreadsheets.batchUpdate({
+    spreadsheetId: SHEET_ID,
+    requestBody: {
+      requests: [
+        {
+          deleteDimension: {
+            range: { sheetId: sheetProps.properties.sheetId, dimension: 'ROWS', startIndex: rowNumber - 1, endIndex: rowNumber },
+          },
+        },
+      ],
+    },
+  });
+  invalidateTab(tabName);
+}
+
+// Appends many rows to a tab in a single batch call. Used for the bulk
+// Absent-row write when a meeting is created.
+export async function appendRows(tabName, headers, rowObjects) {
+  if (rowObjects.length === 0) return;
+  const sheets = getSheetsClient();
+  await sheets.spreadsheets.values.append({
+    spreadsheetId: SHEET_ID,
+    range: `${tabName}!A:A`,
+    valueInputOption: 'USER_ENTERED',
+    insertDataOption: 'INSERT_ROWS',
+    requestBody: { values: rowObjects.map((obj) => headers.map((h) => obj[h] ?? '')) },
+  });
+  invalidateTab(tabName);
+}
+
+// Attendance rows are pre-created as Absent the moment a meeting is
+// created, so marking someone (manually or via QR check in) is a
+// find-and-edit of their existing (Meeting ID, CMS ID) row, not an
+// append. Falls back to appending if a matching row genuinely doesn't
+// exist yet (e.g. someone added to the roster after the meeting was
+// created), so the sheet stays self-healing rather than erroring out.
+export async function upsertMeetingAttendance(records) {
+  const headers = MEETING_ATTENDANCE_HEADERS;
 
   // Bypass the cache here: an up-to-15s-stale view of "what already
   // exists" is exactly what would make a race more likely, not less.
@@ -166,19 +214,15 @@ export async function upsertAttendance(records) {
 
   const updates = [];
   const appends = [];
-  const rowsToDelete = [];
 
   for (const rec of records) {
-    const matches = existing
-      .filter((e) => e['Date'] === rec['Date'] && e['CMS ID'] === rec['CMS ID'])
-      .sort((a, b) => (a['Timestamp'] || '').localeCompare(b['Timestamp'] || ''));
-
-    if (matches.length === 0) {
-      appends.push(rec);
+    const match = existing.find(
+      (e) => e['Meeting ID'] === rec['Meeting ID'] && e['CMS ID'] === rec['CMS ID']
+    );
+    if (match) {
+      updates.push({ row: match._row, rec });
     } else {
-      const keep = matches[matches.length - 1];
-      updates.push({ row: keep._row, rec });
-      for (const dupe of matches.slice(0, -1)) rowsToDelete.push(dupe._row);
+      appends.push(rec);
     }
   }
 
@@ -203,29 +247,6 @@ export async function upsertAttendance(records) {
       insertDataOption: 'INSERT_ROWS',
       requestBody: { values: appends.map((rec) => headers.map((h) => rec[h] ?? '')) },
     });
-  }
-
-  if (rowsToDelete.length > 0) {
-    const sheetMeta = await sheets.spreadsheets.get({
-      spreadsheetId: SHEET_ID,
-      fields: 'sheets(properties(sheetId,title))',
-    });
-    const sheetProps = sheetMeta.data.sheets.find((s) => s.properties.title === TABS.attendance);
-    if (sheetProps) {
-      const sheetId = sheetProps.properties.sheetId;
-      // Delete from the bottom up so earlier row numbers stay valid.
-      const sortedDesc = [...new Set(rowsToDelete)].sort((a, b) => b - a);
-      await sheets.spreadsheets.batchUpdate({
-        spreadsheetId: SHEET_ID,
-        requestBody: {
-          requests: sortedDesc.map((row) => ({
-            deleteDimension: {
-              range: { sheetId, dimension: 'ROWS', startIndex: row - 1, endIndex: row },
-            },
-          })),
-        },
-      });
-    }
   }
 
   invalidateTab(TABS.attendance);

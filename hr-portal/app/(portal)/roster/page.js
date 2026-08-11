@@ -37,6 +37,7 @@ const EMPTY_FORM = Object.fromEntries(FIELDS.map((f) => [f.key, '']));
 
 export default function RosterPage() {
   const [members, setMembers] = useState([]);
+  const [portfolioStats, setPortfolioStats] = useState([]);
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
@@ -62,6 +63,7 @@ export default function RosterPage() {
         }
         const data = await res.json();
         setMembers(data.members || []);
+        setPortfolioStats(data.portfolioStats || []);
         setRole(data.role || null);
         setAccessDenied(false);
       })
@@ -233,12 +235,25 @@ export default function RosterPage() {
             record of truth, nothing here replaces it.
           </p>
         </div>
-        {role === 'admin' && (
+        {(role === 'admin' || role === 'manager') && (
           <Link href="/roster/logins" className="text-sm font-medium text-brand-900 hover:underline">
             Manage logins
           </Link>
         )}
       </div>
+
+      {portfolioStats.length > 0 && (
+        <div className="mt-6 flex flex-wrap gap-3">
+          {portfolioStats.map((p) => (
+            <div key={p.portfolio} className="rounded-lg border border-brand-200 bg-brand-50 px-4 py-2.5">
+              <p className="text-sm font-medium text-brand-900">{p.portfolio}</p>
+              <p className="text-xs text-brand-500">
+                {p.headcount} member{p.headcount === 1 ? '' : 's'} · {p.percentage}% attendance
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
         <button

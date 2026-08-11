@@ -7,15 +7,25 @@ import { usePathname, useRouter } from 'next/navigation';
 // Members' only attendance action is scanning a meeting's QR code (self
 // check in), the Attendance tab still shows for them so the nav is not
 // empty, the page itself explains what to do.
-const MEMBER_TABS = [{ href: '/attendance', label: 'Attendance' }];
+const MEMBER_TABS = [
+  { href: '/attendance', label: 'Attendance' },
+  { href: '/contacts', label: 'Contact Us' },
+  { href: '/announcements', label: 'Announcements' },
+  { href: '/trips', label: 'Trip Itineraries' },
+];
 
 const MANAGER_TABS = [
   { href: '/attendance', label: 'Attendance' },
   { href: '/recruitment', label: 'Recruitment' },
   { href: '/roster', label: 'Roster' },
+  { href: '/contacts', label: 'Contact Us' },
+  { href: '/announcements', label: 'Announcements' },
+  { href: '/trips', label: 'Trip Itineraries' },
+  { href: '/dashboard', label: 'Dashboard' },
 ];
 
-const ADMIN_TABS = [...MANAGER_TABS, { href: '/dashboard', label: 'Dashboard' }];
+// Finance is admin only, the one nav item managers don't get.
+const ADMIN_TABS = [...MANAGER_TABS, { href: '/finance', label: 'Finance' }];
 
 function tabsForRole(role) {
   if (role === 'admin') return ADMIN_TABS;
@@ -48,6 +58,7 @@ export default function NavBar({ session }) {
           <div>
             <p className="font-serif text-lg font-bold leading-tight text-brand-900">NXC Portal</p>
             <p className="text-xs uppercase tracking-wide text-brand-500">Management Portal</p>
+            <p className="text-xs font-medium text-brand-600">Portal made by Ameed Irfan</p>
           </div>
         </div>
 

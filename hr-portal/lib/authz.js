@@ -62,12 +62,60 @@ export function canGenerateCheckinCode(session) {
   return isAdmin(session);
 }
 
+// Login management was admin only; managers now get the same create/edit
+// rights as admins here, same tier as Roster and Recruitment.
 export function canManageLogins(session) {
+  return isManagerOrAdmin(session);
+}
+
+// Creating a meeting triggers the bulk Absent-row write, so it stays
+// paired with QR generation as an admin only action, deliberately
+// narrower than manual attendance marking on an existing meeting.
+export function canCreateMeeting(session) {
   return isAdmin(session);
 }
 
-export function canViewDashboard(session) {
+export function canVoidMeeting(session) {
   return isAdmin(session);
+}
+
+// Contact Us directory: everyone signed in can view, only manager/admin
+// can add or edit entries.
+export function canManageContacts(session) {
+  return isManagerOrAdmin(session);
+}
+
+// Finance is the one explicit exception to "managers = admins": admin
+// only, both to view and to edit. Managers have no access at all.
+export function canAccessFinance(session) {
+  return isAdmin(session);
+}
+
+// Everyone signed in can view announcements targeted at them, only
+// manager/admin can draft, send, edit, or delete.
+export function canManageAnnouncements(session) {
+  return isManagerOrAdmin(session);
+}
+
+// Announcement audience values map onto roles: "All" always matches,
+// otherwise the audience label is the plural of one specific role.
+export function announcementMatchesRole(audience, role) {
+  if (!audience || audience === 'All') return true;
+  const map = { admin: 'Admins', manager: 'Managers', member: 'Members' };
+  return audience === map[role];
+}
+
+// Trip Itineraries is the other explicit exception to "managers = admins":
+// everyone signed in can view/preview, but only admin can add trips or
+// upload/replace files. Managers are view-only here, same as members.
+export function canManageTrips(session) {
+  return isAdmin(session);
+}
+
+// Dashboard was admin only; managers now get full access to all 3 view
+// modes too, same tier as Roster/Recruitment/attendance marking.
+export function canViewDashboard(session) {
+  return isManagerOrAdmin(session);
 }
 
 // Bulk CSV import, same tier as Roster add and edit.

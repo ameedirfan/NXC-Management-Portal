@@ -1,7 +1,14 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import Link from 'next/link';
 import { toCSV, downloadCSV } from '@/lib/csv';
+
+const VIEWS = [
+  { key: 'individual', label: 'Individual' },
+  { key: 'portfolio', label: 'Portfolio' },
+  { key: 'council', label: 'Council-wide' },
+];
 
 function BarChart({ data, labelKey, valueKey, unit = '', color = '#3a2814' }) {
   const max = Math.max(1, ...data.map((d) => d[valueKey]));
@@ -29,50 +36,235 @@ function BarChart({ data, labelKey, valueKey, unit = '', color = '#3a2814' }) {
   );
 }
 
-export default function DashboardPage() {
-  const [portfolios, setPortfolios] = useState([]);
-  const [trendPortfolio, setTrendPortfolio] = useState('');
+function StatTile({ label, value }) {
+  return (
+    <div className="rounded-lg border border-brand-200 bg-brand-50 px-4 py-3">
+      <p className="text-xs uppercase tracking-wide text-brand-500">{label}</p>
+      <p className="mt-1 font-serif text-2xl font-bold text-brand-900">{value}</p>
+    </div>
+  );
+}
+
+function IndividualView({ rosterMembers }) {
+  const [cmsId, setCmsId] = useState('');
   const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!cmsId && rosterMembers.length > 0) setCmsId(rosterMembers[0].cmsId);
+  }, [rosterMembers, cmsId]);
+
+  useEffect(() => {
+    if (!cmsId) return;
+    setLoading(true);
+    fetch(`/api/dashboard/attendance?view=individual&cmsId=${encodeURIComponent(cmsId)}`)
+      .then((res) => res.json())
+      .then(setData)
+      .finally(() => setLoading(false));
+  }, [cmsId]);
+
+  return (
+    <div className="rounded-xl border border-brand-200 bg-white p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-serif text-lg font-semibold text-brand-900">Individual attendance</h2>
+        <select
+          value={cmsId}
+          onChange={(e) => setCmsId(e.target.value)}
+          className="rounded-lg border border-brand-300 bg-white px-3 py-1.5 text-sm"
+        >
+          {rosterMembers.map((m) => (
+            <option key={m.cmsId} value={m.cmsId}>
+              {m.fullName}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {loading || !data ? (
+        <p className="mt-4 text-sm text-brand-400">Loading…</p>
+      ) : data.error ? (
+        <p className="mt-4 text-sm text-red-700">{data.error}</p>
+      ) : (
+        <>
+          <p className="mt-1 text-sm text-brand-500">
+            {data.person.fullName}, {data.person.portfolio}
+          </p>
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <StatTile label="Present" value={data.counts.present} />
+            <StatTile label="Absent" value={data.counts.absent} />
+            <StatTile label="Leave" value={data.counts.leave} />
+            <StatTile label="Attendance %" value={`${data.percentage}%`} />
+          </div>
+          <h3 className="mt-6 text-sm font-medium text-brand-700">Trend, cumulative percent present</h3>
+          <BarChart data={data.trend} labelKey="date" valueKey="presentPct" unit="%" color="#9c7539" />
+        </>
+      )}
+    </div>
+  );
+}
+
+function PortfolioView({ portfolios }) {
+  const [portfolio, setPortfolio] = useState('');
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!portfolio && portfolios.length > 0) setPortfolio(portfolios[0]);
+  }, [portfolios, portfolio]);
+
+  useEffect(() => {
+    if (!portfolio) return;
+    setLoading(true);
+    fetch(`/api/dashboard/attendance?view=portfolio&portfolio=${encodeURIComponent(portfolio)}`)
+      .then((res) => res.json())
+      .then(setData)
+      .finally(() => setLoading(false));
+  }, [portfolio]);
+
+  return (
+    <div className="rounded-xl border border-brand-200 bg-white p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h2 className="font-serif text-lg font-semibold text-brand-900">Portfolio attendance</h2>
+        <select
+          value={portfolio}
+          onChange={(e) => setPortfolio(e.target.value)}
+          className="rounded-lg border border-brand-300 bg-white px-3 py-1.5 text-sm"
+        >
+          {portfolios.map((p) => (
+            <option key={p} value={p}>
+              {p}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {loading || !data ? (
+        <p className="mt-4 text-sm text-brand-400">Loading…</p>
+      ) : data.error ? (
+        <p className="mt-4 text-sm text-red-700">{data.error}</p>
+      ) : (
+        <>
+          <div className="mt-4 grid grid-cols-3 gap-3">
+            <StatTile label="Present" value={data.overall.present} />
+            <StatTile label="Absent" value={data.overall.absent} />
+            <StatTile label="Attendance %" value={`${data.overall.percentage}%`} />
+          </div>
+          <h3 className="mt-6 text-sm font-medium text-brand-700">Trend, percent present per meeting date</h3>
+          <BarChart data={data.trend} labelKey="date" valueKey="presentPct" unit="%" color="#9c7539" />
+
+          <h3 className="mt-6 text-sm font-medium text-brand-700">Member by member</h3>
+          <div className="mt-2 overflow-x-auto rounded-lg border border-brand-200">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-brand-100 text-brand-700">
+                <tr>
+                  <th className="px-3 py-2">Name</th>
+                  <th className="px-3 py-2">Present</th>
+                  <th className="px-3 py-2">Absent</th>
+                  <th className="px-3 py-2">%</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.members.map((m) => (
+                  <tr key={m.cmsId} className="border-t border-brand-100">
+                    <td className="px-3 py-2">{m.fullName}</td>
+                    <td className="px-3 py-2">{m.present}</td>
+                    <td className="px-3 py-2">{m.absent}</td>
+                    <td className="px-3 py-2">{m.percentage}%</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+function CouncilView({ data, loading }) {
+  return (
+    <div className="rounded-xl border border-brand-200 bg-white p-6">
+      <h2 className="font-serif text-lg font-semibold text-brand-900">Council-wide attendance</h2>
+      <p className="text-sm text-brand-500">Every meeting on file, every portfolio, rolled up.</p>
+
+      {loading || !data ? (
+        <p className="mt-4 text-sm text-brand-400">Loading…</p>
+      ) : (
+        <>
+          <div className="mt-4 grid grid-cols-3 gap-3">
+            <StatTile label="Present" value={data.overall.present} />
+            <StatTile label="Absent" value={data.overall.absent} />
+            <StatTile label="Attendance %" value={`${data.overall.percentage}%`} />
+          </div>
+          <h3 className="mt-6 text-sm font-medium text-brand-700">Trend, percent present per meeting date</h3>
+          <BarChart data={data.trend} labelKey="date" valueKey="presentPct" unit="%" color="#9c7539" />
+
+          <h3 className="mt-6 text-sm font-medium text-brand-700">By portfolio, plus Council Meets</h3>
+          <BarChart data={data.byPortfolio} labelKey="label" valueKey="percentage" unit="%" color="#5f4322" />
+        </>
+      )}
+    </div>
+  );
+}
+
+export default function DashboardPage() {
+  const [viewMode, setViewMode] = useState('council');
+  const [role, setRole] = useState(null);
+  const [portfolios, setPortfolios] = useState([]);
+  const [rosterMembers, setRosterMembers] = useState([]);
+  const [applicants, setApplicants] = useState(null);
   const [dataQuality, setDataQuality] = useState(null);
+  const [councilData, setCouncilData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
 
   const load = useCallback(() => {
     setLoading(true);
-    const params = new URLSearchParams(trendPortfolio ? { portfolio: trendPortfolio } : {});
     Promise.all([
-      fetch(`/api/dashboard?${params}`),
+      fetch('/api/dashboard'),
       fetch('/api/dashboard/data-quality'),
+      fetch('/api/roster?view=full'),
+      fetch('/api/dashboard/attendance?view=council'),
     ])
-      .then(async ([dashRes, dqRes]) => {
-        if (dashRes.status === 403 || dqRes.status === 403) {
+      .then(async ([dashRes, dqRes, rosterRes, councilRes]) => {
+        if (dashRes.status === 403 || dqRes.status === 403 || rosterRes.status === 403) {
           setAccessDenied(true);
           return;
         }
-        const [json, dq] = await Promise.all([dashRes.json(), dqRes.json()]);
-        setData(json);
-        setPortfolios(json.portfolios || []);
+        const [dash, dq, rosterData, council] = await Promise.all([
+          dashRes.json(),
+          dqRes.json(),
+          rosterRes.json(),
+          councilRes.json(),
+        ]);
+        setPortfolios(dash.portfolios || []);
+        setApplicants(dash.applicants || null);
         setDataQuality(dq);
+        setRosterMembers(rosterData.members || []);
+        setRole(rosterData.role || null);
+        setCouncilData(council);
         setAccessDenied(false);
       })
       .finally(() => setLoading(false));
-  }, [trendPortfolio]);
+  }, []);
 
   useEffect(() => {
     load();
   }, [load]);
 
   function exportAllCSV() {
-    if (!data) return;
+    if (!applicants) return;
     const sections = [
-      ['Attendance by portfolio', ['Portfolio', 'Meetings held', 'Avg percent present'],
-        data.attendance.byPortfolio.map((r) => [r.portfolio, r.meetingsHeld, r.avgPresentPct])],
-      [`Attendance trend, ${trendPortfolio || 'all portfolios'}`, ['Date', 'Percent present'],
-        data.attendance.trend.map((r) => [r.date, r.presentPct])],
-      ['Applicant funnel', ['Status', 'Count'], data.applicants.funnel.map((r) => [r.status, r.count])],
-      ['Applicants by portfolio', ['Portfolio', 'Total'],
-        data.applicants.byPortfolio.map((r) => [r.portfolio, r.total])],
+      ['Applicant funnel', ['Status', 'Count'], applicants.funnel.map((r) => [r.status, r.count])],
+      ['Applicants by portfolio', ['Portfolio', 'Total'], applicants.byPortfolio.map((r) => [r.portfolio, r.total])],
     ];
+    if (councilData) {
+      sections.unshift([
+        'Council-wide attendance by portfolio',
+        ['Portfolio', 'Percent present'],
+        councilData.byPortfolio.map((r) => [r.label, r.percentage]),
+      ]);
+    }
     const lines = [];
     for (const [title, headers, rows] of sections) {
       lines.push(title);
@@ -83,7 +275,7 @@ export default function DashboardPage() {
   }
 
   if (accessDenied) {
-    return <p className="text-red-700">Admin access required to view the dashboard.</p>;
+    return <p className="text-red-700">Manager or Admin access required to view the dashboard.</p>;
   }
 
   return (
@@ -91,19 +283,27 @@ export default function DashboardPage() {
       <div className="no-print flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-serif text-3xl font-bold text-brand-900">Dashboard</h1>
-          <p className="mt-1 text-brand-500">Attendance trends and the recruitment funnel, at a glance.</p>
+          <p className="mt-1 text-brand-500">Attendance across three views, and the recruitment funnel.</p>
         </div>
         <div className="flex gap-2">
+          {role === 'admin' && (
+            <Link
+              href="/handover"
+              className="rounded-lg border border-brand-300 px-4 py-2 text-sm font-medium text-brand-700 hover:bg-brand-100"
+            >
+              Year-End Handover Export
+            </Link>
+          )}
           <button
             onClick={exportAllCSV}
-            disabled={!data}
+            disabled={!applicants}
             className="rounded-lg border border-brand-300 px-4 py-2 text-sm font-medium text-brand-700 hover:bg-brand-100 disabled:opacity-60"
           >
             Export CSV
           </button>
           <button
             onClick={() => window.print()}
-            disabled={!data}
+            disabled={!applicants}
             className="rounded-lg border border-brand-300 px-4 py-2 text-sm font-medium text-brand-700 hover:bg-brand-100 disabled:opacity-60"
             title="Uses your browser's print dialog. Choose Save as PDF as the destination."
           >
@@ -112,48 +312,39 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {!data ? (
-        <p className="mt-6 text-brand-400">{loading ? 'Loading…' : 'Could not load dashboard data.'}</p>
+      {loading && !applicants ? (
+        <p className="mt-6 text-brand-400">Loading…</p>
       ) : (
         <div className="mt-6 space-y-6">
-          <div className="rounded-xl border border-brand-200 bg-white p-6">
-            <h2 className="font-serif text-lg font-semibold text-brand-900">Average attendance by portfolio</h2>
-            <p className="text-sm text-brand-500">Percent of marked attendance that was Present, across every meeting on file.</p>
-            <BarChart data={data.attendance.byPortfolio} labelKey="portfolio" valueKey="avgPresentPct" unit="%" color="#5f4322" />
+          <div className="no-print flex flex-wrap gap-2">
+            {VIEWS.map((v) => (
+              <button
+                key={v.key}
+                onClick={() => setViewMode(v.key)}
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
+                  viewMode === v.key
+                    ? 'bg-brand-900 text-brand-50'
+                    : 'border border-brand-300 text-brand-700 hover:bg-brand-100'
+                }`}
+              >
+                {v.label}
+              </button>
+            ))}
           </div>
 
-          <div className="rounded-xl border border-brand-200 bg-white p-6">
-            <div className="no-print flex flex-wrap items-center justify-between gap-3">
-              <h2 className="font-serif text-lg font-semibold text-brand-900">Attendance trend</h2>
-              <select
-                value={trendPortfolio}
-                onChange={(e) => setTrendPortfolio(e.target.value)}
-                className="rounded-lg border border-brand-300 bg-white px-3 py-1.5 text-sm"
-              >
-                <option value="">All portfolios</option>
-                {portfolios.map((p) => (
-                  <option key={p} value={p}>
-                    {p}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <p className="text-sm text-brand-500">
-              Percent present per meeting date{trendPortfolio ? `, ${trendPortfolio}` : ', all portfolios combined'}
-              , most recent {data.attendance.trend.length} meetings.
-            </p>
-            <BarChart data={data.attendance.trend} labelKey="date" valueKey="presentPct" unit="%" color="#9c7539" />
-          </div>
+          {viewMode === 'individual' && <IndividualView rosterMembers={rosterMembers} />}
+          {viewMode === 'portfolio' && <PortfolioView portfolios={portfolios} />}
+          {viewMode === 'council' && <CouncilView data={councilData} loading={loading} />}
 
           <div className="rounded-xl border border-brand-200 bg-white p-6">
             <h2 className="font-serif text-lg font-semibold text-brand-900">Applicant funnel</h2>
             <p className="text-sm text-brand-500">Every applicant, across every portfolio, grouped by status.</p>
-            <BarChart data={data.applicants.funnel} labelKey="status" valueKey="count" color="#7d5a2c" />
+            <BarChart data={applicants.funnel} labelKey="status" valueKey="count" color="#7d5a2c" />
           </div>
 
           <div className="rounded-xl border border-brand-200 bg-white p-6">
             <h2 className="font-serif text-lg font-semibold text-brand-900">Applicants by portfolio</h2>
-            <BarChart data={data.applicants.byPortfolio} labelKey="portfolio" valueKey="total" color="#b9954f" />
+            <BarChart data={applicants.byPortfolio} labelKey="portfolio" valueKey="total" color="#b9954f" />
           </div>
 
           <DataQualitySection dataQuality={dataQuality} />

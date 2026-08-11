@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
+import { readSheet, TABS } from '@/lib/sheets';
 import { canGenerateCheckinCode } from '@/lib/authz';
 import { createCheckinToken, CHECKIN_TOKEN_MAX_AGE_SECONDS } from '@/lib/checkinToken';
 
@@ -12,11 +13,18 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Only admins can generate a check in code.' }, { status: 403 });
   }
 
-  const { portfolio, date } = await request.json();
-  if (!portfolio || !date) {
-    return NextResponse.json({ error: 'portfolio and date are required.' }, { status: 400 });
+  const { meetingId } = await request.json();
+  if (!meetingId) {
+    return NextResponse.json({ error: 'meetingId is required.' }, { status: 400 });
   }
 
-  const token = createCheckinToken({ portfolio, date });
+  const { records: meetings } = await readSheet(TABS.meetings);
+  const meeting = meetings.find((m) => m['Meeting ID'] === meetingId);
+  if (!meeting) return NextResponse.json({ error: 'Meeting not found.' }, { status: 404 });
+  if (meeting['Status'] === 'Voided') {
+    return NextResponse.json({ error: 'This meeting has been voided.' }, { status: 400 });
+  }
+
+  const token = createCheckinToken({ meetingId });
   return NextResponse.json({ token, expiresInSeconds: CHECKIN_TOKEN_MAX_AGE_SECONDS });
 }

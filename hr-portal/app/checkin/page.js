@@ -37,7 +37,8 @@ function CheckinContent() {
           return;
         }
         setStatus('success');
-        setMessage(`You are marked Present for ${data.portfolio}, ${data.date}.`);
+        const label = data.scope === 'Council' ? 'the Council Meet' : `${data.portfolio}`;
+        setMessage(`You are marked Present for ${label}, ${data.date}.`);
       })
       .catch(() => {
         setStatus('error');
