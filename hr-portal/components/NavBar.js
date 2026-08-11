@@ -7,12 +7,16 @@ import { usePathname, useRouter } from 'next/navigation';
 // Members' only attendance action is scanning a meeting's QR code (self
 // check in), the Attendance tab still shows for them so the nav is not
 // empty, the page itself explains what to do.
-const MEMBER_TABS = [{ href: '/attendance', label: 'Attendance' }];
+const MEMBER_TABS = [
+  { href: '/attendance', label: 'Attendance' },
+  { href: '/contacts', label: 'Contact Us' },
+];
 
 const MANAGER_TABS = [
   { href: '/attendance', label: 'Attendance' },
   { href: '/recruitment', label: 'Recruitment' },
   { href: '/roster', label: 'Roster' },
+  { href: '/contacts', label: 'Contact Us' },
 ];
 
 const ADMIN_TABS = [...MANAGER_TABS, { href: '/dashboard', label: 'Dashboard' }];

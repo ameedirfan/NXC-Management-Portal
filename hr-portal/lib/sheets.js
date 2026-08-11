@@ -7,6 +7,7 @@ export const TABS = {
   applicants: 'Applicants',
   reviews: 'Reviews',
   statusHistory: 'Status History',
+  contacts: 'Contacts',
 };
 
 // The Applicants tab can have any number of extra columns beyond these

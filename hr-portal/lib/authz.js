@@ -66,6 +66,12 @@ export function canManageLogins(session) {
   return isAdmin(session);
 }
 
+// Contact Us directory: everyone signed in can view, only manager/admin
+// can add or edit entries.
+export function canManageContacts(session) {
+  return isManagerOrAdmin(session);
+}
+
 export function canViewDashboard(session) {
   return isAdmin(session);
 }
