@@ -2,8 +2,9 @@ import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { readSheet, appendRow, TABS } from '@/lib/sheets';
 import { isManagerOrAdmin } from '@/lib/authz';
-import { dedupePortfolios, canonicalPortfolioName } from '@/lib/portfolio';
+import { dedupePortfolios, canonicalPortfolioName, normalizePortfolio } from '@/lib/portfolio';
 import { toRosterRecord, toRosterMember } from '@/lib/rosterFields';
+import { joinAttendanceToMeetings, percentage } from '@/lib/attendanceStats';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,6 +30,25 @@ export async function GET(request) {
       return NextResponse.json({ error: 'Manager or Admin access required.' }, { status: 403 });
     }
     payload.members = records.map(toRosterMember);
+
+    // Roster "at a glance" strip: headcount and current attendance
+    // percentage per portfolio, same percentage math as the Dashboard's
+    // Portfolio view (Present / (Present + Absent), Leave and Voided
+    // meetings excluded as ghost entries).
+    const [{ records: attendance }, { records: meetings }] = await Promise.all([
+      readSheet(TABS.attendance),
+      readSheet(TABS.meetings),
+    ]);
+    const eligible = joinAttendanceToMeetings(attendance, meetings).filter((r) => r.status !== 'Leave');
+    payload.portfolioStats = allPortfolios.map((p) => {
+      const memberIds = new Set(
+        records.filter((r) => normalizePortfolio(r['Portfolio']) === normalizePortfolio(p)).map((r) => r['CMS ID'])
+      );
+      const rows = eligible.filter((r) => memberIds.has(r.cmsId));
+      const present = rows.filter((r) => r.status === 'Present').length;
+      const absent = rows.filter((r) => r.status === 'Absent').length;
+      return { portfolio: p, headcount: memberIds.size, percentage: percentage(present, absent) };
+    });
   }
 
   return NextResponse.json(payload);
