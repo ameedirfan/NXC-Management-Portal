@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { toCSV, downloadCSV } from '@/lib/csv';
 import Pill from '@/components/ui/Pill';
+import { toast } from '@/lib/toast';
 
 const STATUSES = ['Present', 'Absent', 'Leave'];
 
@@ -298,19 +299,35 @@ export default function AttendancePage() {
     downloadCSV(`attendance-${meetingLabel(meeting)}-${date}.csv`, csv);
   }
 
+  // Optimistic: the radios already update `people` instantly (pure local
+  // state), so the only round trip left is this Save. Confirm it right
+  // away instead of making someone watch a spinner, and only correct
+  // course — reload the real saved state, tell them via toast — if the
+  // write genuinely failed.
   async function handleSave() {
     setSaving(true);
-    setMessage('');
+    setMessage('Attendance saved.');
+    toast('Attendance saved');
     const res = await fetch('/api/attendance', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ meetingId: selectedMeetingId, records: people }),
     });
     setSaving(false);
-    setMessage(res.ok ? 'Attendance saved.' : 'Could not save attendance.');
+    if (!res.ok) {
+      setMessage('');
+      toast("Couldn't save — reverted to the last saved state.", 'error');
+      loadAttendance();
+    }
   }
 
+  // Optimistic: flip the meeting to Voided in the UI immediately, roll
+  // back and explain via toast only if the write genuinely fails.
   async function handleVoid() {
+    const previousMeeting = meeting;
+    setMeeting((prev) => ({ ...prev, status: 'Voided' }));
+    setVoidConfirming(false);
+    toast('Meeting voided');
     setVoidBusy(true);
     const res = await fetch(`/api/meetings/${encodeURIComponent(selectedMeetingId)}`, {
       method: 'PATCH',
@@ -318,10 +335,11 @@ export default function AttendancePage() {
       body: JSON.stringify({ status: 'Voided' }),
     });
     setVoidBusy(false);
-    setVoidConfirming(false);
     if (res.ok) {
       loadMeetings();
-      loadAttendance();
+    } else {
+      setMeeting(previousMeeting);
+      toast("Couldn't void this meeting — try again.", 'error');
     }
   }
 

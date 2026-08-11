@@ -22,3 +22,32 @@ input[type='radio'] {
     padding: 0 !important;
   }
 }
+
+/* Shared motion primitives. Every animation added anywhere in the app
+   should use one of these classes (or respect this media query itself)
+   rather than a one-off @keyframes block, so prefers-reduced-motion only
+   has to be handled once, here. */
+@keyframes nxc-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.nxc-toast-in {
+  animation: nxc-toast-in 0.2s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
