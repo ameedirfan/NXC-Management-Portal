@@ -9,6 +9,7 @@ export const TABS = {
   statusHistory: 'Status History',
   contacts: 'Contacts',
   meetings: 'Meetings',
+  finance: 'Finance',
 };
 
 // Columns for the Meeting ID linked Attendance schema (see upsertMeetingAttendance).

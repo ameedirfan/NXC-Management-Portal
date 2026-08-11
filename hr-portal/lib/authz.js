@@ -85,6 +85,12 @@ export function canManageContacts(session) {
   return isManagerOrAdmin(session);
 }
 
+// Finance is the one explicit exception to "managers = admins": admin
+// only, both to view and to edit. Managers have no access at all.
+export function canAccessFinance(session) {
+  return isAdmin(session);
+}
+
 // Dashboard was admin only; managers now get full access to all 3 view
 // modes too, same tier as Roster/Recruitment/attendance marking.
 export function canViewDashboard(session) {

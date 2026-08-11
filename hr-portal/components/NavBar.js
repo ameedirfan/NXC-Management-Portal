@@ -20,7 +20,8 @@ const MANAGER_TABS = [
   { href: '/dashboard', label: 'Dashboard' },
 ];
 
-const ADMIN_TABS = MANAGER_TABS;
+// Finance is admin only, the one nav item managers don't get.
+const ADMIN_TABS = [...MANAGER_TABS, { href: '/finance', label: 'Finance' }];
 
 function tabsForRole(role) {
   if (role === 'admin') return ADMIN_TABS;

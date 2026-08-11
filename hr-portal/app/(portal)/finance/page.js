@@ -1,0 +1,273 @@
+'use client';
+
+import { useEffect, useState, useCallback } from 'react';
+import { toCSV, downloadCSV } from '@/lib/csv';
+
+const EMPTY_FORM = { date: '', description: '', amount: '', type: '' };
+
+function formatMoney(n) {
+  return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+export default function FinancePage() {
+  const [entries, setEntries] = useState([]);
+  const [summary, setSummary] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [accessDenied, setAccessDenied] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingRow, setEditingRow] = useState(null);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [formError, setFormError] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const load = useCallback(() => {
+    setLoading(true);
+    fetch('/api/finance')
+      .then(async (res) => {
+        if (res.status === 403) {
+          setAccessDenied(true);
+          return;
+        }
+        const data = await res.json();
+        setEntries(data.entries || []);
+        setSummary(data);
+        setAccessDenied(false);
+      })
+      .finally(() => setLoading(false));
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  function openAddForm() {
+    setEditingRow(null);
+    setForm(EMPTY_FORM);
+    setFormError('');
+    setFormOpen(true);
+  }
+
+  function openEditForm(entry) {
+    setEditingRow(entry.row);
+    setForm({
+      date: entry.date,
+      description: entry.description,
+      amount: String(entry.amount),
+      type: entry.type,
+    });
+    setFormError('');
+    setFormOpen(true);
+  }
+
+  function closeForm() {
+    setFormOpen(false);
+    setFormError('');
+  }
+
+  async function handleSubmit(e) {
+    e.preventDefault();
+    if (!form.date || !form.description.trim() || !form.amount) {
+      setFormError('Date, Description, and Amount are required.');
+      return;
+    }
+    setSaving(true);
+    setFormError('');
+
+    const isEdit = editingRow !== null;
+    const res = await fetch(isEdit ? `/api/finance/${editingRow}` : '/api/finance', {
+      method: isEdit ? 'PATCH' : 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    });
+    const data = await res.json();
+    setSaving(false);
+
+    if (!res.ok) {
+      setFormError(data.error || 'Could not save this entry.');
+      return;
+    }
+    setFormOpen(false);
+    load();
+  }
+
+  function exportCSV() {
+    const csv = toCSV(
+      ['Date', 'Description', 'Amount', 'Type', 'Recorded By'],
+      entries.map((e) => ({
+        Date: e.date,
+        Description: e.description,
+        Amount: e.amount,
+        Type: e.type,
+        'Recorded By': e.recordedBy,
+      }))
+    );
+    downloadCSV('finance.csv', csv);
+  }
+
+  if (accessDenied) {
+    return <p className="text-red-700">Admin access required to view Finance.</p>;
+  }
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h1 className="font-serif text-3xl font-bold text-brand-900">Finance</h1>
+          <p className="mt-1 text-brand-500">Income and expenses. The Google Sheet remains the record of truth.</p>
+        </div>
+        <div className="flex gap-3">
+          <button
+            onClick={openAddForm}
+            className="rounded-lg bg-brand-900 px-5 py-2.5 font-medium text-brand-50 hover:bg-brand-800"
+          >
+            Add entry
+          </button>
+          <button
+            onClick={exportCSV}
+            disabled={entries.length === 0}
+            className="rounded-lg border border-brand-300 px-4 py-2 text-sm font-medium text-brand-700 hover:bg-brand-100 disabled:opacity-60"
+          >
+            Export CSV
+          </button>
+        </div>
+      </div>
+
+      {summary && (
+        <div className="mt-6 rounded-xl border border-brand-200 bg-white p-6">
+          <p className="text-xs uppercase tracking-wide text-brand-500">Treasury Balance</p>
+          <p className="mt-1 font-serif text-4xl font-bold text-brand-900">
+            {formatMoney(summary.treasuryBalance)}
+          </p>
+          <p className="mt-2 text-sm text-brand-500">
+            Opening balance {formatMoney(summary.openingBalance)}, plus {formatMoney(summary.totalIncome)}{' '}
+            income, minus {formatMoney(summary.totalExpense)} expense. Opening balance is set directly in
+            the Finance sheet.
+          </p>
+        </div>
+      )}
+
+      {formOpen && (
+        <form onSubmit={handleSubmit} className="mt-6 rounded-xl border border-brand-200 bg-white p-6">
+          <h2 className="font-serif text-lg font-semibold text-brand-900">
+            {editingRow !== null ? 'Edit entry' : 'Add entry'}
+          </h2>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="block text-sm font-medium text-brand-800">
+                Date<span className="text-red-600"> Required</span>
+              </label>
+              <input
+                type="date"
+                value={form.date}
+                onChange={(e) => setForm((prev) => ({ ...prev, date: e.target.value }))}
+                className="mt-1 w-full rounded-lg border border-brand-300 px-3 py-2"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-brand-800">
+                Description<span className="text-red-600"> Required</span>
+              </label>
+              <input
+                value={form.description}
+                onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
+                className="mt-1 w-full rounded-lg border border-brand-300 px-3 py-2"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-brand-800">
+                Amount<span className="text-red-600"> Required</span>
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                value={form.amount}
+                onChange={(e) => setForm((prev) => ({ ...prev, amount: e.target.value }))}
+                placeholder="Positive for income, negative for expense"
+                className="mt-1 w-full rounded-lg border border-brand-300 px-3 py-2"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-brand-800">Type</label>
+              <select
+                value={form.type}
+                onChange={(e) => setForm((prev) => ({ ...prev, type: e.target.value }))}
+                className="mt-1 w-full rounded-lg border border-brand-300 bg-white px-3 py-2"
+              >
+                <option value="">Infer from amount's sign</option>
+                <option value="Income">Income</option>
+                <option value="Expense">Expense</option>
+              </select>
+            </div>
+          </div>
+          {formError && <p className="mt-3 text-sm text-red-700">{formError}</p>}
+          <div className="mt-4 flex items-center gap-3">
+            <button
+              type="submit"
+              disabled={saving}
+              className="rounded-lg bg-brand-900 px-5 py-2.5 font-medium text-brand-50 hover:bg-brand-800 disabled:opacity-60"
+            >
+              {saving ? 'Saving…' : editingRow !== null ? 'Save changes' : 'Add entry'}
+            </button>
+            <button
+              type="button"
+              onClick={closeForm}
+              className="rounded-lg border border-brand-300 px-5 py-2.5 font-medium text-brand-700 hover:bg-brand-100"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      )}
+
+      <div className="mt-6 overflow-x-auto rounded-xl border border-brand-200">
+        <table className="w-full text-left text-sm">
+          <thead className="bg-brand-100 text-brand-700">
+            <tr>
+              <th className="px-4 py-3">Date</th>
+              <th className="px-4 py-3">Description</th>
+              <th className="px-4 py-3">Amount</th>
+              <th className="px-4 py-3">Type</th>
+              <th className="px-4 py-3">Recorded By</th>
+              <th className="px-4 py-3"></th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan={6} className="px-4 py-6 text-center text-brand-400">
+                  Loading…
+                </td>
+              </tr>
+            ) : entries.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-4 py-6 text-center text-brand-400">
+                  No entries yet.
+                </td>
+              </tr>
+            ) : (
+              entries.map((e) => (
+                <tr key={e.row} className="border-t border-brand-100">
+                  <td className="px-4 py-3 text-brand-500">{e.date}</td>
+                  <td className="px-4 py-3 font-medium text-brand-900">{e.description}</td>
+                  <td className={`px-4 py-3 ${e.amount < 0 ? 'text-red-700' : 'text-emerald-700'}`}>
+                    {formatMoney(e.amount)}
+                  </td>
+                  <td className="px-4 py-3">{e.type}</td>
+                  <td className="px-4 py-3 text-brand-500">{e.recordedBy}</td>
+                  <td className="px-4 py-3 text-right">
+                    <button
+                      onClick={() => openEditForm(e)}
+                      className="text-sm font-medium text-brand-900 hover:underline"
+                    >
+                      Edit
+                    </button>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
