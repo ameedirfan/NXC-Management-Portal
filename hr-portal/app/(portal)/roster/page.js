@@ -233,7 +233,7 @@ export default function RosterPage() {
             record of truth, nothing here replaces it.
           </p>
         </div>
-        {role === 'admin' && (
+        {(role === 'admin' || role === 'manager') && (
           <Link href="/roster/logins" className="text-sm font-medium text-brand-900 hover:underline">
             Manage logins
           </Link>

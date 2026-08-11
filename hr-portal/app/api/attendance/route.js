@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
-import { readSheet, upsertAttendance, TABS } from '@/lib/sheets';
+import { readSheet, upsertMeetingAttendance, TABS } from '@/lib/sheets';
 import { isManagerOrAdmin, canManuallyMarkAttendance } from '@/lib/authz';
-import { normalizePortfolio, canonicalPortfolioName } from '@/lib/portfolio';
 
 export const dynamic = 'force-dynamic';
+
+const STATUSES = ['Present', 'Absent', 'Leave'];
 
 export async function GET(request) {
   const session = getSession();
@@ -14,33 +15,41 @@ export async function GET(request) {
   }
 
   const { searchParams } = new URL(request.url);
-  const portfolio = searchParams.get('portfolio');
-  const date = searchParams.get('date');
-  if (!portfolio || !date) {
-    return NextResponse.json({ error: 'portfolio and date are required.' }, { status: 400 });
+  const meetingId = searchParams.get('meetingId');
+  if (!meetingId) {
+    return NextResponse.json({ error: 'meetingId is required.' }, { status: 400 });
   }
 
-  const [{ records: roster }, { records: attendance }] = await Promise.all([
-    readSheet(TABS.roster),
+  const [{ records: meetings }, { records: attendance }, { records: roster }] = await Promise.all([
+    readSheet(TABS.meetings),
     readSheet(TABS.attendance),
+    readSheet(TABS.roster),
   ]);
 
-  const people = roster
-    .filter((p) => normalizePortfolio(p['Portfolio']) === normalizePortfolio(portfolio))
-    .map((p) => {
-      const matches = attendance
-        .filter((a) => a['Date'] === date && a['CMS ID'] === p['CMS ID'])
-        .sort((a, b) => (a['Timestamp'] || '').localeCompare(b['Timestamp'] || ''));
-      const existing = matches[matches.length - 1];
-      return {
-        cmsId: p['CMS ID'],
-        fullName: p['Full Name'],
-        designation: p['Designation'],
-        status: existing ? existing['Status'] : '',
-      };
-    });
+  const meeting = meetings.find((m) => m['Meeting ID'] === meetingId);
+  if (!meeting) return NextResponse.json({ error: 'Meeting not found.' }, { status: 404 });
 
-  return NextResponse.json({ people });
+  const rosterByCmsId = new Map(roster.map((r) => [r['CMS ID'], r]));
+  const people = attendance
+    .filter((a) => a['Meeting ID'] === meetingId)
+    .map((a) => ({
+      cmsId: a['CMS ID'],
+      fullName: a['Full Name'],
+      designation: rosterByCmsId.get(a['CMS ID'])?.['Designation'] || '',
+      status: a['Status'] || '',
+    }))
+    .sort((a, b) => a.fullName.localeCompare(b.fullName));
+
+  return NextResponse.json({
+    meeting: {
+      id: meeting['Meeting ID'],
+      date: meeting['Date'],
+      scope: meeting['Scope'],
+      portfolio: meeting['Portfolio'],
+      status: meeting['Status'] || '',
+    },
+    people,
+  });
 }
 
 export async function POST(request) {
@@ -53,33 +62,34 @@ export async function POST(request) {
     );
   }
 
-  const { date, portfolio, records } = await request.json();
-  if (!date || !portfolio || !Array.isArray(records)) {
+  const { meetingId, records } = await request.json();
+  if (!meetingId || !Array.isArray(records)) {
     return NextResponse.json({ error: 'Invalid payload.' }, { status: 400 });
   }
 
-  const { records: roster } = await readSheet(TABS.roster);
-  const rosterPortfolios = [...new Set(roster.map((p) => p['Portfolio']).filter(Boolean))];
-  const canonicalPortfolio = canonicalPortfolioName(portfolio, rosterPortfolios);
-  const allowedCmsIds = new Set(
-    roster
-      .filter((p) => normalizePortfolio(p['Portfolio']) === normalizePortfolio(portfolio))
-      .map((p) => p['CMS ID'])
+  const { records: meetings } = await readSheet(TABS.meetings);
+  const meeting = meetings.find((m) => m['Meeting ID'] === meetingId);
+  if (!meeting) return NextResponse.json({ error: 'Meeting not found.' }, { status: 404 });
+
+  // Only people who already have a pre-created row for this meeting are
+  // valid targets, this is a find-and-edit, never an append of someone
+  // outside the meeting's scope.
+  const { records: existingAttendance } = await readSheet(TABS.attendance);
+  const validCmsIds = new Set(
+    existingAttendance.filter((a) => a['Meeting ID'] === meetingId).map((a) => a['CMS ID'])
   );
 
   const rows = records
-    .filter((r) => r.status && allowedCmsIds.has(r.cmsId))
+    .filter((r) => STATUSES.includes(r.status) && validCmsIds.has(r.cmsId))
     .map((r) => ({
-      Date: date,
-      Portfolio: canonicalPortfolio,
+      'Meeting ID': meetingId,
       'CMS ID': r.cmsId,
       'Full Name': r.fullName,
-      Designation: r.designation,
       Status: r.status,
       'Marked By': session.fullName || session.username,
       Timestamp: new Date().toISOString(),
     }));
 
-  await upsertAttendance(rows);
+  await upsertMeetingAttendance(rows);
   return NextResponse.json({ ok: true });
 }

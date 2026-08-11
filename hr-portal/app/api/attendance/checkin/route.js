@@ -1,9 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
-import { readSheet, upsertAttendance, TABS } from '@/lib/sheets';
-import { isManagerOrAdmin } from '@/lib/authz';
+import { readSheet, upsertMeetingAttendance, TABS } from '@/lib/sheets';
 import { verifyCheckinToken } from '@/lib/checkinToken';
-import { normalizePortfolio, canonicalPortfolioName } from '@/lib/portfolio';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,43 +18,49 @@ export async function POST(request) {
     );
   }
 
-  if (
-    !isManagerOrAdmin(session) &&
-    normalizePortfolio(session.portfolio) !== normalizePortfolio(payload.portfolio)
-  ) {
-    return NextResponse.json(
-      { error: 'This check in code is for a different portfolio than yours.' },
-      { status: 403 }
-    );
+  const [{ records: meetings }, { records: attendance }] = await Promise.all([
+    readSheet(TABS.meetings),
+    readSheet(TABS.attendance),
+  ]);
+
+  const meeting = meetings.find((m) => m['Meeting ID'] === payload.meetingId);
+  if (!meeting) {
+    return NextResponse.json({ error: 'This meeting no longer exists.' }, { status: 404 });
+  }
+  if (meeting['Status'] === 'Voided') {
+    return NextResponse.json({ error: 'This meeting has been voided.' }, { status: 400 });
   }
 
-  const { records: roster } = await readSheet(TABS.roster);
-  const person = roster.find((r) => r['CMS ID'] === session.cmsId);
-  if (!person) {
+  // A row only pre-exists for this meeting if the person was in scope
+  // (all of Council, or that portfolio) when the meeting was created.
+  const existing = attendance.find(
+    (a) => a['Meeting ID'] === payload.meetingId && a['CMS ID'] === session.cmsId
+  );
+  if (!existing) {
     return NextResponse.json(
       {
         error:
-          "You are not currently on the roster, so you can't check yourself in. Ask your portfolio's Manager or Admin.",
+          "You are not on the roster for this meeting, so you can't check yourself in. Ask your portfolio's Manager or Admin.",
       },
       { status: 404 }
     );
   }
 
-  const rosterPortfolios = [...new Set(roster.map((r) => r['Portfolio']).filter(Boolean))];
-  const canonicalPortfolio = canonicalPortfolioName(payload.portfolio, rosterPortfolios);
-
-  await upsertAttendance([
+  await upsertMeetingAttendance([
     {
-      Date: payload.date,
-      Portfolio: canonicalPortfolio,
-      'CMS ID': person['CMS ID'],
-      'Full Name': person['Full Name'],
-      Designation: person['Designation'],
+      'Meeting ID': payload.meetingId,
+      'CMS ID': session.cmsId,
+      'Full Name': existing['Full Name'],
       Status: 'Present',
       'Marked By': `${session.fullName || session.username} (self, QR)`,
       Timestamp: new Date().toISOString(),
     },
   ]);
 
-  return NextResponse.json({ ok: true, portfolio: canonicalPortfolio, date: payload.date });
+  return NextResponse.json({
+    ok: true,
+    scope: meeting['Scope'],
+    portfolio: meeting['Portfolio'],
+    date: meeting['Date'],
+  });
 }

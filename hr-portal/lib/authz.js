@@ -62,7 +62,20 @@ export function canGenerateCheckinCode(session) {
   return isAdmin(session);
 }
 
+// Login management was admin only; managers now get the same create/edit
+// rights as admins here, same tier as Roster and Recruitment.
 export function canManageLogins(session) {
+  return isManagerOrAdmin(session);
+}
+
+// Creating a meeting triggers the bulk Absent-row write, so it stays
+// paired with QR generation as an admin only action, deliberately
+// narrower than manual attendance marking on an existing meeting.
+export function canCreateMeeting(session) {
+  return isAdmin(session);
+}
+
+export function canVoidMeeting(session) {
   return isAdmin(session);
 }
 

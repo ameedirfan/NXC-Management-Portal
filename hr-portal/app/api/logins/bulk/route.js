@@ -3,7 +3,7 @@ import crypto from 'crypto';
 import bcrypt from 'bcryptjs';
 import { getSession } from '@/lib/auth';
 import { readSheet, appendRow, TABS } from '@/lib/sheets';
-import { isAdmin } from '@/lib/authz';
+import { canManageLogins } from '@/lib/authz';
 import { canonicalPortfolioName, dedupePortfolios } from '@/lib/portfolio';
 
 export const dynamic = 'force-dynamic';
@@ -57,8 +57,8 @@ function uniqueUsername(base, taken) {
 export async function POST(request) {
   const session = getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
-  if (!isAdmin(session)) {
-    return NextResponse.json({ error: 'Admin access required.' }, { status: 403 });
+  if (!canManageLogins(session)) {
+    return NextResponse.json({ error: 'Manager or Admin access required.' }, { status: 403 });
   }
 
   const body = await request.json();

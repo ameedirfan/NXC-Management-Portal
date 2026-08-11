@@ -249,7 +249,7 @@ export default function LoginsPage() {
   }
 
   if (accessDenied) {
-    return <p className="text-red-700">Admin access required to manage logins.</p>;
+    return <p className="text-red-700">Manager or Admin access required to manage logins.</p>;
   }
 
   return (
