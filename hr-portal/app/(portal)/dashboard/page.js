@@ -26,7 +26,7 @@ function BarChart({ data, labelKey, valueKey, unit = '', color = '#3a2814' }) {
               style={{ width: `${(d[valueKey] / max) * 100}%`, backgroundColor: color }}
             />
           </div>
-          <span className="w-14 shrink-0 text-right text-brand-500">
+          <span className="w-14 shrink-0 text-right tabular-nums text-brand-500">
             {d[valueKey]}
             {unit}
           </span>
@@ -40,7 +40,7 @@ function StatTile({ label, value }) {
   return (
     <div className="rounded-lg border border-brand-200 bg-brand-50 px-4 py-3">
       <p className="text-xs uppercase tracking-wide text-brand-500">{label}</p>
-      <p className="mt-1 font-serif text-2xl font-bold text-brand-900">{value}</p>
+      <p className="mt-1 font-serif text-2xl font-bold tabular-nums text-brand-900">{value}</p>
     </div>
   );
 }
@@ -167,9 +167,9 @@ function PortfolioView({ portfolios }) {
                 {data.members.map((m) => (
                   <tr key={m.cmsId} className="border-t border-brand-100">
                     <td className="px-3 py-2">{m.fullName}</td>
-                    <td className="px-3 py-2">{m.present}</td>
-                    <td className="px-3 py-2">{m.absent}</td>
-                    <td className="px-3 py-2">{m.percentage}%</td>
+                    <td className="px-3 py-2 tabular-nums">{m.present}</td>
+                    <td className="px-3 py-2 tabular-nums">{m.absent}</td>
+                    <td className="px-3 py-2 tabular-nums">{m.percentage}%</td>
                   </tr>
                 ))}
               </tbody>

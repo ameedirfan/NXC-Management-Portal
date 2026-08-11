@@ -247,7 +247,7 @@ export default function RosterPage() {
           {portfolioStats.map((p) => (
             <div key={p.portfolio} className="rounded-lg border border-brand-200 bg-brand-50 px-4 py-2.5">
               <p className="text-sm font-medium text-brand-900">{p.portfolio}</p>
-              <p className="text-xs text-brand-500">
+              <p className="text-xs tabular-nums text-brand-500">
                 {p.headcount} member{p.headcount === 1 ? '' : 's'} · {p.percentage}% attendance
               </p>
             </div>

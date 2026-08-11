@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { toCSV, downloadCSV } from '@/lib/csv';
+import Pill from '@/components/ui/Pill';
 
 const STATUSES = ['Present', 'Absent', 'Leave'];
 
@@ -119,7 +120,7 @@ function CreateMeetingSection({ portfolios, date, onCreated }) {
       {confirming && (
         <div className="mt-4 rounded-lg border border-brand-300 bg-brand-50 p-4">
           <p className="text-brand-800">
-            This will create an Absent record for all {previewCount}{' '}
+            This will create an Absent record for all <span className="tabular-nums">{previewCount}</span>{' '}
             {scope === 'Council' ? 'roster members' : `${portfolio} members`}, for {date}.
           </p>
           <div className="mt-3 flex gap-3">
@@ -394,8 +395,9 @@ export default function AttendancePage() {
           )}
 
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-            <h2 className="font-serif text-lg font-semibold text-brand-900">
+            <h2 className="flex flex-wrap items-center gap-2 font-serif text-lg font-semibold text-brand-900">
               {meetingLabel(meeting)}, {meeting.date}
+              {meeting.status === 'Voided' && <Pill tone="voided">Voided</Pill>}
             </h2>
             <div className="flex items-center gap-4">
               <a

@@ -3,6 +3,28 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import {
+  ClipboardList,
+  UserPlus,
+  Users,
+  Phone,
+  Megaphone,
+  MapPinned,
+  LayoutDashboard,
+  Wallet,
+} from 'lucide-react';
+
+// One outline icon per tab, never mixed styles.
+const ICONS = {
+  '/attendance': ClipboardList,
+  '/recruitment': UserPlus,
+  '/roster': Users,
+  '/contacts': Phone,
+  '/announcements': Megaphone,
+  '/trips': MapPinned,
+  '/dashboard': LayoutDashboard,
+  '/finance': Wallet,
+};
 
 // Members' only attendance action is scanning a meeting's QR code (self
 // check in), the Attendance tab still shows for them so the nav is not
@@ -63,19 +85,23 @@ export default function NavBar({ session }) {
         </div>
 
         <nav className="flex flex-wrap gap-2">
-          {tabs.map((t) => (
-            <Link
-              key={t.href}
-              href={t.href}
-              className={`rounded-lg px-4 py-2 text-sm font-medium transition ${
-                pathname?.startsWith(t.href)
-                  ? 'bg-brand-900 text-brand-50'
-                  : 'text-brand-700 hover:bg-brand-100'
-              }`}
-            >
-              {t.label}
-            </Link>
-          ))}
+          {tabs.map((t) => {
+            const Icon = ICONS[t.href];
+            return (
+              <Link
+                key={t.href}
+                href={t.href}
+                className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition ${
+                  pathname?.startsWith(t.href)
+                    ? 'bg-brand-900 text-brand-50'
+                    : 'text-brand-700 hover:bg-brand-100'
+                }`}
+              >
+                {Icon && <Icon size={15} strokeWidth={2} aria-hidden="true" />}
+                {t.label}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="flex items-center gap-4">

@@ -162,7 +162,7 @@ export default function TripsPage() {
                 </div>
               )}
               <p className="mt-3 font-serif text-lg font-semibold text-brand-900">{t.location}</p>
-              <p className="text-sm text-brand-500">
+              <p className="text-sm tabular-nums text-brand-500">
                 {t.days} day{String(t.days) === '1' ? '' : 's'} · {t.participantCount} participants
               </p>
             </Link>

@@ -29,6 +29,27 @@ module.exports = {
       fontFamily: {
         serif: ['var(--font-crest)', 'Georgia', 'serif'],
       },
+      // Type scale, codified so every component pulls from the same
+      // sizes instead of picking ad hoc px values. Convention (weight
+      // is chosen per use, Tailwind fontSize doesn't carry it):
+      //   xs   12/16  — metadata, timestamps, helper text
+      //   sm   13/20  — table cells, form labels, nav items, buttons
+      //   base 15/24  — body copy
+      //   lg   18/28  — card/section headings (font-serif, semibold)
+      //   xl   20/28  — sub-page headings
+      //   2xl  24/32  — stat tile values (font-serif, bold)
+      //   3xl  30/36  — page titles (font-serif, bold)
+      //   4xl  36/40  — hero stat numbers, e.g. Treasury Balance
+      fontSize: {
+        xs: ['0.75rem', { lineHeight: '1rem' }],
+        sm: ['0.8125rem', { lineHeight: '1.25rem' }],
+        base: ['0.9375rem', { lineHeight: '1.5rem' }],
+        lg: ['1.125rem', { lineHeight: '1.75rem' }],
+        xl: ['1.25rem', { lineHeight: '1.75rem' }],
+        '2xl': ['1.5rem', { lineHeight: '2rem' }],
+        '3xl': ['1.875rem', { lineHeight: '2.25rem' }],
+        '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
+      },
     },
   },
   plugins: [],

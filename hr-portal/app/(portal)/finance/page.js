@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { toCSV, downloadCSV } from '@/lib/csv';
+import Pill from '@/components/ui/Pill';
 
 const EMPTY_FORM = { date: '', description: '', amount: '', type: '' };
 
@@ -144,12 +145,13 @@ export default function FinancePage() {
       {summary && (
         <div className="mt-6 rounded-xl border border-brand-200 bg-white p-6">
           <p className="text-xs uppercase tracking-wide text-brand-500">Treasury Balance</p>
-          <p className="mt-1 font-serif text-4xl font-bold text-brand-900">
+          <p className="mt-1 font-serif text-4xl font-bold tabular-nums text-brand-900">
             {formatMoney(summary.treasuryBalance)}
           </p>
           <p className="mt-2 text-sm text-brand-500">
-            Opening balance {formatMoney(summary.openingBalance)}, plus {formatMoney(summary.totalIncome)}{' '}
-            income, minus {formatMoney(summary.totalExpense)} expense.
+            Opening balance <span className="tabular-nums">{formatMoney(summary.openingBalance)}</span>, plus{' '}
+            <span className="tabular-nums">{formatMoney(summary.totalIncome)}</span> income, minus{' '}
+            <span className="tabular-nums">{formatMoney(summary.totalExpense)}</span> expense.
           </p>
           <p className="mt-2 text-xs text-brand-400">
             To set the opening balance, add a row directly in the Finance sheet with Type = "Opening
@@ -260,12 +262,17 @@ export default function FinancePage() {
             ) : (
               entries.map((e) => (
                 <tr key={e.row} className="border-t border-brand-100">
-                  <td className="px-4 py-3 text-brand-500">{e.date}</td>
+                  <td className="px-4 py-3 tabular-nums text-brand-500">{e.date}</td>
                   <td className="px-4 py-3 font-medium text-brand-900">{e.description}</td>
-                  <td className={`px-4 py-3 ${e.amount < 0 ? 'text-red-700' : 'text-emerald-700'}`}>
-                    {formatMoney(e.amount)}
+                  <td className="px-4 py-3 tabular-nums">
+                    <Pill tone={e.amount < 0 ? 'expense' : 'income'}>
+                      {e.amount >= 0 ? '+' : ''}
+                      {formatMoney(e.amount)}
+                    </Pill>
                   </td>
-                  <td className="px-4 py-3">{e.type}</td>
+                  <td className="px-4 py-3">
+                    <Pill tone={e.amount < 0 ? 'expense' : 'income'}>{e.type}</Pill>
+                  </td>
                   <td className="px-4 py-3 text-brand-500">{e.recordedBy}</td>
                   <td className="px-4 py-3 text-right">
                     <button

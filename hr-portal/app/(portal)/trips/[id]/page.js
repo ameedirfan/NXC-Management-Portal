@@ -75,7 +75,7 @@ export default function TripDetailPage() {
       <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-serif text-3xl font-bold text-brand-900">{trip.location}</h1>
-          <p className="mt-1 text-brand-500">
+          <p className="mt-1 tabular-nums text-brand-500">
             {trip.days} day{String(trip.days) === '1' ? '' : 's'} · {trip.participantCount} participants
           </p>
         </div>

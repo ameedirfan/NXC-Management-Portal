@@ -181,7 +181,7 @@ export default function HandoverPage() {
         <div className="mt-6 space-y-6">
           <div className="rounded-xl border border-brand-200 bg-white p-6">
             <p className="text-xs uppercase tracking-wide text-brand-500">Treasury Balance</p>
-            <p className="mt-1 font-serif text-3xl font-bold text-brand-900">
+            <p className="mt-1 font-serif text-3xl font-bold tabular-nums text-brand-900">
               {formatMoney(data.finance.treasuryBalance)}
             </p>
             <p className="mt-1 text-sm text-brand-500">

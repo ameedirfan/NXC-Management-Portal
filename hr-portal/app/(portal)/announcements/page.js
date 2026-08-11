@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { renderAnnouncementHtml } from '@/lib/markdown';
+import Pill from '@/components/ui/Pill';
 
 const AUDIENCES = ['All', 'Members', 'Managers', 'Admins'];
 
@@ -234,9 +235,11 @@ export default function AnnouncementsPage() {
                 className="text-brand-900"
                 dangerouslySetInnerHTML={{ __html: renderAnnouncementHtml(a.message) }}
               />
-              <p className="mt-3 text-xs text-brand-500">
-                Posted by {a.author} — {formatDate(a.timestamp)}
-                {a.audience !== 'All' && ` · ${a.audience}`}
+              <p className="mt-3 flex flex-wrap items-center gap-2 text-xs text-brand-500">
+                <span>
+                  Posted by {a.author} — {formatDate(a.timestamp)}
+                </span>
+                {a.audience !== 'All' && <Pill tone="muted">{a.audience}</Pill>}
               </p>
               {canManage && (
                 <div className="mt-3 flex items-center gap-3">
