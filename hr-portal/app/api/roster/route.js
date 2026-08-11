@@ -5,6 +5,7 @@ import { isManagerOrAdmin } from '@/lib/authz';
 import { dedupePortfolios, canonicalPortfolioName, normalizePortfolio } from '@/lib/portfolio';
 import { toRosterRecord, toRosterMember } from '@/lib/rosterFields';
 import { joinAttendanceToMeetings, percentage } from '@/lib/attendanceStats';
+import { friendlyReadError } from '@/lib/apiError';
 
 export const dynamic = 'force-dynamic';
 
@@ -34,21 +35,29 @@ export async function GET(request) {
     // Roster "at a glance" strip: headcount and current attendance
     // percentage per portfolio, same percentage math as the Dashboard's
     // Portfolio view (Present / (Present + Absent), Leave and Voided
-    // meetings excluded as ghost entries).
-    const [{ records: attendance }, { records: meetings }] = await Promise.all([
-      readSheet(TABS.attendance),
-      readSheet(TABS.meetings),
-    ]);
-    const eligible = joinAttendanceToMeetings(attendance, meetings).filter((r) => r.status !== 'Leave');
-    payload.portfolioStats = allPortfolios.map((p) => {
-      const memberIds = new Set(
-        records.filter((r) => normalizePortfolio(r['Portfolio']) === normalizePortfolio(p)).map((r) => r['CMS ID'])
-      );
-      const rows = eligible.filter((r) => memberIds.has(r.cmsId));
-      const present = rows.filter((r) => r.status === 'Present').length;
-      const absent = rows.filter((r) => r.status === 'Absent').length;
-      return { portfolio: p, headcount: memberIds.size, percentage: percentage(present, absent) };
-    });
+    // meetings excluded as ghost entries). Kept in its own try/catch so
+    // this endpoint (also used by the Logins page and the Dashboard)
+    // still works before the Meetings tab exists in the sheet, just
+    // without the strip.
+    try {
+      const [{ records: attendance }, { records: meetings }] = await Promise.all([
+        readSheet(TABS.attendance),
+        readSheet(TABS.meetings),
+      ]);
+      const eligible = joinAttendanceToMeetings(attendance, meetings).filter((r) => r.status !== 'Leave');
+      payload.portfolioStats = allPortfolios.map((p) => {
+        const memberIds = new Set(
+          records.filter((r) => normalizePortfolio(r['Portfolio']) === normalizePortfolio(p)).map((r) => r['CMS ID'])
+        );
+        const rows = eligible.filter((r) => memberIds.has(r.cmsId));
+        const present = rows.filter((r) => r.status === 'Present').length;
+        const absent = rows.filter((r) => r.status === 'Absent').length;
+        return { portfolio: p, headcount: memberIds.size, percentage: percentage(present, absent) };
+      });
+    } catch (err) {
+      payload.portfolioStats = [];
+      payload.portfolioStatsError = friendlyReadError(err);
+    }
   }
 
   return NextResponse.json(payload);

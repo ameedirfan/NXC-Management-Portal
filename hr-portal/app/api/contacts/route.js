@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { readSheet, appendRow, TABS } from '@/lib/sheets';
 import { canManageContacts } from '@/lib/authz';
+import { friendlyReadError } from '@/lib/apiError';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +20,12 @@ export async function GET() {
   const session = getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
 
-  const { records } = await readSheet(TABS.contacts);
+  let records;
+  try {
+    ({ records } = await readSheet(TABS.contacts));
+  } catch (err) {
+    return NextResponse.json({ error: friendlyReadError(err) }, { status: 500 });
+  }
   return NextResponse.json({
     contacts: records.map(toContact),
     canManage: canManageContacts(session),

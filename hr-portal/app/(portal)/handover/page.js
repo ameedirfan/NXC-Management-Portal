@@ -83,6 +83,7 @@ export default function HandoverPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     fetch('/api/handover')
@@ -91,8 +92,14 @@ export default function HandoverPage() {
           setAccessDenied(true);
           return;
         }
-        setData(await res.json());
+        const json = await res.json();
+        if (json.error) {
+          setLoadError(json.error);
+          return;
+        }
+        setData(json);
       })
+      .catch(() => setLoadError('Could not reach the server. Try again.'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -167,7 +174,9 @@ export default function HandoverPage() {
       </div>
 
       {loading || !data ? (
-        <p className="mt-6 text-brand-400">{loading ? 'Loading…' : 'Could not load handover data.'}</p>
+        <p className={`mt-6 ${loadError ? 'text-red-700' : 'text-brand-400'}`}>
+          {loading ? 'Loading…' : loadError || 'Could not load handover data.'}
+        </p>
       ) : (
         <div className="mt-6 space-y-6">
           <div className="rounded-xl border border-brand-200 bg-white p-6">

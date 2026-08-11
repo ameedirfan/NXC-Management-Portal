@@ -4,6 +4,7 @@ import { readSheet, TABS } from '@/lib/sheets';
 import { canViewDashboard } from '@/lib/authz';
 import { normalizePortfolio, canonicalPortfolioName, dedupePortfolios } from '@/lib/portfolio';
 import { joinAttendanceToMeetings, percentage } from '@/lib/attendanceStats';
+import { friendlyReadError } from '@/lib/apiError';
 
 export const dynamic = 'force-dynamic';
 
@@ -32,11 +33,16 @@ export async function GET(request) {
   const cmsId = searchParams.get('cmsId') || '';
   const portfolioParam = searchParams.get('portfolio') || '';
 
-  const [{ records: roster }, { records: attendance }, { records: meetings }] = await Promise.all([
-    readSheet(TABS.roster),
-    readSheet(TABS.attendance),
-    readSheet(TABS.meetings),
-  ]);
+  let roster, attendance, meetings;
+  try {
+    [{ records: roster }, { records: attendance }, { records: meetings }] = await Promise.all([
+      readSheet(TABS.roster),
+      readSheet(TABS.attendance),
+      readSheet(TABS.meetings),
+    ]);
+  } catch (err) {
+    return NextResponse.json({ error: friendlyReadError(err) }, { status: 500 });
+  }
 
   const rosterPortfolios = dedupePortfolios(roster.map((r) => r['Portfolio']));
   const rosterByCmsId = new Map(roster.map((r) => [r['CMS ID'], r]));

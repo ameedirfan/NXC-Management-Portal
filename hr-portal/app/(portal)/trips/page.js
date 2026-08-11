@@ -9,6 +9,7 @@ export default function TripsPage() {
   const [trips, setTrips] = useState([]);
   const [canManage, setCanManage] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
   const [formOpen, setFormOpen] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [formError, setFormError] = useState('');
@@ -16,12 +17,18 @@ export default function TripsPage() {
 
   const load = useCallback(() => {
     setLoading(true);
+    setLoadError('');
     fetch('/api/trips')
       .then((res) => res.json())
       .then((data) => {
+        if (data.error) {
+          setLoadError(data.error);
+          return;
+        }
         setTrips(data.trips || []);
         setCanManage(!!data.canManage);
       })
+      .catch(() => setLoadError('Could not reach the server. Try again.'))
       .finally(() => setLoading(false));
   }, []);
 
@@ -136,6 +143,8 @@ export default function TripsPage() {
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {loading ? (
           <p className="text-brand-400">Loading…</p>
+        ) : loadError ? (
+          <p className="text-red-700">{loadError}</p>
         ) : trips.length === 0 ? (
           <p className="text-brand-400">No trips yet.</p>
         ) : (

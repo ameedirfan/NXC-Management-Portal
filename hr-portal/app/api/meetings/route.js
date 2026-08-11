@@ -3,6 +3,7 @@ import { getSession } from '@/lib/auth';
 import { readSheet, appendRow, appendRows, TABS, MEETING_HEADERS, MEETING_ATTENDANCE_HEADERS } from '@/lib/sheets';
 import { isManagerOrAdmin, canCreateMeeting } from '@/lib/authz';
 import { normalizePortfolio, canonicalPortfolioName, dedupePortfolios } from '@/lib/portfolio';
+import { friendlyReadError } from '@/lib/apiError';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,7 +30,12 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const date = searchParams.get('date');
 
-  const { records } = await readSheet(TABS.meetings);
+  let records;
+  try {
+    ({ records } = await readSheet(TABS.meetings));
+  } catch (err) {
+    return NextResponse.json({ error: friendlyReadError(err) }, { status: 500 });
+  }
   const meetings = records
     .map(toMeeting)
     .filter((m) => !date || m.date === date);
@@ -73,31 +79,35 @@ export async function POST(request) {
   }
 
   const meetingId = `M${Date.now()}`;
-  const { headers: meetingHeaders } = await readSheet(TABS.meetings, 'A:ZZ', { fresh: true });
-  const effectiveMeetingHeaders = meetingHeaders.length ? meetingHeaders : MEETING_HEADERS;
+  try {
+    const { headers: meetingHeaders } = await readSheet(TABS.meetings, 'A:ZZ', { fresh: true });
+    const effectiveMeetingHeaders = meetingHeaders.length ? meetingHeaders : MEETING_HEADERS;
 
-  await appendRow(TABS.meetings, effectiveMeetingHeaders, {
-    'Meeting ID': meetingId,
-    Date: date,
-    Scope: scope,
-    Portfolio: canonicalPortfolio,
-    'Created By': session.fullName || session.username,
-    Status: '',
-  });
-
-  const timestamp = new Date().toISOString();
-  await appendRows(
-    TABS.attendance,
-    MEETING_ATTENDANCE_HEADERS,
-    applicable.map((p) => ({
+    await appendRow(TABS.meetings, effectiveMeetingHeaders, {
       'Meeting ID': meetingId,
-      'CMS ID': p['CMS ID'],
-      'Full Name': p['Full Name'],
-      Status: 'Absent',
-      'Marked By': `${session.fullName || session.username} (meeting created)`,
-      Timestamp: timestamp,
-    }))
-  );
+      Date: date,
+      Scope: scope,
+      Portfolio: canonicalPortfolio,
+      'Created By': session.fullName || session.username,
+      Status: '',
+    });
+
+    const timestamp = new Date().toISOString();
+    await appendRows(
+      TABS.attendance,
+      MEETING_ATTENDANCE_HEADERS,
+      applicable.map((p) => ({
+        'Meeting ID': meetingId,
+        'CMS ID': p['CMS ID'],
+        'Full Name': p['Full Name'],
+        Status: 'Absent',
+        'Marked By': `${session.fullName || session.username} (meeting created)`,
+        Timestamp: timestamp,
+      }))
+    );
+  } catch (err) {
+    return NextResponse.json({ error: friendlyReadError(err) }, { status: 500 });
+  }
 
   return NextResponse.json({
     ok: true,

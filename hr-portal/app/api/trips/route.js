@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { readSheet, appendRow, TABS } from '@/lib/sheets';
 import { canManageTrips } from '@/lib/authz';
+import { friendlyReadError } from '@/lib/apiError';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,7 +25,12 @@ export async function GET() {
   const session = getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
 
-  const { records } = await readSheet(TABS.trips);
+  let records;
+  try {
+    ({ records } = await readSheet(TABS.trips));
+  } catch (err) {
+    return NextResponse.json({ error: friendlyReadError(err) }, { status: 500 });
+  }
   const trips = records.map(toTrip).sort((a, b) => (a.dateAdded < b.dateAdded ? 1 : -1));
 
   return NextResponse.json({ trips, canManage: canManageTrips(session) });
@@ -51,33 +57,37 @@ export async function POST(request) {
     );
   }
 
-  const { headers } = await readSheet(TABS.trips, 'A:ZZ', { fresh: true });
-  const effectiveHeaders = headers.length
-    ? headers
-    : [
-        'Trip ID',
-        'Location',
-        'Number of Days',
-        'Total Participant Count',
-        'Itinerary File Link',
-        'Seating Plan File Link',
-        'Group Photo Link',
-        'Created By',
-        'Date Added',
-      ];
-
   const id = `T${Date.now()}`;
-  await appendRow(TABS.trips, effectiveHeaders, {
-    'Trip ID': id,
-    Location: location,
-    'Number of Days': days,
-    'Total Participant Count': participantCount,
-    'Itinerary File Link': '',
-    'Seating Plan File Link': '',
-    'Group Photo Link': '',
-    'Created By': session.fullName || session.username,
-    'Date Added': new Date().toISOString().slice(0, 10),
-  });
+  try {
+    const { headers } = await readSheet(TABS.trips, 'A:ZZ', { fresh: true });
+    const effectiveHeaders = headers.length
+      ? headers
+      : [
+          'Trip ID',
+          'Location',
+          'Number of Days',
+          'Total Participant Count',
+          'Itinerary File Link',
+          'Seating Plan File Link',
+          'Group Photo Link',
+          'Created By',
+          'Date Added',
+        ];
+
+    await appendRow(TABS.trips, effectiveHeaders, {
+      'Trip ID': id,
+      Location: location,
+      'Number of Days': days,
+      'Total Participant Count': participantCount,
+      'Itinerary File Link': '',
+      'Seating Plan File Link': '',
+      'Group Photo Link': '',
+      'Created By': session.fullName || session.username,
+      'Date Added': new Date().toISOString().slice(0, 10),
+    });
+  } catch (err) {
+    return NextResponse.json({ error: friendlyReadError(err) }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true, id });
 }
