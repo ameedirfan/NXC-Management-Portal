@@ -69,7 +69,7 @@ export default function CommandPalette({ open, onClose, role, supportsViewTransi
               <button
                 key={t.href}
                 onClick={() => go(t.href)}
-                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-brand-800 hover:bg-white/60"
+                className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-brand-800 hover:bg-brand-50/60"
               >
                 {Icon && <Icon size={15} aria-hidden="true" />}
                 Go to {t.label}

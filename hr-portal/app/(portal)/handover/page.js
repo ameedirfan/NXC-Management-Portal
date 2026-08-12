@@ -13,7 +13,7 @@ function formatMoney(n) {
 
 function Section({ title, children }) {
   return (
-    <div className="rounded-xl border border-brand-200 bg-white p-6">
+    <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
       <h2 className="font-serif text-lg font-semibold text-brand-900">{title}</h2>
       <div className="mt-3 overflow-x-auto">{children}</div>
     </div>
@@ -189,7 +189,7 @@ export default function HandoverPage() {
         ) : (
           <div className="mt-6 space-y-6">
             {Array.from({ length: 4 }).map((_, i) => (
-              <div key={i} className="rounded-xl border border-brand-200 bg-white p-6">
+              <div key={i} className="rounded-xl border border-brand-200 bg-brand-50 p-6">
                 <Skeleton className="h-5 w-48" />
                 <div className="mt-4 space-y-2">
                   {Array.from({ length: 3 }).map((_, r) => (
@@ -202,7 +202,7 @@ export default function HandoverPage() {
         )
       ) : (
         <div className="mt-6 space-y-6">
-          <div className="rounded-xl border border-brand-200 bg-white p-6">
+          <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
             <p className="text-xs uppercase tracking-wide text-brand-500">Treasury Balance</p>
             <p className="mt-1 font-serif text-3xl font-bold tabular-nums text-brand-900">
               <AnimatedNumber value={data.finance.treasuryBalance} format={formatMoney} />

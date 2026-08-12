@@ -73,7 +73,7 @@ export default function ApplicantPage() {
       <div>
         <Skeleton className="h-4 w-32" />
         <Skeleton className="mt-4 h-9 w-64" />
-        <div className="mt-6 grid gap-4 rounded-xl border border-brand-200 bg-white p-6 sm:grid-cols-2">
+        <div className="mt-6 grid gap-4 rounded-xl border border-brand-200 bg-brand-50 p-6 sm:grid-cols-2">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i}>
               <Skeleton className="h-3 w-20" />
@@ -99,7 +99,7 @@ export default function ApplicantPage() {
           value={applicant.status || ''}
           onChange={(e) => handleStatusChange(e.target.value)}
           disabled={statusSaving}
-          className="rounded-lg border border-brand-300 bg-white px-3 py-2 font-medium"
+          className="rounded-lg border border-brand-300 bg-brand-50 px-3 py-2 font-medium"
         >
           <option value="">No status yet</option>
           {STATUSES.map((s) => (
@@ -110,7 +110,7 @@ export default function ApplicantPage() {
         </select>
       </div>
 
-      <div className="mt-6 grid gap-4 rounded-xl border border-brand-200 bg-white p-6 sm:grid-cols-2">
+      <div className="mt-6 grid gap-4 rounded-xl border border-brand-200 bg-brand-50 p-6 sm:grid-cols-2">
         <InfoRow label="CMS ID" value={applicant.cmsId} />
         <InfoRow label="Contact" value={applicant.contactNo} />
         <InfoRow label="Email" value={applicant.email} />
@@ -151,7 +151,7 @@ export default function ApplicantPage() {
         <h2 className="font-serif text-lg font-semibold text-brand-900">Reviews ({reviews.length})</h2>
         <div className="mt-3 space-y-3">
           {reviews.map((r, i) => (
-            <div key={i} className="rounded-lg border border-brand-200 bg-white p-4">
+            <div key={i} className="rounded-lg border border-brand-200 bg-brand-50 p-4">
               <div className="flex items-center justify-between">
                 <span className="font-medium text-brand-900">{r.reviewer}</span>
                 <span className="text-sm text-brand-400">
@@ -164,14 +164,14 @@ export default function ApplicantPage() {
           ))}
         </div>
 
-        <form onSubmit={handleSubmitReview} className="mt-4 rounded-xl border border-brand-200 bg-white p-6">
+        <form onSubmit={handleSubmitReview} className="mt-4 rounded-xl border border-brand-200 bg-brand-50 p-6">
           <h3 className="font-medium text-brand-900">Add a review</h3>
           <div className="mt-3">
             <label className="block text-sm font-medium text-brand-800">Recommendation</label>
             <select
               value={recommendation}
               onChange={(e) => setRecommendation(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-brand-300 bg-white px-3 py-2"
+              className="mt-1 w-full rounded-lg border border-brand-300 bg-brand-50 px-3 py-2"
             >
               {RECOMMENDATIONS.map((r) => (
                 <option key={r} value={r}>

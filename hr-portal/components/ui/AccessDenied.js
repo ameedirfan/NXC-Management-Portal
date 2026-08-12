@@ -5,7 +5,7 @@ import Link from 'next/link';
 // not a raw error string or a broken page.
 export default function AccessDenied({ message }) {
   return (
-    <div className="flex flex-col items-center rounded-xl border border-brand-200 bg-white px-6 py-12 text-center">
+    <div className="flex flex-col items-center rounded-xl border border-brand-200 bg-brand-50 px-6 py-12 text-center">
       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-100">
         <ShieldOff size={22} className="text-brand-500" aria-hidden="true" />
       </div>

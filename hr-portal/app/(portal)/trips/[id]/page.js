@@ -82,7 +82,7 @@ export default function TripDetailPage() {
         <Skeleton className="mt-2 h-4 w-64" />
         <div className="mt-6 grid gap-6 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="rounded-xl border border-brand-200 bg-white p-5">
+            <div key={i} className="rounded-xl border border-brand-200 bg-brand-50 p-5">
               <Skeleton className="h-5 w-24" />
               <Skeleton className="mt-3 h-48 w-full" />
             </div>
@@ -113,7 +113,7 @@ export default function TripDetailPage() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         {SLOTS.map((slot) => (
-          <div key={slot.key} className="rounded-xl border border-brand-200 bg-white p-5">
+          <div key={slot.key} className="rounded-xl border border-brand-200 bg-brand-50 p-5">
             <div className="flex items-center justify-between gap-2">
               <h2 className="font-serif text-lg font-semibold text-brand-900">{slot.label}</h2>
               {canManage && (

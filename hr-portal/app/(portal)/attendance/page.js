@@ -74,7 +74,7 @@ function CreateMeetingSection({ portfolios, date, onCreated }) {
   }
 
   return (
-    <div className="mt-6 rounded-xl border border-brand-200 bg-white p-6">
+    <div className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
       <h2 className="font-serif text-lg font-semibold text-brand-900">Create a meeting</h2>
       <p className="text-sm text-brand-500">
         Creates an Absent record for everyone in scope right away, marking a specific person
@@ -87,7 +87,7 @@ function CreateMeetingSection({ portfolios, date, onCreated }) {
           <select
             value={scope}
             onChange={(e) => setScope(e.target.value)}
-            className="mt-1 rounded-lg border border-brand-300 bg-white px-3 py-2"
+            className="mt-1 rounded-lg border border-brand-300 bg-brand-50 px-3 py-2"
           >
             <option value="Council">Council Meet, every member</option>
             <option value="Portfolio">Portfolio Meet, one portfolio</option>
@@ -99,7 +99,7 @@ function CreateMeetingSection({ portfolios, date, onCreated }) {
             <select
               value={portfolio}
               onChange={(e) => setPortfolio(e.target.value)}
-              className="mt-1 rounded-lg border border-brand-300 bg-white px-3 py-2"
+              className="mt-1 rounded-lg border border-brand-300 bg-brand-50 px-3 py-2"
             >
               {portfolios.map((p) => (
                 <option key={p} value={p}>
@@ -173,7 +173,7 @@ function CheckinQrSection({ meeting }) {
   }
 
   return (
-    <div className="mt-6 rounded-xl border border-brand-200 bg-white p-6">
+    <div className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-serif text-lg font-semibold text-brand-900">Meeting check in QR</h2>
@@ -356,7 +356,7 @@ export default function AttendancePage() {
     return (
       <div>
         <h1 className="font-serif text-3xl font-bold text-brand-900">Attendance</h1>
-        <div className="mt-6 rounded-xl border border-brand-200 bg-white p-6">
+        <div className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
           <p className="text-brand-700">
             Ask your portfolio's Admin to show the meeting's check in QR code. Scan it with
             your phone's camera to mark yourself Present.
@@ -381,7 +381,7 @@ export default function AttendancePage() {
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className="mt-1 w-full rounded-lg border border-brand-300 bg-white px-3 py-2"
+          className="mt-1 w-full rounded-lg border border-brand-300 bg-brand-50 px-3 py-2"
         />
       </div>
 
@@ -393,7 +393,7 @@ export default function AttendancePage() {
           <select
             value={selectedMeetingId}
             onChange={(e) => setSelectedMeetingId(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-brand-300 bg-white px-3 py-2"
+            className="mt-1 w-full rounded-lg border border-brand-300 bg-brand-50 px-3 py-2"
           >
             <option value="" disabled>
               Choose a meeting

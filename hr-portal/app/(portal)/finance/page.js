@@ -165,7 +165,7 @@ export default function FinancePage() {
       {loadError && <ErrorRetry className="mt-6" message={loadError} onRetry={load} />}
 
       {loading && !summary && !loadError && (
-        <div className="mt-6 rounded-xl border border-brand-200 bg-white p-6">
+        <div className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
           <Skeleton className="h-3 w-28" />
           <Skeleton className="mt-2 h-10 w-48" />
           <Skeleton className="mt-3 h-4 w-full max-w-md" />
@@ -173,7 +173,7 @@ export default function FinancePage() {
       )}
 
       {summary && (
-        <div className="mt-6 rounded-xl border border-brand-200 bg-white p-6">
+        <div className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
           <p className="text-xs uppercase tracking-wide text-brand-500">Treasury Balance</p>
           <p className="mt-1 font-serif text-4xl font-bold tabular-nums text-brand-900">
             <AnimatedNumber value={summary.treasuryBalance} format={formatMoney} />
@@ -192,7 +192,7 @@ export default function FinancePage() {
       )}
 
       {formOpen && (
-        <form onSubmit={handleSubmit} className="mt-6 rounded-xl border border-brand-200 bg-white p-6">
+        <form onSubmit={handleSubmit} className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
           <h2 className="font-serif text-lg font-semibold text-brand-900">
             {editingRow !== null ? 'Edit entry' : 'Add entry'}
           </h2>
@@ -242,7 +242,7 @@ export default function FinancePage() {
               <select
                 value={form.type}
                 onChange={(e) => setForm((prev) => ({ ...prev, type: e.target.value }))}
-                className="mt-1 w-full rounded-lg border border-brand-300 bg-white px-3 py-2"
+                className="mt-1 w-full rounded-lg border border-brand-300 bg-brand-50 px-3 py-2"
               >
                 <option value="">Infer from amount's sign</option>
                 <option value="Income">Income</option>

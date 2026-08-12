@@ -3,7 +3,7 @@
 
 export default function EmptyState({ icon: Icon, title, description, actionLabel, onAction, className = '' }) {
   return (
-    <div className={`col-span-full flex flex-col items-center rounded-xl border border-dashed border-brand-300 bg-white px-6 py-12 text-center ${className}`}>
+    <div className={`col-span-full flex flex-col items-center rounded-xl border border-dashed border-brand-300 bg-brand-50 px-6 py-12 text-center ${className}`}>
       {Icon && (
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-100">
           <Icon size={22} className="text-brand-500" aria-hidden="true" />

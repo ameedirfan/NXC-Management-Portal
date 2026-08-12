@@ -1,5 +1,16 @@
 /** @type {import('tailwindcss').Config} */
+
+// Each step resolves through a CSS custom property (defined for both
+// :root and .dark in globals.css) instead of a fixed hex, so dark mode
+// is a value swap on the same tokens, not a second set of classes.
+// Standard Tailwind "CSS variables with opacity support" pattern.
+function withOpacity(varName) {
+  return ({ opacityValue }) =>
+    opacityValue !== undefined ? `rgb(var(${varName}) / ${opacityValue})` : `rgb(var(${varName}))`;
+}
+
 module.exports = {
+  darkMode: 'class',
   content: [
     './app/**/*.{js,jsx}',
     './components/**/*.{js,jsx}',
@@ -13,17 +24,17 @@ module.exports = {
         // navy/slate scale used to be, so the whole portal reads as one
         // piece with the crest instead of a generic admin panel.
         brand: {
-          50: '#f9f4e8',
-          100: '#f2e9d3',
-          200: '#e6d3ab',
-          300: '#d4b878',
-          400: '#b9954f',
-          500: '#9c7539',
-          600: '#7d5a2c',
-          700: '#5f4322',
-          800: '#4a3319',
-          900: '#3a2814',
-          950: '#241809',
+          50: withOpacity('--brand-50'),
+          100: withOpacity('--brand-100'),
+          200: withOpacity('--brand-200'),
+          300: withOpacity('--brand-300'),
+          400: withOpacity('--brand-400'),
+          500: withOpacity('--brand-500'),
+          600: withOpacity('--brand-600'),
+          700: withOpacity('--brand-700'),
+          800: withOpacity('--brand-800'),
+          900: withOpacity('--brand-900'),
+          950: withOpacity('--brand-950'),
         },
       },
       fontFamily: {

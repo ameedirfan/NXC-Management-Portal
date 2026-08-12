@@ -129,7 +129,7 @@ function ComposePanel({ initial, onClose, onSent, onSendConfirmed, onSendFailed 
             <select
               value={audience}
               onChange={(e) => setAudience(e.target.value)}
-              className="ml-auto rounded-lg border border-brand-300 bg-white px-2 py-1 text-sm"
+              className="ml-auto rounded-lg border border-brand-300 bg-brand-50 px-2 py-1 text-sm"
             >
               {AUDIENCES.map((a) => (
                 <option key={a} value={a}>
@@ -264,7 +264,7 @@ export default function AnnouncementsPage() {
       <div className="mt-6 space-y-4">
         {loading ? (
           Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="rounded-xl border border-brand-200 bg-white p-5">
+            <div key={i} className="rounded-xl border border-brand-200 bg-brand-50 p-5">
               <Skeleton className="h-4 w-full" />
               <Skeleton className="mt-2 h-4 w-2/3" />
               <Skeleton className="mt-4 h-3 w-40" />
@@ -286,7 +286,7 @@ export default function AnnouncementsPage() {
           />
         ) : (
           announcements.map((a) => (
-            <div key={a.id} className="rounded-xl border border-brand-200 bg-white p-5">
+            <div key={a.id} className="rounded-xl border border-brand-200 bg-brand-50 p-5">
               <div
                 className="text-brand-900"
                 dangerouslySetInnerHTML={{ __html: renderAnnouncementHtml(a.message) }}

@@ -11,7 +11,7 @@ export default function ErrorRetry({ message, onRetry, className = '' }) {
       {onRetry && (
         <button
           onClick={onRetry}
-          className="rounded-lg border border-red-300 bg-white px-4 py-1.5 text-sm font-medium text-red-800 hover:bg-red-100"
+          className="rounded-lg border border-red-300 bg-brand-50 px-4 py-1.5 text-sm font-medium text-red-800 hover:bg-red-100"
         >
           Try again
         </button>

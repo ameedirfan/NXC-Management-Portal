@@ -109,7 +109,7 @@ export default function RecruitmentPage() {
         <select
           value={portfolio ?? ''}
           onChange={(e) => setPortfolio(e.target.value)}
-          className="mt-1 w-full rounded-lg border border-brand-300 bg-white px-3 py-2 sm:max-w-xs"
+          className="mt-1 w-full rounded-lg border border-brand-300 bg-brand-50 px-3 py-2 sm:max-w-xs"
         >
           <option value="">All portfolios</option>
           {portfolios.map((p) => (
@@ -120,7 +120,7 @@ export default function RecruitmentPage() {
         </select>
       </div>
 
-      <div className="mt-6 rounded-xl border border-brand-200 bg-white p-6">
+      <div className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
         <h2 className="font-serif text-lg font-semibold text-brand-900">CMS ID lookup</h2>
         <form onSubmit={handleCmsLookup} className="mt-3 flex gap-3">
           <input
@@ -138,7 +138,7 @@ export default function RecruitmentPage() {
         </form>
       </div>
 
-      <div className="mt-6 rounded-xl border border-brand-200 bg-white p-6">
+      <div className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <h2 className="font-serif text-lg font-semibold text-brand-900">Applicants</h2>
           <button

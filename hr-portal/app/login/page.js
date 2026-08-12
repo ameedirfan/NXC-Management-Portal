@@ -59,7 +59,7 @@ function LoginForm() {
             <input
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-brand-300 bg-white px-3 py-2 focus:border-brand-700 focus:outline-none focus:ring-1 focus:ring-brand-700"
+              className="mt-1 w-full rounded-lg border border-brand-300 bg-brand-50 px-3 py-2 focus:border-brand-700 focus:outline-none focus:ring-1 focus:ring-brand-700"
               autoComplete="username"
               required
             />
@@ -70,7 +70,7 @@ function LoginForm() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-brand-300 bg-white px-3 py-2 focus:border-brand-700 focus:outline-none focus:ring-1 focus:ring-brand-700"
+              className="mt-1 w-full rounded-lg border border-brand-300 bg-brand-50 px-3 py-2 focus:border-brand-700 focus:outline-none focus:ring-1 focus:ring-brand-700"
               autoComplete="current-password"
               required
             />

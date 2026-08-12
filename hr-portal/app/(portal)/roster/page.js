@@ -303,7 +303,7 @@ export default function RosterPage() {
       {importError && <p className="mt-3 text-sm text-red-700">{importError}</p>}
 
       {importPreview && (
-        <div className="mt-4 rounded-xl border border-brand-200 bg-white p-6">
+        <div className="mt-4 rounded-xl border border-brand-200 bg-brand-50 p-6">
           <h2 className="font-serif text-lg font-semibold text-brand-900">
             Import preview. {importPreview.validCount} of {importPreview.totalCount} rows valid
           </h2>
@@ -357,7 +357,7 @@ export default function RosterPage() {
       {formOpen && (
         <form
           onSubmit={handleSubmit}
-          className="mt-6 rounded-xl border border-brand-200 bg-white p-6"
+          className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6"
         >
           <h2 className="font-serif text-lg font-semibold text-brand-900">
             {editingCmsId !== null ? `Edit ${form.fullName || 'member'}` : 'Add roster member'}
@@ -392,7 +392,7 @@ export default function RosterPage() {
                     <select
                       value={form.portfolio}
                       onChange={(e) => handlePortfolioSelect(e.target.value)}
-                      className="mt-1 w-full rounded-lg border border-brand-300 bg-white px-3 py-2"
+                      className="mt-1 w-full rounded-lg border border-brand-300 bg-brand-50 px-3 py-2"
                     >
                       <option value="" disabled>
                         Select a portfolio

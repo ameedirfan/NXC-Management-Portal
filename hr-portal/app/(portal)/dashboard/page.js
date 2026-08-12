@@ -66,7 +66,7 @@ function StatBlockSkeleton({ tiles = 3 }) {
 // Used at the top level, before any card exists yet — a full card shape.
 function DashboardCardSkeleton({ tiles = 3 }) {
   return (
-    <div className="rounded-xl border border-brand-200 bg-white p-6">
+    <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
       <Skeleton className="h-5 w-48" />
       <Skeleton className="mt-2 h-4 w-64" />
       <StatBlockSkeleton tiles={tiles} />
@@ -105,13 +105,13 @@ function IndividualView({ rosterMembers }) {
   }, [cmsId]);
 
   return (
-    <div className="rounded-xl border border-brand-200 bg-white p-6">
+    <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-serif text-lg font-semibold text-brand-900">Individual attendance</h2>
         <select
           value={cmsId}
           onChange={(e) => setCmsId(e.target.value)}
-          className="rounded-lg border border-brand-300 bg-white px-3 py-1.5 text-sm"
+          className="rounded-lg border border-brand-300 bg-brand-50 px-3 py-1.5 text-sm"
         >
           {rosterMembers.map((m) => (
             <option key={m.cmsId} value={m.cmsId}>
@@ -163,13 +163,13 @@ function PortfolioView({ portfolios }) {
   }, [portfolio]);
 
   return (
-    <div className="rounded-xl border border-brand-200 bg-white p-6">
+    <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-serif text-lg font-semibold text-brand-900">Portfolio attendance</h2>
         <select
           value={portfolio}
           onChange={(e) => setPortfolio(e.target.value)}
-          className="rounded-lg border border-brand-300 bg-white px-3 py-1.5 text-sm"
+          className="rounded-lg border border-brand-300 bg-brand-50 px-3 py-1.5 text-sm"
         >
           {portfolios.map((p) => (
             <option key={p} value={p}>
@@ -224,7 +224,7 @@ function PortfolioView({ portfolios }) {
 
 function CouncilView({ data, loading }) {
   return (
-    <div className="rounded-xl border border-brand-200 bg-white p-6">
+    <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
       <h2 className="font-serif text-lg font-semibold text-brand-900">Council-wide attendance</h2>
       <p className="text-sm text-brand-500">Every meeting on file, every portfolio, rolled up.</p>
 
@@ -394,13 +394,13 @@ export default function DashboardPage() {
             {viewMode === 'council' && <CouncilView data={councilData} loading={loading} />}
           </div>
 
-          <div className="rounded-xl border border-brand-200 bg-white p-6">
+          <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
             <h2 className="font-serif text-lg font-semibold text-brand-900">Applicant funnel</h2>
             <p className="text-sm text-brand-500">Every applicant, across every portfolio, grouped by status.</p>
             <BarChart data={applicants.funnel} labelKey="status" valueKey="count" color="#7d5a2c" />
           </div>
 
-          <div className="rounded-xl border border-brand-200 bg-white p-6">
+          <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
             <h2 className="font-serif text-lg font-semibold text-brand-900">Applicants by portfolio</h2>
             <BarChart data={applicants.byPortfolio} labelKey="portfolio" valueKey="total" color="#b9954f" />
           </div>
@@ -422,7 +422,7 @@ function DataQualitySection({ dataQuality }) {
     dataQuality.applicantsBadPortfolio.length;
 
   return (
-    <div className="rounded-xl border border-brand-200 bg-white p-6">
+    <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
       <h2 className="font-serif text-lg font-semibold text-brand-900">Data quality</h2>
       <p className="text-sm text-brand-500">Housekeeping checks across Roster, Logins, and Applicants.</p>
 

@@ -14,6 +14,7 @@ import {
   Wallet,
   Command,
 } from 'lucide-react';
+import ThemeToggle from '@/components/ui/ThemeToggle';
 
 // One outline icon per tab, never mixed styles. Exported so the Command
 // Palette can render the same icons for the same destinations.
@@ -124,10 +125,11 @@ export default function NavBar({ session, supportsViewTransitions = false, onOpe
             onClick={onOpenPalette}
             title="Search (Ctrl+K)"
             aria-label="Open command palette"
-            className="flex items-center gap-1.5 rounded-lg border border-brand-300 bg-white px-2.5 py-1.5 text-xs font-medium text-brand-600 hover:bg-brand-100"
+            className="flex items-center gap-1.5 rounded-lg border border-brand-300 bg-brand-50 px-2.5 py-1.5 text-xs font-medium text-brand-600 hover:bg-brand-100"
           >
             <Command size={13} aria-hidden="true" />K
           </button>
+          <ThemeToggle />
           <p className="text-sm text-brand-600">
             {session.fullName || session.username} · {roleLabel(session.role) || session.portfolio}
           </p>

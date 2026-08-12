@@ -116,7 +116,7 @@ export default function ContactsPage() {
       </div>
 
       {formOpen && (
-        <form onSubmit={handleSubmit} className="mt-6 rounded-xl border border-brand-200 bg-white p-6">
+        <form onSubmit={handleSubmit} className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
           <h2 className="font-serif text-lg font-semibold text-brand-900">
             {editingRow !== null ? 'Edit contact' : 'Add contact'}
           </h2>
@@ -186,7 +186,7 @@ export default function ContactsPage() {
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="flex items-center justify-between gap-4 rounded-xl border border-brand-200 bg-white p-4">
+            <div key={i} className="flex items-center justify-between gap-4 rounded-xl border border-brand-200 bg-brand-50 p-4">
               <div className="flex-1">
                 <Skeleton className="h-4 w-32" />
                 <Skeleton className="mt-2 h-3 w-20" />
@@ -212,7 +212,7 @@ export default function ContactsPage() {
           contacts.map((c) => (
             <div
               key={c.row}
-              className="flex items-center justify-between gap-4 rounded-xl border border-brand-200 bg-white p-4"
+              className="flex items-center justify-between gap-4 rounded-xl border border-brand-200 bg-brand-50 p-4"
             >
               <div>
                 <p className="font-semibold text-brand-900">{c.fullName}</p>

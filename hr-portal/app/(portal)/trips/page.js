@@ -91,7 +91,7 @@ export default function TripsPage() {
       </div>
 
       {formOpen && (
-        <form onSubmit={handleSubmit} className="mt-6 rounded-xl border border-brand-200 bg-white p-6">
+        <form onSubmit={handleSubmit} className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
           <h2 className="font-serif text-lg font-semibold text-brand-900">Add trip</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
             <div>
@@ -185,7 +185,7 @@ export default function TripsPage() {
             <Link
               key={t.id}
               href={`/trips/${encodeURIComponent(t.id)}`}
-              className="rounded-xl border border-brand-200 bg-white p-5 hover:border-brand-400"
+              className="rounded-xl border border-brand-200 bg-brand-50 p-5 hover:border-brand-400"
             >
               {t.groupPhotoLink ? (
                 <img src={t.groupPhotoLink} alt={t.location} className="h-32 w-full rounded-lg object-cover" />

@@ -26,7 +26,7 @@ export function SkeletonTableRows({ rows = 4, columns = 3, widths, cellClassName
 // A card-shaped placeholder for grid/list layouts (Trips, Contacts).
 export function SkeletonCard() {
   return (
-    <div className="rounded-xl border border-brand-200 bg-white p-5">
+    <div className="rounded-xl border border-brand-200 bg-brand-50 p-5">
       <Skeleton className="h-32 w-full" />
       <Skeleton className="mt-3 h-5 w-2/3" />
       <Skeleton className="mt-2 h-4 w-1/3" />
