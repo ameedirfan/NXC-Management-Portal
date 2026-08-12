@@ -1,7 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { toCSV, downloadCSV } from '@/lib/csv';
+import { Skeleton } from '@/components/ui/Skeleton';
+import AnimatedNumber from '@/components/ui/AnimatedNumber';
+import ErrorRetry from '@/components/ui/ErrorRetry';
+import AccessDenied from '@/components/ui/AccessDenied';
 
 function formatMoney(n) {
   return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -9,7 +13,7 @@ function formatMoney(n) {
 
 function Section({ title, children }) {
   return (
-    <div className="rounded-xl border border-brand-200 bg-white p-6">
+    <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
       <h2 className="font-serif text-lg font-semibold text-brand-900">{title}</h2>
       <div className="mt-3 overflow-x-auto">{children}</div>
     </div>
@@ -85,7 +89,9 @@ export default function HandoverPage() {
   const [accessDenied, setAccessDenied] = useState(false);
   const [loadError, setLoadError] = useState('');
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setLoading(true);
+    setLoadError('');
     fetch('/api/handover')
       .then(async (res) => {
         if (res.status === 403) {
@@ -102,6 +108,10 @@ export default function HandoverPage() {
       .catch(() => setLoadError('Could not reach the server. Try again.'))
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   function exportCSV() {
     if (!data) return;
@@ -142,7 +152,7 @@ export default function HandoverPage() {
   }
 
   if (accessDenied) {
-    return <p className="text-red-700">Admin access required for the Year-End Handover Export.</p>;
+    return <AccessDenied message="The Year-End Handover Export is admin only." />;
   }
 
   return (
@@ -174,15 +184,28 @@ export default function HandoverPage() {
       </div>
 
       {loading || !data ? (
-        <p className={`mt-6 ${loadError ? 'text-red-700' : 'text-brand-400'}`}>
-          {loading ? 'Loading…' : loadError || 'Could not load handover data.'}
-        </p>
+        loadError ? (
+          <ErrorRetry className="mt-6" message={loadError} onRetry={load} />
+        ) : (
+          <div className="mt-6 space-y-6">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="rounded-xl border border-brand-200 bg-brand-50 p-6">
+                <Skeleton className="h-5 w-48" />
+                <div className="mt-4 space-y-2">
+                  {Array.from({ length: 3 }).map((_, r) => (
+                    <Skeleton key={r} className="h-4 w-full" />
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        )
       ) : (
         <div className="mt-6 space-y-6">
-          <div className="rounded-xl border border-brand-200 bg-white p-6">
+          <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
             <p className="text-xs uppercase tracking-wide text-brand-500">Treasury Balance</p>
-            <p className="mt-1 font-serif text-3xl font-bold text-brand-900">
-              {formatMoney(data.finance.treasuryBalance)}
+            <p className="mt-1 font-serif text-3xl font-bold tabular-nums text-brand-900">
+              <AnimatedNumber value={data.finance.treasuryBalance} format={formatMoney} />
             </p>
             <p className="mt-1 text-sm text-brand-500">
               Opening {formatMoney(data.finance.openingBalance)}, income {formatMoney(data.finance.totalIncome)},

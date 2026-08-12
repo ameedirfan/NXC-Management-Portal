@@ -3,6 +3,9 @@
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { Skeleton } from '@/components/ui/Skeleton';
+import ErrorRetry from '@/components/ui/ErrorRetry';
+import { toast } from '@/lib/toast';
 
 const SLOTS = [
   { key: 'itinerary', label: 'Itinerary', linkKey: 'itineraryLink', accept: 'application/pdf' },
@@ -31,15 +34,22 @@ export default function TripDetailPage() {
   const [loading, setLoading] = useState(true);
   const [uploadingSlot, setUploadingSlot] = useState(null);
   const [uploadError, setUploadError] = useState('');
+  const [loadError, setLoadError] = useState('');
 
   const load = useCallback(() => {
     setLoading(true);
+    setLoadError('');
     fetch('/api/trips')
       .then((res) => res.json())
       .then((data) => {
+        if (data.error) {
+          setLoadError(data.error);
+          return;
+        }
         setCanManage(!!data.canManage);
         setTrip((data.trips || []).find((t) => t.id === id) || null);
       })
+      .catch(() => setLoadError('Could not reach the server. Try again.'))
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -60,10 +70,28 @@ export default function TripDetailPage() {
       setUploadError(data.error || 'Could not upload this file.');
       return;
     }
+    toast('File uploaded');
     load();
   }
 
-  if (loading) return <p className="text-brand-400">Loading…</p>;
+  if (loading) {
+    return (
+      <div>
+        <Skeleton className="h-4 w-40" />
+        <Skeleton className="mt-3 h-9 w-56" />
+        <Skeleton className="mt-2 h-4 w-64" />
+        <div className="mt-6 grid gap-6 lg:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="rounded-xl border border-brand-200 bg-brand-50 p-5">
+              <Skeleton className="h-5 w-24" />
+              <Skeleton className="mt-3 h-48 w-full" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+  if (loadError) return <ErrorRetry message={loadError} onRetry={load} />;
   if (!trip) return <p className="text-red-700">Trip not found.</p>;
 
   return (
@@ -75,7 +103,7 @@ export default function TripDetailPage() {
       <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-serif text-3xl font-bold text-brand-900">{trip.location}</h1>
-          <p className="mt-1 text-brand-500">
+          <p className="mt-1 tabular-nums text-brand-500">
             {trip.days} day{String(trip.days) === '1' ? '' : 's'} · {trip.participantCount} participants
           </p>
         </div>
@@ -85,7 +113,7 @@ export default function TripDetailPage() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         {SLOTS.map((slot) => (
-          <div key={slot.key} className="rounded-xl border border-brand-200 bg-white p-5">
+          <div key={slot.key} className="rounded-xl border border-brand-200 bg-brand-50 p-5">
             <div className="flex items-center justify-between gap-2">
               <h2 className="font-serif text-lg font-semibold text-brand-900">{slot.label}</h2>
               {canManage && (

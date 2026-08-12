@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { readSheet, updateField, appendRow, TABS, CORE_APPLICANT_FIELDS } from '@/lib/sheets';
 import { isManagerOrAdmin } from '@/lib/authz';
+import { friendlyReadError } from '@/lib/apiError';
 
 export const dynamic = 'force-dynamic';
 
@@ -19,7 +20,12 @@ export async function GET(_request, { params }) {
   const session = getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
 
-  const { records: applicants } = await readSheet(TABS.applicants);
+  let applicants, reviews, statusHistory;
+  try {
+    ({ records: applicants } = await readSheet(TABS.applicants));
+  } catch (err) {
+    return NextResponse.json({ error: friendlyReadError(err) }, { status: 500 });
+  }
   const applicant = applicants.find((a) => a['CMS ID'] === params.cmsId);
   if (!applicant) {
     return NextResponse.json({ error: 'Applicant not found.' }, { status: 404 });
@@ -28,10 +34,14 @@ export async function GET(_request, { params }) {
     return NextResponse.json({ error: 'Manager or Admin access required.' }, { status: 403 });
   }
 
-  const [{ records: reviews }, { records: statusHistory }] = await Promise.all([
-    readSheet(TABS.reviews),
-    readStatusHistorySafely(),
-  ]);
+  try {
+    [{ records: reviews }, { records: statusHistory }] = await Promise.all([
+      readSheet(TABS.reviews),
+      readStatusHistorySafely(),
+    ]);
+  } catch (err) {
+    return NextResponse.json({ error: friendlyReadError(err) }, { status: 500 });
+  }
 
   const applicantReviews = reviews
     .filter((r) => r['CMS ID'] === params.cmsId)

@@ -2,6 +2,13 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { toCSV, downloadCSV } from '@/lib/csv';
+import Pill from '@/components/ui/Pill';
+import { Skeleton, SkeletonTableRows } from '@/components/ui/Skeleton';
+import ErrorRetry from '@/components/ui/ErrorRetry';
+import AccessDenied from '@/components/ui/AccessDenied';
+import { toast } from '@/lib/toast';
+import AnimatedNumber from '@/components/ui/AnimatedNumber';
+import { useFabAction } from '@/components/FabProvider';
 
 const EMPTY_FORM = { date: '', description: '', amount: '', type: '' };
 
@@ -18,7 +25,7 @@ export default function FinancePage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
-  const [formError, setFormError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(() => {
@@ -47,10 +54,12 @@ export default function FinancePage() {
     load();
   }, [load]);
 
+  useFabAction(!accessDenied ? '+ Row' : undefined, () => openAddForm());
+
   function openAddForm() {
     setEditingRow(null);
     setForm(EMPTY_FORM);
-    setFormError('');
+    setFieldErrors({});
     setFormOpen(true);
   }
 
@@ -62,23 +71,36 @@ export default function FinancePage() {
       amount: String(entry.amount),
       type: entry.type,
     });
-    setFormError('');
+    setFieldErrors({});
     setFormOpen(true);
   }
 
   function closeForm() {
     setFormOpen(false);
-    setFormError('');
+    setFieldErrors({});
+  }
+
+  function validate() {
+    const errors = {};
+    if (!form.date) errors.date = 'Date is required.';
+    if (!form.description.trim()) errors.description = 'Description is required.';
+    if (!form.amount) {
+      errors.amount = 'Amount is required.';
+    } else if (Number.isNaN(Number(form.amount))) {
+      errors.amount = 'Amount must be a number.';
+    }
+    return errors;
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!form.date || !form.description.trim() || !form.amount) {
-      setFormError('Date, Description, and Amount are required.');
+    const errors = validate();
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
     setSaving(true);
-    setFormError('');
+    setFieldErrors({});
 
     const isEdit = editingRow !== null;
     const res = await fetch(isEdit ? `/api/finance/${editingRow}` : '/api/finance', {
@@ -90,9 +112,10 @@ export default function FinancePage() {
     setSaving(false);
 
     if (!res.ok) {
-      setFormError(data.error || 'Could not save this entry.');
+      setFieldErrors({ form: data.error || 'Could not save this entry.' });
       return;
     }
+    toast(isEdit ? 'Entry updated' : 'Entry added');
     setFormOpen(false);
     load();
   }
@@ -112,7 +135,7 @@ export default function FinancePage() {
   }
 
   if (accessDenied) {
-    return <p className="text-red-700">Admin access required to view Finance.</p>;
+    return <AccessDenied message="Finance is admin only." />;
   }
 
   return (
@@ -139,17 +162,26 @@ export default function FinancePage() {
         </div>
       </div>
 
-      {loadError && <p className="mt-6 text-red-700">{loadError}</p>}
+      {loadError && <ErrorRetry className="mt-6" message={loadError} onRetry={load} />}
+
+      {loading && !summary && !loadError && (
+        <div className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
+          <Skeleton className="h-3 w-28" />
+          <Skeleton className="mt-2 h-10 w-48" />
+          <Skeleton className="mt-3 h-4 w-full max-w-md" />
+        </div>
+      )}
 
       {summary && (
-        <div className="mt-6 rounded-xl border border-brand-200 bg-white p-6">
+        <div className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
           <p className="text-xs uppercase tracking-wide text-brand-500">Treasury Balance</p>
-          <p className="mt-1 font-serif text-4xl font-bold text-brand-900">
-            {formatMoney(summary.treasuryBalance)}
+          <p className="mt-1 font-serif text-4xl font-bold tabular-nums text-brand-900">
+            <AnimatedNumber value={summary.treasuryBalance} format={formatMoney} />
           </p>
           <p className="mt-2 text-sm text-brand-500">
-            Opening balance {formatMoney(summary.openingBalance)}, plus {formatMoney(summary.totalIncome)}{' '}
-            income, minus {formatMoney(summary.totalExpense)} expense.
+            Opening balance <span className="tabular-nums">{formatMoney(summary.openingBalance)}</span>, plus{' '}
+            <span className="tabular-nums">{formatMoney(summary.totalIncome)}</span> income, minus{' '}
+            <span className="tabular-nums">{formatMoney(summary.totalExpense)}</span> expense.
           </p>
           <p className="mt-2 text-xs text-brand-400">
             To set the opening balance, add a row directly in the Finance sheet with Type = "Opening
@@ -160,7 +192,7 @@ export default function FinancePage() {
       )}
 
       {formOpen && (
-        <form onSubmit={handleSubmit} className="mt-6 rounded-xl border border-brand-200 bg-white p-6">
+        <form onSubmit={handleSubmit} className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
           <h2 className="font-serif text-lg font-semibold text-brand-900">
             {editingRow !== null ? 'Edit entry' : 'Add entry'}
           </h2>
@@ -173,8 +205,10 @@ export default function FinancePage() {
                 type="date"
                 value={form.date}
                 onChange={(e) => setForm((prev) => ({ ...prev, date: e.target.value }))}
-                className="mt-1 w-full rounded-lg border border-brand-300 px-3 py-2"
+                aria-invalid={!!fieldErrors.date}
+                className={`mt-1 w-full rounded-lg border px-3 py-2 ${fieldErrors.date ? 'border-red-400' : 'border-brand-300'}`}
               />
+              {fieldErrors.date && <p className="mt-1 text-xs text-red-700">{fieldErrors.date}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-brand-800">
@@ -183,8 +217,10 @@ export default function FinancePage() {
               <input
                 value={form.description}
                 onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
-                className="mt-1 w-full rounded-lg border border-brand-300 px-3 py-2"
+                aria-invalid={!!fieldErrors.description}
+                className={`mt-1 w-full rounded-lg border px-3 py-2 ${fieldErrors.description ? 'border-red-400' : 'border-brand-300'}`}
               />
+              {fieldErrors.description && <p className="mt-1 text-xs text-red-700">{fieldErrors.description}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-brand-800">
@@ -196,15 +232,17 @@ export default function FinancePage() {
                 value={form.amount}
                 onChange={(e) => setForm((prev) => ({ ...prev, amount: e.target.value }))}
                 placeholder="Positive for income, negative for expense"
-                className="mt-1 w-full rounded-lg border border-brand-300 px-3 py-2"
+                aria-invalid={!!fieldErrors.amount}
+                className={`mt-1 w-full rounded-lg border px-3 py-2 ${fieldErrors.amount ? 'border-red-400' : 'border-brand-300'}`}
               />
+              {fieldErrors.amount && <p className="mt-1 text-xs text-red-700">{fieldErrors.amount}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-brand-800">Type</label>
               <select
                 value={form.type}
                 onChange={(e) => setForm((prev) => ({ ...prev, type: e.target.value }))}
-                className="mt-1 w-full rounded-lg border border-brand-300 bg-white px-3 py-2"
+                className="mt-1 w-full rounded-lg border border-brand-300 bg-brand-50 px-3 py-2"
               >
                 <option value="">Infer from amount's sign</option>
                 <option value="Income">Income</option>
@@ -212,7 +250,7 @@ export default function FinancePage() {
               </select>
             </div>
           </div>
-          {formError && <p className="mt-3 text-sm text-red-700">{formError}</p>}
+          {fieldErrors.form && <p className="mt-3 text-sm text-red-700">{fieldErrors.form}</p>}
           <div className="mt-4 flex items-center gap-3">
             <button
               type="submit"
@@ -232,6 +270,7 @@ export default function FinancePage() {
         </form>
       )}
 
+      {!loadError && (
       <div className="mt-6 overflow-x-auto rounded-xl border border-brand-200">
         <table className="w-full text-left text-sm">
           <thead className="bg-brand-100 text-brand-700">
@@ -246,26 +285,35 @@ export default function FinancePage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-brand-400">
-                  Loading…
-                </td>
-              </tr>
+              <SkeletonTableRows
+                rows={5}
+                columns={6}
+                widths={['w-16', 'w-2/3', 'w-16', 'w-14', 'w-24', 'w-8']}
+              />
             ) : entries.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-brand-400">
-                  No entries yet.
+                <td colSpan={6} className="px-4 py-10 text-center text-brand-400">
+                  No entries yet.{' '}
+                  <button onClick={openAddForm} className="font-medium text-brand-900 hover:underline">
+                    Add the first one
+                  </button>
+                  .
                 </td>
               </tr>
             ) : (
               entries.map((e) => (
                 <tr key={e.row} className="border-t border-brand-100">
-                  <td className="px-4 py-3 text-brand-500">{e.date}</td>
+                  <td className="px-4 py-3 tabular-nums text-brand-500">{e.date}</td>
                   <td className="px-4 py-3 font-medium text-brand-900">{e.description}</td>
-                  <td className={`px-4 py-3 ${e.amount < 0 ? 'text-red-700' : 'text-emerald-700'}`}>
-                    {formatMoney(e.amount)}
+                  <td className="px-4 py-3 tabular-nums">
+                    <Pill tone={e.amount < 0 ? 'expense' : 'income'}>
+                      {e.amount >= 0 ? '+' : ''}
+                      {formatMoney(e.amount)}
+                    </Pill>
                   </td>
-                  <td className="px-4 py-3">{e.type}</td>
+                  <td className="px-4 py-3">
+                    <Pill tone={e.amount < 0 ? 'expense' : 'income'}>{e.type}</Pill>
+                  </td>
                   <td className="px-4 py-3 text-brand-500">{e.recordedBy}</td>
                   <td className="px-4 py-3 text-right">
                     <button
@@ -281,6 +329,7 @@ export default function FinancePage() {
           </tbody>
         </table>
       </div>
+      )}
     </div>
   );
 }

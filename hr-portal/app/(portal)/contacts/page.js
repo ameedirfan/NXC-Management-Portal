@@ -1,6 +1,12 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
+import { Phone } from 'lucide-react';
+import { Skeleton } from '@/components/ui/Skeleton';
+import EmptyState from '@/components/ui/EmptyState';
+import ErrorRetry from '@/components/ui/ErrorRetry';
+import { toast } from '@/lib/toast';
+import { useFabAction } from '@/components/FabProvider';
 
 const EMPTY_FORM = { fullName: '', position: '', phone: '', email: '' };
 
@@ -12,7 +18,7 @@ export default function ContactsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
-  const [formError, setFormError] = useState('');
+  const [fieldErrors, setFieldErrors] = useState({});
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(() => {
@@ -36,10 +42,12 @@ export default function ContactsPage() {
     load();
   }, [load]);
 
+  useFabAction(canManage ? '+ Contact' : undefined, () => openAddForm());
+
   function openAddForm() {
     setEditingRow(null);
     setForm(EMPTY_FORM);
-    setFormError('');
+    setFieldErrors({});
     setFormOpen(true);
   }
 
@@ -51,23 +59,26 @@ export default function ContactsPage() {
       phone: contact.phone,
       email: contact.email,
     });
-    setFormError('');
+    setFieldErrors({});
     setFormOpen(true);
   }
 
   function closeForm() {
     setFormOpen(false);
-    setFormError('');
+    setFieldErrors({});
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!form.fullName.trim() || !form.position.trim()) {
-      setFormError('Full Name and Position are required.');
+    const errors = {};
+    if (!form.fullName.trim()) errors.fullName = 'Full Name is required.';
+    if (!form.position.trim()) errors.position = 'Position is required.';
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
     setSaving(true);
-    setFormError('');
+    setFieldErrors({});
 
     const isEdit = editingRow !== null;
     const res = await fetch(isEdit ? `/api/contacts/${editingRow}` : '/api/contacts', {
@@ -79,9 +90,10 @@ export default function ContactsPage() {
     setSaving(false);
 
     if (!res.ok) {
-      setFormError(data.error || 'Could not save this contact.');
+      setFieldErrors({ form: data.error || 'Could not save this contact.' });
       return;
     }
+    toast(isEdit ? 'Contact updated' : 'Contact added');
     setFormOpen(false);
     load();
   }
@@ -104,7 +116,7 @@ export default function ContactsPage() {
       </div>
 
       {formOpen && (
-        <form onSubmit={handleSubmit} className="mt-6 rounded-xl border border-brand-200 bg-white p-6">
+        <form onSubmit={handleSubmit} className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
           <h2 className="font-serif text-lg font-semibold text-brand-900">
             {editingRow !== null ? 'Edit contact' : 'Add contact'}
           </h2>
@@ -116,8 +128,10 @@ export default function ContactsPage() {
               <input
                 value={form.fullName}
                 onChange={(e) => setForm((prev) => ({ ...prev, fullName: e.target.value }))}
-                className="mt-1 w-full rounded-lg border border-brand-300 px-3 py-2"
+                aria-invalid={!!fieldErrors.fullName}
+                className={`mt-1 w-full rounded-lg border px-3 py-2 ${fieldErrors.fullName ? 'border-red-400' : 'border-brand-300'}`}
               />
+              {fieldErrors.fullName && <p className="mt-1 text-xs text-red-700">{fieldErrors.fullName}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-brand-800">
@@ -127,8 +141,10 @@ export default function ContactsPage() {
                 value={form.position}
                 onChange={(e) => setForm((prev) => ({ ...prev, position: e.target.value }))}
                 placeholder="e.g. President, Director HR"
-                className="mt-1 w-full rounded-lg border border-brand-300 px-3 py-2"
+                aria-invalid={!!fieldErrors.position}
+                className={`mt-1 w-full rounded-lg border px-3 py-2 ${fieldErrors.position ? 'border-red-400' : 'border-brand-300'}`}
               />
+              {fieldErrors.position && <p className="mt-1 text-xs text-red-700">{fieldErrors.position}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-brand-800">Phone Number</label>
@@ -147,7 +163,7 @@ export default function ContactsPage() {
               />
             </div>
           </div>
-          {formError && <p className="mt-3 text-sm text-red-700">{formError}</p>}
+          {fieldErrors.form && <p className="mt-3 text-sm text-red-700">{fieldErrors.form}</p>}
           <div className="mt-4 flex items-center gap-3">
             <button
               type="submit"
@@ -169,16 +185,34 @@ export default function ContactsPage() {
 
       <div className="mt-6 grid gap-3 sm:grid-cols-2">
         {loading ? (
-          <p className="text-brand-400">Loading…</p>
+          Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex items-center justify-between gap-4 rounded-xl border border-brand-200 bg-brand-50 p-4">
+              <div className="flex-1">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="mt-2 h-3 w-20" />
+              </div>
+              <Skeleton className="h-4 w-24" />
+            </div>
+          ))
         ) : loadError ? (
-          <p className="text-red-700">{loadError}</p>
+          <ErrorRetry className="col-span-full" message={loadError} onRetry={load} />
         ) : contacts.length === 0 ? (
-          <p className="text-brand-400">No contacts yet.</p>
+          <EmptyState
+            icon={Phone}
+            title="No contacts yet"
+            description={
+              canManage
+                ? 'Add the exec team so members know who to reach.'
+                : 'Contact details will show up here once added.'
+            }
+            actionLabel={canManage ? 'Add the first contact' : undefined}
+            onAction={canManage ? openAddForm : undefined}
+          />
         ) : (
           contacts.map((c) => (
             <div
               key={c.row}
-              className="flex items-center justify-between gap-4 rounded-xl border border-brand-200 bg-white p-4"
+              className="flex items-center justify-between gap-4 rounded-xl border border-brand-200 bg-brand-50 p-4"
             >
               <div>
                 <p className="font-semibold text-brand-900">{c.fullName}</p>

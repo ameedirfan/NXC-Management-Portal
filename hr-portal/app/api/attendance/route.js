@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { readSheet, upsertMeetingAttendance, TABS } from '@/lib/sheets';
 import { isManagerOrAdmin, canManuallyMarkAttendance } from '@/lib/authz';
+import { friendlyReadError } from '@/lib/apiError';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,11 +21,16 @@ export async function GET(request) {
     return NextResponse.json({ error: 'meetingId is required.' }, { status: 400 });
   }
 
-  const [{ records: meetings }, { records: attendance }, { records: roster }] = await Promise.all([
-    readSheet(TABS.meetings),
-    readSheet(TABS.attendance),
-    readSheet(TABS.roster),
-  ]);
+  let meetings, attendance, roster;
+  try {
+    [{ records: meetings }, { records: attendance }, { records: roster }] = await Promise.all([
+      readSheet(TABS.meetings),
+      readSheet(TABS.attendance),
+      readSheet(TABS.roster),
+    ]);
+  } catch (err) {
+    return NextResponse.json({ error: friendlyReadError(err) }, { status: 500 });
+  }
 
   const meeting = meetings.find((m) => m['Meeting ID'] === meetingId);
   if (!meeting) return NextResponse.json({ error: 'Meeting not found.' }, { status: 404 });

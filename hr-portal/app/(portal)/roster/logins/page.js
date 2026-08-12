@@ -4,6 +4,11 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { dedupePortfolios } from '@/lib/portfolio';
 import { toCSV, downloadCSV } from '@/lib/csv';
+import { SkeletonTableRows } from '@/components/ui/Skeleton';
+import ErrorRetry from '@/components/ui/ErrorRetry';
+import AccessDenied from '@/components/ui/AccessDenied';
+import { toast } from '@/lib/toast';
+import { useFabAction } from '@/components/FabProvider';
 
 const CUSTOM_OPTION = '__custom__';
 const ROLES = ['member', 'manager', 'admin'];
@@ -37,9 +42,11 @@ export default function LoginsPage() {
   const [bulkCreated, setBulkCreated] = useState(null);
   const [bulkBusy, setBulkBusy] = useState(false);
   const [bulkError, setBulkError] = useState('');
+  const [loadError, setLoadError] = useState('');
 
   const load = useCallback(() => {
     setLoading(true);
+    setLoadError('');
     Promise.all([
       fetch('/api/logins').then((res) => (res.status === 403 ? null : res.json())),
       fetch('/api/roster?view=full').then((res) => (res.status === 403 ? null : res.json())),
@@ -49,16 +56,24 @@ export default function LoginsPage() {
           setAccessDenied(true);
           return;
         }
+        const firstError = loginsData.error || rosterData.error;
+        if (firstError) {
+          setLoadError(firstError);
+          return;
+        }
         setLogins(loginsData.logins || []);
         setRosterMembers(rosterData.members || []);
         setAccessDenied(false);
       })
+      .catch(() => setLoadError('Could not reach the server. Try again.'))
       .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  useFabAction(!accessDenied ? '+ Login' : undefined, () => openAddForm());
 
   const rosterByCmsId = useMemo(
     () => Object.fromEntries(rosterMembers.map((m) => [m.cmsId, m])),
@@ -180,6 +195,7 @@ export default function LoginsPage() {
       setBulkError(data.error || 'Could not create these logins.');
       return;
     }
+    toast(`Created ${data.created} login${data.created === 1 ? '' : 's'}`);
     setBulkCreated(data);
     load();
   }
@@ -244,12 +260,16 @@ export default function LoginsPage() {
       setFormError(data.error || 'Could not save this login.');
       return;
     }
+    toast(isEdit ? 'Login updated' : 'Login added');
     setFormOpen(false);
     load();
   }
 
   if (accessDenied) {
-    return <p className="text-red-700">Manager or Admin access required to manage logins.</p>;
+    return <AccessDenied message="Logins are managed by managers and admins." />;
+  }
+  if (loadError && !loading) {
+    return <ErrorRetry message={loadError} onRetry={load} />;
   }
 
   return (
@@ -283,7 +303,7 @@ export default function LoginsPage() {
       </div>
 
       {bulkOpen && (
-        <div className="mt-6 rounded-xl border border-brand-200 bg-white p-6">
+        <div className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="font-serif text-lg font-semibold text-brand-900">Bulk create logins</h2>
             <button onClick={closeBulk} className="text-sm text-brand-500 hover:underline">
@@ -407,7 +427,7 @@ export default function LoginsPage() {
                   <select
                     value={bulkRole}
                     onChange={(e) => setBulkRole(e.target.value)}
-                    className="mt-1 w-full rounded-lg border border-brand-300 bg-white px-3 py-2"
+                    className="mt-1 w-full rounded-lg border border-brand-300 bg-brand-50 px-3 py-2"
                   >
                     {ROLES.map((r) => (
                       <option key={r} value={r}>
@@ -424,7 +444,7 @@ export default function LoginsPage() {
                   <select
                     value={bulkStrategy}
                     onChange={(e) => setBulkStrategy(e.target.value)}
-                    className="mt-1 w-full rounded-lg border border-brand-300 bg-white px-3 py-2"
+                    className="mt-1 w-full rounded-lg border border-brand-300 bg-brand-50 px-3 py-2"
                   >
                     <option value="name">First name dot last name, for example ali.khan</option>
                     <option value="cmsId">CMS ID as the username</option>
@@ -503,7 +523,7 @@ export default function LoginsPage() {
       {formOpen && (
         <form
           onSubmit={handleSubmit}
-          className="mt-6 rounded-xl border border-brand-200 bg-white p-6"
+          className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6"
         >
           <h2 className="font-serif text-lg font-semibold text-brand-900">
             {editingUsername !== null ? `Edit ${form.username}` : 'Add login'}
@@ -514,7 +534,7 @@ export default function LoginsPage() {
             <select
               value={linkedCmsId}
               onChange={(e) => handlePickRosterMember(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-brand-300 bg-white px-3 py-2"
+              className="mt-1 w-full rounded-lg border border-brand-300 bg-brand-50 px-3 py-2"
             >
               <option value={CUSTOM_OPTION}>Not on roster, enter manually</option>
               {rosterMembers.map((m) => (
@@ -585,7 +605,7 @@ export default function LoginsPage() {
               <select
                 value={form.role}
                 onChange={(e) => setForm((p) => ({ ...p, role: e.target.value }))}
-                className="mt-1 w-full rounded-lg border border-brand-300 bg-white px-3 py-2"
+                className="mt-1 w-full rounded-lg border border-brand-300 bg-brand-50 px-3 py-2"
               >
                 {ROLES.map((r) => (
                   <option key={r} value={r}>
@@ -634,15 +654,19 @@ export default function LoginsPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-brand-400">
-                  Loading…
-                </td>
-              </tr>
+              <SkeletonTableRows
+                rows={5}
+                columns={6}
+                widths={['w-24', 'w-32', 'w-16', 'w-20', 'w-14', 'w-8']}
+              />
             ) : logins.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-brand-400">
-                  No logins found.
+                <td colSpan={6} className="px-4 py-10 text-center text-brand-400">
+                  No logins yet.{' '}
+                  <button onClick={openAddForm} className="font-medium text-brand-900 hover:underline">
+                    Add the first one
+                  </button>
+                  .
                 </td>
               </tr>
             ) : (

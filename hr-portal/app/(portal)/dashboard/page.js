@@ -3,6 +3,9 @@
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { toCSV, downloadCSV } from '@/lib/csv';
+import { Skeleton } from '@/components/ui/Skeleton';
+import AnimatedNumber from '@/components/ui/AnimatedNumber';
+import ErrorRetry from '@/components/ui/ErrorRetry';
 
 const VIEWS = [
   { key: 'individual', label: 'Individual' },
@@ -26,7 +29,7 @@ function BarChart({ data, labelKey, valueKey, unit = '', color = '#3a2814' }) {
               style={{ width: `${(d[valueKey] / max) * 100}%`, backgroundColor: color }}
             />
           </div>
-          <span className="w-14 shrink-0 text-right text-brand-500">
+          <span className="w-14 shrink-0 text-right tabular-nums text-brand-500">
             {d[valueKey]}
             {unit}
           </span>
@@ -36,11 +39,49 @@ function BarChart({ data, labelKey, valueKey, unit = '', color = '#3a2814' }) {
   );
 }
 
-function StatTile({ label, value }) {
+const TILE_GRID_CLASSES = { 3: 'grid-cols-3', 4: 'grid-cols-2 sm:grid-cols-4' };
+
+// Used inside a view that already has its own card border + heading —
+// just the tiles-and-bars shape.
+function StatBlockSkeleton({ tiles = 3 }) {
+  return (
+    <div className="mt-4">
+      <div className={`grid gap-3 ${TILE_GRID_CLASSES[tiles] || TILE_GRID_CLASSES[3]}`}>
+        {Array.from({ length: tiles }).map((_, i) => (
+          <div key={i} className="rounded-lg border border-brand-200 bg-brand-50 px-4 py-3">
+            <Skeleton className="h-3 w-16" />
+            <Skeleton className="mt-2 h-6 w-12" />
+          </div>
+        ))}
+      </div>
+      <div className="mt-6 space-y-2">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-4 w-full" />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Used at the top level, before any card exists yet — a full card shape.
+function DashboardCardSkeleton({ tiles = 3 }) {
+  return (
+    <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
+      <Skeleton className="h-5 w-48" />
+      <Skeleton className="mt-2 h-4 w-64" />
+      <StatBlockSkeleton tiles={tiles} />
+    </div>
+  );
+}
+
+function StatTile({ label, value, suffix = '' }) {
   return (
     <div className="rounded-lg border border-brand-200 bg-brand-50 px-4 py-3">
       <p className="text-xs uppercase tracking-wide text-brand-500">{label}</p>
-      <p className="mt-1 font-serif text-2xl font-bold text-brand-900">{value}</p>
+      <p className="mt-1 font-serif text-2xl font-bold tabular-nums text-brand-900">
+        <AnimatedNumber value={value} />
+        {suffix}
+      </p>
     </div>
   );
 }
@@ -64,13 +105,13 @@ function IndividualView({ rosterMembers }) {
   }, [cmsId]);
 
   return (
-    <div className="rounded-xl border border-brand-200 bg-white p-6">
+    <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-serif text-lg font-semibold text-brand-900">Individual attendance</h2>
         <select
           value={cmsId}
           onChange={(e) => setCmsId(e.target.value)}
-          className="rounded-lg border border-brand-300 bg-white px-3 py-1.5 text-sm"
+          className="rounded-lg border border-brand-300 bg-brand-50 px-3 py-1.5 text-sm"
         >
           {rosterMembers.map((m) => (
             <option key={m.cmsId} value={m.cmsId}>
@@ -81,7 +122,7 @@ function IndividualView({ rosterMembers }) {
       </div>
 
       {loading || !data ? (
-        <p className="mt-4 text-sm text-brand-400">Loading…</p>
+        <StatBlockSkeleton tiles={4} />
       ) : data.error ? (
         <p className="mt-4 text-sm text-red-700">{data.error}</p>
       ) : (
@@ -93,7 +134,7 @@ function IndividualView({ rosterMembers }) {
             <StatTile label="Present" value={data.counts.present} />
             <StatTile label="Absent" value={data.counts.absent} />
             <StatTile label="Leave" value={data.counts.leave} />
-            <StatTile label="Attendance %" value={`${data.percentage}%`} />
+            <StatTile label="Attendance %" value={data.percentage} suffix="%" />
           </div>
           <h3 className="mt-6 text-sm font-medium text-brand-700">Trend, cumulative percent present</h3>
           <BarChart data={data.trend} labelKey="date" valueKey="presentPct" unit="%" color="#9c7539" />
@@ -122,13 +163,13 @@ function PortfolioView({ portfolios }) {
   }, [portfolio]);
 
   return (
-    <div className="rounded-xl border border-brand-200 bg-white p-6">
+    <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="font-serif text-lg font-semibold text-brand-900">Portfolio attendance</h2>
         <select
           value={portfolio}
           onChange={(e) => setPortfolio(e.target.value)}
-          className="rounded-lg border border-brand-300 bg-white px-3 py-1.5 text-sm"
+          className="rounded-lg border border-brand-300 bg-brand-50 px-3 py-1.5 text-sm"
         >
           {portfolios.map((p) => (
             <option key={p} value={p}>
@@ -139,7 +180,7 @@ function PortfolioView({ portfolios }) {
       </div>
 
       {loading || !data ? (
-        <p className="mt-4 text-sm text-brand-400">Loading…</p>
+        <StatBlockSkeleton tiles={3} />
       ) : data.error ? (
         <p className="mt-4 text-sm text-red-700">{data.error}</p>
       ) : (
@@ -147,7 +188,7 @@ function PortfolioView({ portfolios }) {
           <div className="mt-4 grid grid-cols-3 gap-3">
             <StatTile label="Present" value={data.overall.present} />
             <StatTile label="Absent" value={data.overall.absent} />
-            <StatTile label="Attendance %" value={`${data.overall.percentage}%`} />
+            <StatTile label="Attendance %" value={data.overall.percentage} suffix="%" />
           </div>
           <h3 className="mt-6 text-sm font-medium text-brand-700">Trend, percent present per meeting date</h3>
           <BarChart data={data.trend} labelKey="date" valueKey="presentPct" unit="%" color="#9c7539" />
@@ -167,9 +208,9 @@ function PortfolioView({ portfolios }) {
                 {data.members.map((m) => (
                   <tr key={m.cmsId} className="border-t border-brand-100">
                     <td className="px-3 py-2">{m.fullName}</td>
-                    <td className="px-3 py-2">{m.present}</td>
-                    <td className="px-3 py-2">{m.absent}</td>
-                    <td className="px-3 py-2">{m.percentage}%</td>
+                    <td className="px-3 py-2 tabular-nums">{m.present}</td>
+                    <td className="px-3 py-2 tabular-nums">{m.absent}</td>
+                    <td className="px-3 py-2 tabular-nums">{m.percentage}%</td>
                   </tr>
                 ))}
               </tbody>
@@ -183,18 +224,18 @@ function PortfolioView({ portfolios }) {
 
 function CouncilView({ data, loading }) {
   return (
-    <div className="rounded-xl border border-brand-200 bg-white p-6">
+    <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
       <h2 className="font-serif text-lg font-semibold text-brand-900">Council-wide attendance</h2>
       <p className="text-sm text-brand-500">Every meeting on file, every portfolio, rolled up.</p>
 
       {loading || !data ? (
-        <p className="mt-4 text-sm text-brand-400">Loading…</p>
+        <StatBlockSkeleton tiles={3} />
       ) : (
         <>
           <div className="mt-4 grid grid-cols-3 gap-3">
             <StatTile label="Present" value={data.overall.present} />
             <StatTile label="Absent" value={data.overall.absent} />
-            <StatTile label="Attendance %" value={`${data.overall.percentage}%`} />
+            <StatTile label="Attendance %" value={data.overall.percentage} suffix="%" />
           </div>
           <h3 className="mt-6 text-sm font-medium text-brand-700">Trend, percent present per meeting date</h3>
           <BarChart data={data.trend} labelKey="date" valueKey="presentPct" unit="%" color="#9c7539" />
@@ -283,7 +324,7 @@ export default function DashboardPage() {
   }
 
   if (accessDenied) {
-    return <p className="text-red-700">Manager or Admin access required to view the dashboard.</p>;
+    return <AccessDenied message="The Dashboard is for managers and admins." />;
   }
 
   return (
@@ -321,9 +362,14 @@ export default function DashboardPage() {
       </div>
 
       {loading || !applicants ? (
-        <p className={`mt-6 ${loadError ? 'text-red-700' : 'text-brand-400'}`}>
-          {loading ? 'Loading…' : loadError || 'Could not load dashboard data.'}
-        </p>
+        loadError ? (
+          <ErrorRetry className="mt-6" message={loadError} onRetry={load} />
+        ) : (
+          <div className="mt-6 space-y-6">
+            <DashboardCardSkeleton tiles={3} />
+            <DashboardCardSkeleton tiles={3} />
+          </div>
+        )
       ) : (
         <div className="mt-6 space-y-6">
           <div className="no-print flex flex-wrap gap-2">
@@ -342,17 +388,19 @@ export default function DashboardPage() {
             ))}
           </div>
 
-          {viewMode === 'individual' && <IndividualView rosterMembers={rosterMembers} />}
-          {viewMode === 'portfolio' && <PortfolioView portfolios={portfolios} />}
-          {viewMode === 'council' && <CouncilView data={councilData} loading={loading} />}
+          <div key={viewMode} className="nxc-page-in">
+            {viewMode === 'individual' && <IndividualView rosterMembers={rosterMembers} />}
+            {viewMode === 'portfolio' && <PortfolioView portfolios={portfolios} />}
+            {viewMode === 'council' && <CouncilView data={councilData} loading={loading} />}
+          </div>
 
-          <div className="rounded-xl border border-brand-200 bg-white p-6">
+          <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
             <h2 className="font-serif text-lg font-semibold text-brand-900">Applicant funnel</h2>
             <p className="text-sm text-brand-500">Every applicant, across every portfolio, grouped by status.</p>
             <BarChart data={applicants.funnel} labelKey="status" valueKey="count" color="#7d5a2c" />
           </div>
 
-          <div className="rounded-xl border border-brand-200 bg-white p-6">
+          <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
             <h2 className="font-serif text-lg font-semibold text-brand-900">Applicants by portfolio</h2>
             <BarChart data={applicants.byPortfolio} labelKey="portfolio" valueKey="total" color="#b9954f" />
           </div>
@@ -374,7 +422,7 @@ function DataQualitySection({ dataQuality }) {
     dataQuality.applicantsBadPortfolio.length;
 
   return (
-    <div className="rounded-xl border border-brand-200 bg-white p-6">
+    <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
       <h2 className="font-serif text-lg font-semibold text-brand-900">Data quality</h2>
       <p className="text-sm text-brand-500">Housekeeping checks across Roster, Logins, and Applicants.</p>
 

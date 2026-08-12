@@ -2,6 +2,13 @@
 
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { renderAnnouncementHtml } from '@/lib/markdown';
+import Pill from '@/components/ui/Pill';
+import { toast } from '@/lib/toast';
+import { Megaphone } from 'lucide-react';
+import { Skeleton } from '@/components/ui/Skeleton';
+import EmptyState from '@/components/ui/EmptyState';
+import ErrorRetry from '@/components/ui/ErrorRetry';
+import { useFabAction } from '@/components/FabProvider';
 
 const AUDIENCES = ['All', 'Members', 'Managers', 'Admins'];
 
@@ -11,12 +18,19 @@ function formatDate(iso) {
   return Number.isNaN(d.getTime()) ? iso : d.toLocaleString();
 }
 
-function ComposePanel({ initial, onClose, onSaved }) {
+function ComposePanel({ initial, onClose, onSent, onSendConfirmed, onSendFailed }) {
   const [message, setMessage] = useState(initial?.message || '');
   const [audience, setAudience] = useState(initial?.audience || 'All');
   const [error, setError] = useState('');
-  const [saving, setSaving] = useState(false);
   const textareaRef = useRef(null);
+
+  useEffect(() => {
+    function onKeyDown(e) {
+      if (e.key === 'Escape') onClose();
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [onClose]);
 
   function wrapSelection(before, after = before) {
     const el = textareaRef.current;
@@ -43,31 +57,43 @@ function ComposePanel({ initial, onClose, onSaved }) {
     setMessage(next);
   }
 
-  async function handleSend() {
+  // Optimistic: close and confirm immediately, the network round trip
+  // happens after. Only if it genuinely fails do we reopen this panel
+  // with the draft intact and explain via toast.
+  function handleSend() {
     if (!message.trim()) {
       setError('Message is required.');
       return;
     }
-    setSaving(true);
     setError('');
     const isEdit = !!initial;
-    const res = await fetch(isEdit ? `/api/announcements/${initial.id}` : '/api/announcements', {
+    const draft = { id: initial?.id, message, audience };
+    onSent(draft);
+
+    fetch(isEdit ? `/api/announcements/${initial.id}` : '/api/announcements', {
       method: isEdit ? 'PATCH' : 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message, audience }),
-    });
-    const data = await res.json();
-    setSaving(false);
-    if (!res.ok) {
-      setError(data.error || 'Could not save this announcement.');
-      return;
-    }
-    onSaved();
+    })
+      .then(async (res) => {
+        const data = await res.json();
+        if (!res.ok) {
+          onSendFailed(draft, data.error || 'Could not save this announcement.');
+        } else {
+          onSendConfirmed();
+        }
+      })
+      .catch(() => onSendFailed(draft, 'Could not reach the server.'));
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-end bg-black/20 p-4 sm:items-center sm:justify-center">
-      <div className="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-brand-200 bg-white shadow-2xl">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label={initial ? 'Edit announcement' : 'New announcement'}
+      className="fixed inset-0 z-50 flex items-end justify-end bg-brand-950/25 backdrop-blur-sm p-4 sm:items-center sm:justify-center"
+    >
+      <div className="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-white/50 bg-brand-50/70 shadow-2xl backdrop-blur-xl backdrop-saturate-150">
         <div className="flex items-center justify-between border-b border-brand-200 px-5 py-3">
           <h2 className="font-serif text-lg font-semibold text-brand-900">
             {initial ? 'Edit announcement' : 'New announcement'}
@@ -103,7 +129,7 @@ function ComposePanel({ initial, onClose, onSaved }) {
             <select
               value={audience}
               onChange={(e) => setAudience(e.target.value)}
-              className="ml-auto rounded-lg border border-brand-300 bg-white px-2 py-1 text-sm"
+              className="ml-auto rounded-lg border border-brand-300 bg-brand-50 px-2 py-1 text-sm"
             >
               {AUDIENCES.map((a) => (
                 <option key={a} value={a}>
@@ -134,10 +160,9 @@ function ComposePanel({ initial, onClose, onSaved }) {
         <div className="flex items-center gap-3 border-t border-brand-200 px-5 py-3">
           <button
             onClick={handleSend}
-            disabled={saving}
-            className="rounded-lg bg-brand-900 px-5 py-2.5 font-medium text-brand-50 hover:bg-brand-800 disabled:opacity-60"
+            className="rounded-lg bg-brand-900 px-5 py-2.5 font-medium text-brand-50 hover:bg-brand-800"
           >
-            {saving ? 'Sending…' : initial ? 'Save changes' : 'Send'}
+            {initial ? 'Save changes' : 'Send'}
           </button>
           <button
             onClick={onClose}
@@ -181,6 +206,8 @@ export default function AnnouncementsPage() {
     load();
   }, [load]);
 
+  useFabAction(canManage ? '+ Announcement' : undefined, () => openCompose());
+
   function openCompose() {
     setEditing(null);
     setComposeOpen(true);
@@ -191,10 +218,24 @@ export default function AnnouncementsPage() {
     setComposeOpen(true);
   }
 
-  function handleSaved() {
+  // Optimistic: close and confirm the moment Send is clicked. On genuine
+  // success, quietly reconcile with the server (picks up the real ID,
+  // timestamp, and author). On genuine failure, reopen the compose panel
+  // with the draft intact and explain via toast.
+  function handleSent(draft) {
     setComposeOpen(false);
     setEditing(null);
+    toast(draft.id ? 'Announcement updated' : 'Announcement sent');
+  }
+
+  function handleSendConfirmed() {
     load();
+  }
+
+  function handleSendFailed(draft, message) {
+    toast(`Couldn't send — ${message}`, 'error');
+    setEditing(draft.id ? draft : { message: draft.message, audience: draft.audience });
+    setComposeOpen(true);
   }
 
   async function handleDelete(id) {
@@ -222,21 +263,39 @@ export default function AnnouncementsPage() {
 
       <div className="mt-6 space-y-4">
         {loading ? (
-          <p className="text-brand-400">Loading…</p>
+          Array.from({ length: 3 }).map((_, i) => (
+            <div key={i} className="rounded-xl border border-brand-200 bg-brand-50 p-5">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="mt-2 h-4 w-2/3" />
+              <Skeleton className="mt-4 h-3 w-40" />
+            </div>
+          ))
         ) : loadError ? (
-          <p className="text-red-700">{loadError}</p>
+          <ErrorRetry message={loadError} onRetry={load} />
         ) : announcements.length === 0 ? (
-          <p className="text-brand-400">No announcements yet.</p>
+          <EmptyState
+            icon={Megaphone}
+            title="No announcements yet"
+            description={
+              canManage
+                ? 'Send the first announcement to your members.'
+                : 'Announcements aimed at you will show up here.'
+            }
+            actionLabel={canManage ? 'Write the first announcement' : undefined}
+            onAction={canManage ? openCompose : undefined}
+          />
         ) : (
           announcements.map((a) => (
-            <div key={a.id} className="rounded-xl border border-brand-200 bg-white p-5">
+            <div key={a.id} className="rounded-xl border border-brand-200 bg-brand-50 p-5">
               <div
                 className="text-brand-900"
                 dangerouslySetInnerHTML={{ __html: renderAnnouncementHtml(a.message) }}
               />
-              <p className="mt-3 text-xs text-brand-500">
-                Posted by {a.author} — {formatDate(a.timestamp)}
-                {a.audience !== 'All' && ` · ${a.audience}`}
+              <p className="mt-3 flex flex-wrap items-center gap-2 text-xs text-brand-500">
+                <span>
+                  Posted by {a.author} — {formatDate(a.timestamp)}
+                </span>
+                {a.audience !== 'All' && <Pill tone="muted">{a.audience}</Pill>}
               </p>
               {canManage && (
                 <div className="mt-3 flex items-center gap-3">
@@ -272,7 +331,13 @@ export default function AnnouncementsPage() {
       </div>
 
       {composeOpen && (
-        <ComposePanel initial={editing} onClose={() => setComposeOpen(false)} onSaved={handleSaved} />
+        <ComposePanel
+          initial={editing}
+          onClose={() => setComposeOpen(false)}
+          onSent={handleSent}
+          onSendConfirmed={handleSendConfirmed}
+          onSendFailed={handleSendFailed}
+        />
       )}
     </div>
   );

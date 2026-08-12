@@ -4,6 +4,11 @@ import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { toCSV, downloadCSV, parseCSV } from '@/lib/csv';
 import { dedupePortfolios } from '@/lib/portfolio';
+import { SkeletonTableRows } from '@/components/ui/Skeleton';
+import ErrorRetry from '@/components/ui/ErrorRetry';
+import AccessDenied from '@/components/ui/AccessDenied';
+import { useFabAction } from '@/components/FabProvider';
+import { toast } from '@/lib/toast';
 
 const NEW_PORTFOLIO_OPTION = '__new_portfolio__';
 
@@ -52,9 +57,11 @@ export default function RosterPage() {
   const [importRows, setImportRows] = useState(null);
   const [importing, setImporting] = useState(false);
   const [importError, setImportError] = useState('');
+  const [loadError, setLoadError] = useState('');
 
   const load = useCallback(() => {
     setLoading(true);
+    setLoadError('');
     fetch('/api/roster?view=full')
       .then(async (res) => {
         if (res.status === 403) {
@@ -62,17 +69,24 @@ export default function RosterPage() {
           return;
         }
         const data = await res.json();
+        if (data.error) {
+          setLoadError(data.error);
+          return;
+        }
         setMembers(data.members || []);
         setPortfolioStats(data.portfolioStats || []);
         setRole(data.role || null);
         setAccessDenied(false);
       })
+      .catch(() => setLoadError('Could not reach the server. Try again.'))
       .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
     load();
   }, [load]);
+
+  useFabAction(!accessDenied ? '+ Member' : undefined, () => openAddForm());
 
   const suggestions = useMemo(() => {
     const out = {};
@@ -153,6 +167,7 @@ export default function RosterPage() {
       setFormError(data.error || 'Could not save this member.');
       return;
     }
+    toast(isEdit ? 'Member updated' : 'Member added');
     setFormOpen(false);
     load();
   }
@@ -210,6 +225,7 @@ export default function RosterPage() {
       setImportError(data.error || 'Could not import.');
       return;
     }
+    toast(`Imported ${data.imported ?? importRows.length} member${data.imported === 1 ? '' : 's'}`);
     setImportPreview(null);
     setImportRows(null);
     load();
@@ -222,7 +238,10 @@ export default function RosterPage() {
   }
 
   if (accessDenied) {
-    return <p className="text-red-700">Manager or Admin access required to manage the roster.</p>;
+    return <AccessDenied message="Roster management is for managers and admins." />;
+  }
+  if (loadError && !loading) {
+    return <ErrorRetry message={loadError} onRetry={load} />;
   }
 
   return (
@@ -247,7 +266,7 @@ export default function RosterPage() {
           {portfolioStats.map((p) => (
             <div key={p.portfolio} className="rounded-lg border border-brand-200 bg-brand-50 px-4 py-2.5">
               <p className="text-sm font-medium text-brand-900">{p.portfolio}</p>
-              <p className="text-xs text-brand-500">
+              <p className="text-xs tabular-nums text-brand-500">
                 {p.headcount} member{p.headcount === 1 ? '' : 's'} · {p.percentage}% attendance
               </p>
             </div>
@@ -284,7 +303,7 @@ export default function RosterPage() {
       {importError && <p className="mt-3 text-sm text-red-700">{importError}</p>}
 
       {importPreview && (
-        <div className="mt-4 rounded-xl border border-brand-200 bg-white p-6">
+        <div className="mt-4 rounded-xl border border-brand-200 bg-brand-50 p-6">
           <h2 className="font-serif text-lg font-semibold text-brand-900">
             Import preview. {importPreview.validCount} of {importPreview.totalCount} rows valid
           </h2>
@@ -338,7 +357,7 @@ export default function RosterPage() {
       {formOpen && (
         <form
           onSubmit={handleSubmit}
-          className="mt-6 rounded-xl border border-brand-200 bg-white p-6"
+          className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6"
         >
           <h2 className="font-serif text-lg font-semibold text-brand-900">
             {editingCmsId !== null ? `Edit ${form.fullName || 'member'}` : 'Add roster member'}
@@ -373,7 +392,7 @@ export default function RosterPage() {
                     <select
                       value={form.portfolio}
                       onChange={(e) => handlePortfolioSelect(e.target.value)}
-                      className="mt-1 w-full rounded-lg border border-brand-300 bg-white px-3 py-2"
+                      className="mt-1 w-full rounded-lg border border-brand-300 bg-brand-50 px-3 py-2"
                     >
                       <option value="" disabled>
                         Select a portfolio
@@ -452,11 +471,11 @@ export default function RosterPage() {
           </thead>
           <tbody>
             {loading ? (
-              <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-brand-400">
-                  Loading…
-                </td>
-              </tr>
+              <SkeletonTableRows
+                rows={6}
+                columns={7}
+                widths={['w-2/3', 'w-16', 'w-20', 'w-20', 'w-12', 'w-24', 'w-10']}
+              />
             ) : filtered.length === 0 ? (
               <tr>
                 <td colSpan={7} className="px-4 py-6 text-center text-brand-400">

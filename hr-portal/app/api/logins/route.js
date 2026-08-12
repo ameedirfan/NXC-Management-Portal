@@ -4,6 +4,7 @@ import { getSession } from '@/lib/auth';
 import { readSheet, appendRow, TABS } from '@/lib/sheets';
 import { canManageLogins } from '@/lib/authz';
 import { dedupePortfolios, canonicalPortfolioName } from '@/lib/portfolio';
+import { friendlyReadError } from '@/lib/apiError';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,7 +27,12 @@ export async function GET() {
     return NextResponse.json({ error: 'Manager or Admin access required.' }, { status: 403 });
   }
 
-  const { records } = await readSheet(TABS.login);
+  let records;
+  try {
+    ({ records } = await readSheet(TABS.login));
+  } catch (err) {
+    return NextResponse.json({ error: friendlyReadError(err) }, { status: 500 });
+  }
   return NextResponse.json({ logins: records.map(toLoginSummary) });
 }
 

@@ -2,12 +2,58 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Brand palette as CSS custom properties (space-separated RGB, so
+   Tailwind's rgb(var(--x) / <alpha>) opacity modifiers keep working).
+   Dark mode is this same set of tokens resolving to different values
+   under .dark, not a second set of dark: classes scattered everywhere. */
+:root {
+  --brand-50: 249 244 232;
+  --brand-100: 242 233 211;
+  --brand-200: 230 211 171;
+  --brand-300: 212 184 120;
+  --brand-400: 185 149 79;
+  --brand-500: 156 117 57;
+  --brand-600: 125 90 44;
+  --brand-700: 95 67 34;
+  --brand-800: 74 51 25;
+  --brand-900: 58 40 20;
+  --brand-950: 36 24 9;
+}
+
+.dark {
+  --brand-50: 28 21 13;
+  --brand-100: 41 31 20;
+  --brand-200: 62 47 30;
+  --brand-300: 90 68 43;
+  --brand-400: 124 94 60;
+  --brand-500: 165 125 80;
+  --brand-600: 185 150 110;
+  --brand-700: 202 175 145;
+  --brand-800: 219 200 179;
+  --brand-900: 232 220 207;
+  --brand-950: 242 235 227;
+}
+
 html {
   color-scheme: light;
 }
 
+html.dark {
+  color-scheme: dark;
+}
+
 input[type='radio'] {
-  accent-color: #4a3319;
+  accent-color: rgb(var(--brand-800));
+}
+
+/* Accessibility floor: one consistent, on-brand, visible focus ring for
+   every interactive element, keyboard-only (not on mouse click) via
+   :focus-visible. Applies everywhere by default so no individual button,
+   link, or form field has to opt in. */
+:focus-visible {
+  outline: 2px solid rgb(var(--brand-600));
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 /* Used by the Dashboard's Export PDF button, which triggers the browser's
@@ -20,5 +66,87 @@ input[type='radio'] {
   }
   .print-area {
     padding: 0 !important;
+  }
+}
+
+/* Shared motion primitives. Every animation added anywhere in the app
+   should use one of these classes (or respect this media query itself)
+   rather than a one-off @keyframes block, so prefers-reduced-motion only
+   has to be handled once, here. */
+@keyframes nxc-shimmer {
+  0% {
+    background-position: 150% 0;
+  }
+  100% {
+    background-position: -50% 0;
+  }
+}
+.nxc-shimmer {
+  background-image: linear-gradient(90deg, rgb(var(--brand-100)) 25%, rgb(var(--brand-200)) 37%, rgb(var(--brand-100)) 63%);
+  background-size: 400% 100%;
+  animation: nxc-shimmer 1.4s ease infinite;
+}
+
+@keyframes nxc-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.nxc-page-in {
+  animation: nxc-page-in 180ms ease-out;
+}
+
+/* Native View Transitions API (NavBar tab navigation), matched to the
+   same 150-200ms window as the CSS fallback above. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 180ms;
+}
+
+@keyframes nxc-confetti-fall {
+  to {
+    transform: translate(var(--dx), 130px) rotate(280deg);
+    opacity: 0;
+  }
+}
+.nxc-confetti-piece {
+  animation: nxc-confetti-fall 0.9s ease-out forwards;
+}
+
+@keyframes nxc-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.nxc-toast-in {
+  animation: nxc-toast-in 0.2s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* ::view-transition-* pseudo-elements live outside the normal tree, the
+     wildcard rule above doesn't reach them. */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }

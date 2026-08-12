@@ -2,6 +2,10 @@
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { toCSV, downloadCSV } from '@/lib/csv';
+import Pill from '@/components/ui/Pill';
+import { toast } from '@/lib/toast';
+import { SkeletonTableRows } from '@/components/ui/Skeleton';
+import ErrorRetry from '@/components/ui/ErrorRetry';
 
 const STATUSES = ['Present', 'Absent', 'Leave'];
 
@@ -70,7 +74,7 @@ function CreateMeetingSection({ portfolios, date, onCreated }) {
   }
 
   return (
-    <div className="mt-6 rounded-xl border border-brand-200 bg-white p-6">
+    <div className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
       <h2 className="font-serif text-lg font-semibold text-brand-900">Create a meeting</h2>
       <p className="text-sm text-brand-500">
         Creates an Absent record for everyone in scope right away, marking a specific person
@@ -83,7 +87,7 @@ function CreateMeetingSection({ portfolios, date, onCreated }) {
           <select
             value={scope}
             onChange={(e) => setScope(e.target.value)}
-            className="mt-1 rounded-lg border border-brand-300 bg-white px-3 py-2"
+            className="mt-1 rounded-lg border border-brand-300 bg-brand-50 px-3 py-2"
           >
             <option value="Council">Council Meet, every member</option>
             <option value="Portfolio">Portfolio Meet, one portfolio</option>
@@ -95,7 +99,7 @@ function CreateMeetingSection({ portfolios, date, onCreated }) {
             <select
               value={portfolio}
               onChange={(e) => setPortfolio(e.target.value)}
-              className="mt-1 rounded-lg border border-brand-300 bg-white px-3 py-2"
+              className="mt-1 rounded-lg border border-brand-300 bg-brand-50 px-3 py-2"
             >
               {portfolios.map((p) => (
                 <option key={p} value={p}>
@@ -119,7 +123,7 @@ function CreateMeetingSection({ portfolios, date, onCreated }) {
       {confirming && (
         <div className="mt-4 rounded-lg border border-brand-300 bg-brand-50 p-4">
           <p className="text-brand-800">
-            This will create an Absent record for all {previewCount}{' '}
+            This will create an Absent record for all <span className="tabular-nums">{previewCount}</span>{' '}
             {scope === 'Council' ? 'roster members' : `${portfolio} members`}, for {date}.
           </p>
           <div className="mt-3 flex gap-3">
@@ -169,7 +173,7 @@ function CheckinQrSection({ meeting }) {
   }
 
   return (
-    <div className="mt-6 rounded-xl border border-brand-200 bg-white p-6">
+    <div className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-serif text-lg font-semibold text-brand-900">Meeting check in QR</h2>
@@ -223,6 +227,7 @@ export default function AttendancePage() {
   const [message, setMessage] = useState('');
   const [voidBusy, setVoidBusy] = useState(false);
   const [voidConfirming, setVoidConfirming] = useState(false);
+  const [loadError, setLoadError] = useState('');
 
   useEffect(() => {
     fetch('/api/roster')
@@ -241,13 +246,19 @@ export default function AttendancePage() {
   const loadMeetings = useCallback(() => {
     if (!canMark || !date) return;
     setMeetingsLoading(true);
+    setLoadError('');
     fetch(`/api/meetings?date=${date}`)
-      .then((res) => res.json())
-      .then((data) => {
+      .then(async (res) => {
+        const data = await res.json();
+        if (data.error) {
+          setLoadError(data.error);
+          return;
+        }
         const list = data.meetings || [];
         setMeetings(list);
         setSelectedMeetingId(list.length === 1 ? list[0].id : '');
       })
+      .catch(() => setLoadError('Could not reach the server. Try again.'))
       .finally(() => setMeetingsLoading(false));
   }, [canMark, date]);
 
@@ -276,7 +287,7 @@ export default function AttendancePage() {
   }, [loadAttendance]);
 
   function handleMeetingCreated(newMeetingId) {
-    setMessage('Meeting created.');
+    toast('Meeting created');
     loadMeetings();
     setSelectedMeetingId(newMeetingId);
   }
@@ -297,19 +308,35 @@ export default function AttendancePage() {
     downloadCSV(`attendance-${meetingLabel(meeting)}-${date}.csv`, csv);
   }
 
+  // Optimistic: the radios already update `people` instantly (pure local
+  // state), so the only round trip left is this Save. Confirm it right
+  // away instead of making someone watch a spinner, and only correct
+  // course — reload the real saved state, tell them via toast — if the
+  // write genuinely failed.
   async function handleSave() {
     setSaving(true);
-    setMessage('');
+    setMessage('Attendance saved.');
+    toast('Attendance saved');
     const res = await fetch('/api/attendance', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ meetingId: selectedMeetingId, records: people }),
     });
     setSaving(false);
-    setMessage(res.ok ? 'Attendance saved.' : 'Could not save attendance.');
+    if (!res.ok) {
+      setMessage('');
+      toast("Couldn't save — reverted to the last saved state.", 'error');
+      loadAttendance();
+    }
   }
 
+  // Optimistic: flip the meeting to Voided in the UI immediately, roll
+  // back and explain via toast only if the write genuinely fails.
   async function handleVoid() {
+    const previousMeeting = meeting;
+    setMeeting((prev) => ({ ...prev, status: 'Voided' }));
+    setVoidConfirming(false);
+    toast('Meeting voided');
     setVoidBusy(true);
     const res = await fetch(`/api/meetings/${encodeURIComponent(selectedMeetingId)}`, {
       method: 'PATCH',
@@ -317,10 +344,11 @@ export default function AttendancePage() {
       body: JSON.stringify({ status: 'Voided' }),
     });
     setVoidBusy(false);
-    setVoidConfirming(false);
     if (res.ok) {
       loadMeetings();
-      loadAttendance();
+    } else {
+      setMeeting(previousMeeting);
+      toast("Couldn't void this meeting — try again.", 'error');
     }
   }
 
@@ -328,7 +356,7 @@ export default function AttendancePage() {
     return (
       <div>
         <h1 className="font-serif text-3xl font-bold text-brand-900">Attendance</h1>
-        <div className="mt-6 rounded-xl border border-brand-200 bg-white p-6">
+        <div className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
           <p className="text-brand-700">
             Ask your portfolio's Admin to show the meeting's check in QR code. Scan it with
             your phone's camera to mark yourself Present.
@@ -353,17 +381,19 @@ export default function AttendancePage() {
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
-          className="mt-1 w-full rounded-lg border border-brand-300 bg-white px-3 py-2"
+          className="mt-1 w-full rounded-lg border border-brand-300 bg-brand-50 px-3 py-2"
         />
       </div>
 
-      {!meetingsLoading && meetings.length > 1 && (
+      {loadError && <ErrorRetry className="mt-6" message={loadError} onRetry={loadMeetings} />}
+
+      {!loadError && !meetingsLoading && meetings.length > 1 && (
         <div className="mt-4 max-w-md">
           <label className="block text-sm font-medium text-brand-800">Meeting</label>
           <select
             value={selectedMeetingId}
             onChange={(e) => setSelectedMeetingId(e.target.value)}
-            className="mt-1 w-full rounded-lg border border-brand-300 bg-white px-3 py-2"
+            className="mt-1 w-full rounded-lg border border-brand-300 bg-brand-50 px-3 py-2"
           >
             <option value="" disabled>
               Choose a meeting
@@ -378,9 +408,11 @@ export default function AttendancePage() {
         </div>
       )}
 
-      {canCreateMeeting && <CreateMeetingSection portfolios={portfolios} date={date} onCreated={handleMeetingCreated} />}
+      {!loadError && canCreateMeeting && (
+        <CreateMeetingSection portfolios={portfolios} date={date} onCreated={handleMeetingCreated} />
+      )}
 
-      {!meetingsLoading && meetings.length === 0 && !canCreateMeeting && (
+      {!loadError && !meetingsLoading && meetings.length === 0 && !canCreateMeeting && (
         <p className="mt-6 text-brand-400">No meeting exists for this date yet. Ask an Admin to create one.</p>
       )}
 
@@ -394,8 +426,9 @@ export default function AttendancePage() {
           )}
 
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-            <h2 className="font-serif text-lg font-semibold text-brand-900">
+            <h2 className="flex flex-wrap items-center gap-2 font-serif text-lg font-semibold text-brand-900">
               {meetingLabel(meeting)}, {meeting.date}
+              {meeting.status === 'Voided' && <Pill tone="voided">Voided</Pill>}
             </h2>
             <div className="flex items-center gap-4">
               <a
@@ -465,11 +498,7 @@ export default function AttendancePage() {
               </thead>
               <tbody>
                 {loading ? (
-                  <tr>
-                    <td colSpan={3} className="px-4 py-6 text-center text-brand-400">
-                      Loading…
-                    </td>
-                  </tr>
+                  <SkeletonTableRows rows={5} columns={3} widths={['w-2/3', 'w-1/2', 'w-24']} />
                 ) : people.length === 0 ? (
                   <tr>
                     <td colSpan={3} className="px-4 py-6 text-center text-brand-400">
