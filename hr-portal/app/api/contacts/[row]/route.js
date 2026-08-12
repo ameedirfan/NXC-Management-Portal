@@ -5,8 +5,9 @@ import { canManageContacts } from '@/lib/authz';
 
 export const dynamic = 'force-dynamic';
 
-export async function PATCH(request, { params }) {
-  const session = getSession();
+export async function PATCH(request, { params: paramsPromise }) {
+  const params = await paramsPromise;
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   if (!canManageContacts(session)) {
     return NextResponse.json({ error: 'Manager or Admin access required.' }, { status: 403 });

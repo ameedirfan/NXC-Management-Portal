@@ -22,7 +22,7 @@ function trendFromRows(rows) {
 }
 
 export async function GET(request) {
-  const session = getSession();
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   if (!canViewDashboard(session)) {
     return NextResponse.json({ error: 'Manager or Admin access required.' }, { status: 403 });

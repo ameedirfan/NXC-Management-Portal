@@ -21,7 +21,7 @@ function toMeeting(record) {
 }
 
 export async function GET(request) {
-  const session = getSession();
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   if (!isManagerOrAdmin(session)) {
     return NextResponse.json({ error: 'Manager or Admin access required.' }, { status: 403 });
@@ -47,7 +47,7 @@ export async function GET(request) {
 // immediately pre-creates every applicable person's Attendance row as
 // Absent, in one batch write, per the "pre-created as Absent" rule.
 export async function POST(request) {
-  const session = getSession();
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   if (!canCreateMeeting(session)) {
     return NextResponse.json({ error: 'Admin access required to create a meeting.' }, { status: 403 });

@@ -8,7 +8,7 @@ import { friendlyReadError } from '@/lib/apiError';
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  const session = getSession();
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   if (!canViewDashboard(session)) {
     return NextResponse.json({ error: 'Manager or Admin access required.' }, { status: 403 });

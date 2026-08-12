@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic';
 const STATUSES = ['Present', 'Absent', 'Leave'];
 
 export async function GET(request) {
-  const session = getSession();
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   if (!isManagerOrAdmin(session)) {
     return NextResponse.json({ error: 'Manager or Admin access required.' }, { status: 403 });
@@ -59,7 +59,7 @@ export async function GET(request) {
 }
 
 export async function POST(request) {
-  const session = getSession();
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   if (!canManuallyMarkAttendance(session)) {
     return NextResponse.json(

@@ -23,9 +23,10 @@ export function createSessionToken(payload) {
   return `${body}.${sig}`;
 }
 
-export function setSessionCookie(payload) {
+export async function setSessionCookie(payload) {
   const token = createSessionToken(payload);
-  cookies().set(COOKIE_NAME, token, {
+  const cookieStore = await cookies();
+  cookieStore.set(COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
@@ -34,12 +35,14 @@ export function setSessionCookie(payload) {
   });
 }
 
-export function clearSessionCookie() {
-  cookies().delete(COOKIE_NAME);
+export async function clearSessionCookie() {
+  const cookieStore = await cookies();
+  cookieStore.delete(COOKIE_NAME);
 }
 
-export function getSession() {
-  const token = cookies().get(COOKIE_NAME)?.value;
+export async function getSession() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(COOKIE_NAME)?.value;
   if (!token) return null;
 
   const parts = token.split('.');

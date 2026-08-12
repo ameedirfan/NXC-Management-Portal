@@ -14,8 +14,9 @@ const SLOTS = {
 
 // Re-uploading a file is the confirmed exception to add-and-edit-never-
 // delete here: the old Drive file is deleted, not kept as an orphan.
-export async function POST(request, { params }) {
-  const session = getSession();
+export async function POST(request, { params: paramsPromise }) {
+  const params = await paramsPromise;
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   if (!canManageTrips(session)) {
     return NextResponse.json({ error: 'Admin access required.' }, { status: 403 });

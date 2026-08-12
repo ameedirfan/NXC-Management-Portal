@@ -55,7 +55,7 @@ function uniqueUsername(base, taken) {
 // the same usernames and passwords, nothing is regenerated between preview
 // and confirm, so what the admin reviewed is exactly what gets created.
 export async function POST(request) {
-  const session = getSession();
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   if (!canManageLogins(session)) {
     return NextResponse.json({ error: 'Manager or Admin access required.' }, { status: 403 });
