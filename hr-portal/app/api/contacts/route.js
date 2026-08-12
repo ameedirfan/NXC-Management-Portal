@@ -17,7 +17,7 @@ function toContact(record) {
 }
 
 export async function GET() {
-  const session = getSession();
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
 
   let records;
@@ -33,7 +33,7 @@ export async function GET() {
 }
 
 export async function POST(request) {
-  const session = getSession();
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   if (!canManageContacts(session)) {
     return NextResponse.json({ error: 'Manager or Admin access required.' }, { status: 403 });

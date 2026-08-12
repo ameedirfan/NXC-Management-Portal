@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 const REQUIRED = ['cmsId', 'fullName', 'portfolio', 'designation'];
 
 export async function POST(request) {
-  const session = getSession();
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   if (!isManagerOrAdmin(session)) {
     return NextResponse.json({ error: 'Manager or Admin access required.' }, { status: 403 });

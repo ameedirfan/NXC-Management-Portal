@@ -16,8 +16,9 @@ async function readStatusHistorySafely() {
   }
 }
 
-export async function GET(_request, { params }) {
-  const session = getSession();
+export async function GET(_request, { params: paramsPromise }) {
+  const params = await paramsPromise;
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
 
   let applicants, reviews, statusHistory;
@@ -85,8 +86,9 @@ export async function GET(_request, { params }) {
   });
 }
 
-export async function PATCH(request, { params }) {
-  const session = getSession();
+export async function PATCH(request, { params: paramsPromise }) {
+  const params = await paramsPromise;
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
 
   const { status } = await request.json();

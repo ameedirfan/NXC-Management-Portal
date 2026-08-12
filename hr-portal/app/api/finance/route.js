@@ -25,7 +25,7 @@ function toEntry(record) {
 }
 
 export async function GET() {
-  const session = getSession();
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   if (!canAccessFinance(session)) {
     return NextResponse.json({ error: 'Admin access required.' }, { status: 403 });
@@ -58,7 +58,7 @@ export async function GET() {
 }
 
 export async function POST(request) {
-  const session = getSession();
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   if (!canAccessFinance(session)) {
     return NextResponse.json({ error: 'Admin access required.' }, { status: 403 });

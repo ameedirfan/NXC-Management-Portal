@@ -8,8 +8,9 @@ export const dynamic = 'force-dynamic';
 // Voiding, not deleting, a mistakenly created meeting. Attendance rows
 // tied to a Voided meeting are simply skipped by the percentage
 // calculation, same "ghost entry" mechanic as a Leave status.
-export async function PATCH(request, { params }) {
-  const session = getSession();
+export async function PATCH(request, { params: paramsPromise }) {
+  const params = await paramsPromise;
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   if (!canVoidMeeting(session)) {
     return NextResponse.json({ error: 'Admin access required to void a meeting.' }, { status: 403 });

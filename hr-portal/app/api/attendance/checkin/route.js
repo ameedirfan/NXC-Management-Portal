@@ -6,7 +6,7 @@ import { verifyCheckinToken } from '@/lib/checkinToken';
 export const dynamic = 'force-dynamic';
 
 export async function POST(request) {
-  const session = getSession();
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
 
   const { token } = await request.json();

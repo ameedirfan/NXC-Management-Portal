@@ -9,8 +9,9 @@ const AUDIENCES = ['All', 'Members', 'Managers', 'Admins'];
 
 // Announcements are the confirmed exception to add-and-edit-never-delete:
 // a sent announcement can be edited after the fact, and deleted outright.
-export async function PATCH(request, { params }) {
-  const session = getSession();
+export async function PATCH(request, { params: paramsPromise }) {
+  const params = await paramsPromise;
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   if (!canManageAnnouncements(session)) {
     return NextResponse.json({ error: 'Manager or Admin access required.' }, { status: 403 });
@@ -37,8 +38,9 @@ export async function PATCH(request, { params }) {
   return NextResponse.json({ ok: true });
 }
 
-export async function DELETE(request, { params }) {
-  const session = getSession();
+export async function DELETE(request, { params: paramsPromise }) {
+  const params = await paramsPromise;
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   if (!canManageAnnouncements(session)) {
     return NextResponse.json({ error: 'Manager or Admin access required.' }, { status: 403 });
