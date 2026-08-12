@@ -25,7 +25,7 @@ export default function Confetti({ burstKey }) {
       {pieces.map((p) => (
         <span
           key={p.id}
-          className="nxc-confetti-piece absolute top-1/3 h-2.5 w-2 rounded-sm"
+          className="nxc-confetti-piece absolute top-1/3 h-2.5 w-2 rounded-xs"
           style={{
             left: `${p.left}%`,
             backgroundColor: p.color,
