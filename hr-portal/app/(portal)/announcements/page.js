@@ -91,7 +91,7 @@ function ComposePanel({ initial, onClose, onSent, onSendConfirmed, onSendFailed 
       role="dialog"
       aria-modal="true"
       aria-label={initial ? 'Edit announcement' : 'New announcement'}
-      className="fixed inset-0 z-50 flex items-end justify-end bg-brand-950/25 backdrop-blur-sm p-4 sm:items-center sm:justify-center"
+      className="fixed inset-0 z-50 flex items-end justify-end bg-brand-950/25 backdrop-blur-xs p-4 sm:items-center sm:justify-center"
     >
       <div className="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-white/50 bg-brand-50/70 shadow-2xl backdrop-blur-xl backdrop-saturate-150">
         <div className="flex items-center justify-between border-b border-brand-200 px-5 py-3">
@@ -108,21 +108,21 @@ function ComposePanel({ initial, onClose, onSent, onSendConfirmed, onSendFailed 
             <button
               type="button"
               onClick={() => wrapSelection('**')}
-              className="rounded border border-brand-300 px-2 py-1 text-sm font-bold hover:bg-brand-100"
+              className="rounded-sm border border-brand-300 px-2 py-1 text-sm font-bold hover:bg-brand-100"
             >
               B
             </button>
             <button
               type="button"
               onClick={() => wrapSelection('*')}
-              className="rounded border border-brand-300 px-2 py-1 text-sm italic hover:bg-brand-100"
+              className="rounded-sm border border-brand-300 px-2 py-1 text-sm italic hover:bg-brand-100"
             >
               i
             </button>
             <button
               type="button"
               onClick={insertLink}
-              className="rounded border border-brand-300 px-2 py-1 text-sm hover:bg-brand-100"
+              className="rounded-sm border border-brand-300 px-2 py-1 text-sm hover:bg-brand-100"
             >
               Link
             </button>

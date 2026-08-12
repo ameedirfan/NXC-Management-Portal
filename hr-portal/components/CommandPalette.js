@@ -44,9 +44,9 @@ export default function CommandPalette({ open, onClose, role, supportsViewTransi
       role="dialog"
       aria-modal="true"
       aria-label="Command palette"
-      className="fixed inset-0 z-[100] flex justify-center px-4 pt-24"
+      className="fixed inset-0 z-100 flex justify-center px-4 pt-24"
     >
-      <div onClick={onClose} className="fixed inset-0 bg-brand-950/30 backdrop-blur-sm" />
+      <div onClick={onClose} className="fixed inset-0 bg-brand-950/30 backdrop-blur-xs" />
       <div className="relative h-fit w-full max-w-lg overflow-hidden rounded-2xl border border-white/50 bg-brand-50/70 shadow-2xl backdrop-blur-xl backdrop-saturate-150">
         <div className="flex items-center gap-2 border-b border-brand-200/70 px-4 py-3">
           <Search size={16} className="shrink-0 text-brand-500" aria-hidden="true" />
@@ -55,9 +55,9 @@ export default function CommandPalette({ open, onClose, role, supportsViewTransi
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Jump to a tab…"
-            className="min-w-0 flex-1 bg-transparent text-sm text-brand-900 outline-none placeholder:text-brand-400"
+            className="min-w-0 flex-1 bg-transparent text-sm text-brand-900 outline-hidden placeholder:text-brand-400"
           />
-          <span className="shrink-0 rounded border border-brand-300 px-1.5 py-0.5 text-[10px] font-medium text-brand-500">
+          <span className="shrink-0 rounded-sm border border-brand-300 px-1.5 py-0.5 text-[10px] font-medium text-brand-500">
             ESC
           </span>
         </div>

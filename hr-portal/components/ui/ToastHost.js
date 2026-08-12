@@ -26,7 +26,7 @@ export default function ToastHost() {
 
   return (
     <div
-      className="no-print fixed inset-x-0 bottom-5 z-[200] flex flex-col items-center gap-2 px-4"
+      className="no-print fixed inset-x-0 bottom-5 z-200 flex flex-col items-center gap-2 px-4"
       aria-live="polite"
       aria-atomic="true"
     >

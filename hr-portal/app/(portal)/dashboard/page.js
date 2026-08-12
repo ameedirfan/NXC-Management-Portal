@@ -23,9 +23,9 @@ function BarChart({ data, labelKey, valueKey, unit = '', color = '#3a2814' }) {
           <span className="w-32 shrink-0 truncate text-brand-700" title={d[labelKey]}>
             {d[labelKey]}
           </span>
-          <div className="h-4 flex-1 overflow-hidden rounded bg-brand-100">
+          <div className="h-4 flex-1 overflow-hidden rounded-sm bg-brand-100">
             <div
-              className="h-full rounded"
+              className="h-full rounded-sm"
               style={{ width: `${(d[valueKey] / max) * 100}%`, backgroundColor: color }}
             />
           </div>

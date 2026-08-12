@@ -84,7 +84,7 @@ function CheckinContent() {
             <p className="mt-2 text-brand-800">{message}</p>
             <p className="mt-4 text-sm text-brand-500">You can close this page now.</p>
             <div
-              className="nxc-toast-in fixed inset-x-0 bottom-5 z-[200] flex justify-center px-4"
+              className="nxc-toast-in fixed inset-x-0 bottom-5 z-200 flex justify-center px-4"
               aria-live="polite"
             >
               <div className="rounded-full bg-brand-900 px-5 py-2.5 text-sm font-medium text-brand-50 shadow-lg">

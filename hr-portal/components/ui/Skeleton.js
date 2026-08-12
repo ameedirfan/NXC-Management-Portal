@@ -2,7 +2,7 @@
 // a Sheets read is in flight instead of a blank flash or a spinner.
 
 export function Skeleton({ className = '' }) {
-  return <div className={`nxc-shimmer rounded ${className}`} />;
+  return <div className={`nxc-shimmer rounded-sm ${className}`} />;
 }
 
 // A row of cells matching a data table's shape — pass the same column
