@@ -17,16 +17,22 @@ export function FabProvider({ children }) {
 }
 
 export function useFabAction(label, onAction) {
-  const ctx = useContext(FabContext);
+  // Depend on setFab (React guarantees this dispatcher's identity is
+  // stable across renders), never on the context object itself — that
+  // object is a fresh {fab, setFab} literal every time FabProvider
+  // re-renders, and depending on it here would re-run this effect on
+  // every fab update, which calls setFab again, which re-renders
+  // FabProvider again: an infinite loop the instant any page registers
+  // a FAB action.
+  const { setFab } = useContext(FabContext) || {};
   const actionRef = useRef(onAction);
   actionRef.current = onAction;
 
   useEffect(() => {
-    if (!ctx || !label) return;
-    ctx.setFab({ label, onAction: () => actionRef.current() });
-    return () => ctx.setFab((prev) => (prev?.label === label ? null : prev));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ctx, label]);
+    if (!setFab || !label) return;
+    setFab({ label, onAction: () => actionRef.current() });
+    return () => setFab((prev) => (prev?.label === label ? null : prev));
+  }, [setFab, label]);
 }
 
 export function useFab() {
