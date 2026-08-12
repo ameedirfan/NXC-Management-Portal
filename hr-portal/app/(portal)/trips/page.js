@@ -7,6 +7,7 @@ import { SkeletonCard } from '@/components/ui/Skeleton';
 import EmptyState from '@/components/ui/EmptyState';
 import ErrorRetry from '@/components/ui/ErrorRetry';
 import { toast } from '@/lib/toast';
+import { useFabAction } from '@/components/FabProvider';
 
 const EMPTY_FORM = { location: '', days: '', participantCount: '' };
 
@@ -40,6 +41,8 @@ export default function TripsPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useFabAction(canManage ? '+ Trip' : undefined, () => setFormOpen(true));
 
   async function handleSubmit(e) {
     e.preventDefault();

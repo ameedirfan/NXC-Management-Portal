@@ -6,6 +6,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import EmptyState from '@/components/ui/EmptyState';
 import ErrorRetry from '@/components/ui/ErrorRetry';
 import { toast } from '@/lib/toast';
+import { useFabAction } from '@/components/FabProvider';
 
 const EMPTY_FORM = { fullName: '', position: '', phone: '', email: '' };
 
@@ -40,6 +41,8 @@ export default function ContactsPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useFabAction(canManage ? '+ Contact' : undefined, () => openAddForm());
 
   function openAddForm() {
     setEditingRow(null);

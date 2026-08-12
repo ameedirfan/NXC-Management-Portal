@@ -8,6 +8,7 @@ import { SkeletonTableRows } from '@/components/ui/Skeleton';
 import ErrorRetry from '@/components/ui/ErrorRetry';
 import AccessDenied from '@/components/ui/AccessDenied';
 import { toast } from '@/lib/toast';
+import { useFabAction } from '@/components/FabProvider';
 
 const CUSTOM_OPTION = '__custom__';
 const ROLES = ['member', 'manager', 'admin'];
@@ -71,6 +72,8 @@ export default function LoginsPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useFabAction(!accessDenied ? '+ Login' : undefined, () => openAddForm());
 
   const rosterByCmsId = useMemo(
     () => Object.fromEntries(rosterMembers.map((m) => [m.cmsId, m])),

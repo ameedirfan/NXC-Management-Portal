@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
+import Confetti from '@/components/ui/Confetti';
 
 // Deliberately outside the (portal) route group, that layout does a
 // blanket server side redirect to /login for anyone signed out, which
@@ -13,6 +14,7 @@ function CheckinContent() {
   const token = searchParams.get('token') || '';
   const [status, setStatus] = useState('checking'); // checking, needs-login, success, error
   const [message, setMessage] = useState('');
+  const [confettiKey, setConfettiKey] = useState(0);
 
   useEffect(() => {
     if (!token) {
@@ -39,6 +41,7 @@ function CheckinContent() {
         setStatus('success');
         const label = data.scope === 'Council' ? 'the Council Meet' : `${data.portfolio}`;
         setMessage(`You are marked Present for ${label}, ${data.date}.`);
+        setConfettiKey((k) => k + 1);
       })
       .catch(() => {
         setStatus('error');
@@ -50,7 +53,8 @@ function CheckinContent() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-brand-950 px-4">
-      <div className="w-full max-w-sm rounded-2xl bg-brand-50 p-8 text-center shadow-xl">
+      <div className="relative w-full max-w-sm rounded-2xl bg-brand-50 p-8 text-center shadow-xl">
+        <Confetti burstKey={confettiKey} />
         <Image
           src="/logo.png"
           alt="NXC"
@@ -79,6 +83,14 @@ function CheckinContent() {
             <p className="mt-4 text-2xl">✅</p>
             <p className="mt-2 text-brand-800">{message}</p>
             <p className="mt-4 text-sm text-brand-500">You can close this page now.</p>
+            <div
+              className="nxc-toast-in fixed inset-x-0 bottom-5 z-[200] flex justify-center px-4"
+              aria-live="polite"
+            >
+              <div className="rounded-full bg-brand-900 px-5 py-2.5 text-sm font-medium text-brand-50 shadow-lg">
+                Checked in — see you there
+              </div>
+            </div>
           </>
         )}
 

@@ -8,6 +8,7 @@ import { Megaphone } from 'lucide-react';
 import { Skeleton } from '@/components/ui/Skeleton';
 import EmptyState from '@/components/ui/EmptyState';
 import ErrorRetry from '@/components/ui/ErrorRetry';
+import { useFabAction } from '@/components/FabProvider';
 
 const AUDIENCES = ['All', 'Members', 'Managers', 'Admins'];
 
@@ -90,9 +91,9 @@ function ComposePanel({ initial, onClose, onSent, onSendConfirmed, onSendFailed 
       role="dialog"
       aria-modal="true"
       aria-label={initial ? 'Edit announcement' : 'New announcement'}
-      className="fixed inset-0 z-50 flex items-end justify-end bg-black/20 p-4 sm:items-center sm:justify-center"
+      className="fixed inset-0 z-50 flex items-end justify-end bg-brand-950/25 backdrop-blur-sm p-4 sm:items-center sm:justify-center"
     >
-      <div className="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-brand-200 bg-white shadow-2xl">
+      <div className="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-white/50 bg-brand-50/70 shadow-2xl backdrop-blur-xl backdrop-saturate-150">
         <div className="flex items-center justify-between border-b border-brand-200 px-5 py-3">
           <h2 className="font-serif text-lg font-semibold text-brand-900">
             {initial ? 'Edit announcement' : 'New announcement'}
@@ -204,6 +205,8 @@ export default function AnnouncementsPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useFabAction(canManage ? '+ Announcement' : undefined, () => openCompose());
 
   function openCompose() {
     setEditing(null);

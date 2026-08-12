@@ -72,6 +72,16 @@ input[type='radio'] {
   animation-duration: 180ms;
 }
 
+@keyframes nxc-confetti-fall {
+  to {
+    transform: translate(var(--dx), 130px) rotate(280deg);
+    opacity: 0;
+  }
+}
+.nxc-confetti-piece {
+  animation: nxc-confetti-fall 0.9s ease-out forwards;
+}
+
 @keyframes nxc-toast-in {
   from {
     opacity: 0;

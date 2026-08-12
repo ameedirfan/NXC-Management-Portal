@@ -7,6 +7,7 @@ import { dedupePortfolios } from '@/lib/portfolio';
 import { SkeletonTableRows } from '@/components/ui/Skeleton';
 import ErrorRetry from '@/components/ui/ErrorRetry';
 import AccessDenied from '@/components/ui/AccessDenied';
+import { useFabAction } from '@/components/FabProvider';
 import { toast } from '@/lib/toast';
 
 const NEW_PORTFOLIO_OPTION = '__new_portfolio__';
@@ -84,6 +85,8 @@ export default function RosterPage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useFabAction(!accessDenied ? '+ Member' : undefined, () => openAddForm());
 
   const suggestions = useMemo(() => {
     const out = {};

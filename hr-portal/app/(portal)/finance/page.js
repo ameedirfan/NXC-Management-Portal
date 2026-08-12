@@ -8,6 +8,7 @@ import ErrorRetry from '@/components/ui/ErrorRetry';
 import AccessDenied from '@/components/ui/AccessDenied';
 import { toast } from '@/lib/toast';
 import AnimatedNumber from '@/components/ui/AnimatedNumber';
+import { useFabAction } from '@/components/FabProvider';
 
 const EMPTY_FORM = { date: '', description: '', amount: '', type: '' };
 
@@ -52,6 +53,8 @@ export default function FinancePage() {
   useEffect(() => {
     load();
   }, [load]);
+
+  useFabAction(!accessDenied ? '+ Row' : undefined, () => openAddForm());
 
   function openAddForm() {
     setEditingRow(null);

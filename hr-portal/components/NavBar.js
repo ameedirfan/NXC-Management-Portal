@@ -12,10 +12,12 @@ import {
   MapPinned,
   LayoutDashboard,
   Wallet,
+  Command,
 } from 'lucide-react';
 
-// One outline icon per tab, never mixed styles.
-const ICONS = {
+// One outline icon per tab, never mixed styles. Exported so the Command
+// Palette can render the same icons for the same destinations.
+export const NAV_ICONS = {
   '/attendance': ClipboardList,
   '/recruitment': UserPlus,
   '/roster': Users,
@@ -49,7 +51,7 @@ const MANAGER_TABS = [
 // Finance is admin only, the one nav item managers don't get.
 const ADMIN_TABS = [...MANAGER_TABS, { href: '/finance', label: 'Finance' }];
 
-function tabsForRole(role) {
+export function tabsForRole(role) {
   if (role === 'admin') return ADMIN_TABS;
   if (role === 'manager') return MANAGER_TABS;
   return MEMBER_TABS;
@@ -61,7 +63,7 @@ function roleLabel(role) {
   return null;
 }
 
-export default function NavBar({ session, supportsViewTransitions = false }) {
+export default function NavBar({ session, supportsViewTransitions = false, onOpenPalette }) {
   const pathname = usePathname();
   const router = useRouter();
   const tabs = tabsForRole(session.role);
@@ -98,7 +100,7 @@ export default function NavBar({ session, supportsViewTransitions = false }) {
 
         <nav className="flex flex-wrap gap-2">
           {tabs.map((t) => {
-            const Icon = ICONS[t.href];
+            const Icon = NAV_ICONS[t.href];
             return (
               <Link
                 key={t.href}
@@ -117,7 +119,15 @@ export default function NavBar({ session, supportsViewTransitions = false }) {
           })}
         </nav>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={onOpenPalette}
+            title="Search (Ctrl+K)"
+            aria-label="Open command palette"
+            className="flex items-center gap-1.5 rounded-lg border border-brand-300 bg-white px-2.5 py-1.5 text-xs font-medium text-brand-600 hover:bg-brand-100"
+          >
+            <Command size={13} aria-hidden="true" />K
+          </button>
           <p className="text-sm text-brand-600">
             {session.fullName || session.username} · {roleLabel(session.role) || session.portfolio}
           </p>
