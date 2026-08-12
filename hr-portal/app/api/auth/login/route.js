@@ -38,7 +38,7 @@ export async function POST(request) {
 
   clearAttempts(rateLimitKey);
 
-  setSessionCookie({
+  await setSessionCookie({
     username: user['Username'],
     fullName: user['Full Name'] || '',
     cmsId: user['CMS ID'] || '',

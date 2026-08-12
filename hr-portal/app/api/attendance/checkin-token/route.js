@@ -7,7 +7,7 @@ import { createCheckinToken, CHECKIN_TOKEN_MAX_AGE_SECONDS } from '@/lib/checkin
 export const dynamic = 'force-dynamic';
 
 export async function POST(request) {
-  const session = getSession();
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   if (!canGenerateCheckinCode(session)) {
     return NextResponse.json({ error: 'Only admins can generate a check in code.' }, { status: 403 });

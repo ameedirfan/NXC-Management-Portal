@@ -13,7 +13,7 @@ const APPLICANT_STATUSES = ['Pending', 'Interviewing', 'Recommended', 'Not recom
 // now. This endpoint stays for the parts of the Dashboard that aren't
 // attendance: the portfolio list and the recruitment funnel.
 export async function GET() {
-  const session = getSession();
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   if (!canViewDashboard(session)) {
     return NextResponse.json({ error: 'Manager or Admin access required.' }, { status: 403 });

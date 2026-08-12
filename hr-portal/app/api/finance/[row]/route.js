@@ -10,8 +10,9 @@ function parseAmount(value) {
   return Number.isFinite(n) ? n : 0;
 }
 
-export async function PATCH(request, { params }) {
-  const session = getSession();
+export async function PATCH(request, { params: paramsPromise }) {
+  const params = await paramsPromise;
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   if (!canAccessFinance(session)) {
     return NextResponse.json({ error: 'Admin access required.' }, { status: 403 });

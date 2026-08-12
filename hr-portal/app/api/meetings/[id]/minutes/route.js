@@ -43,8 +43,9 @@ function blankSection(title) {
   ];
 }
 
-export async function GET(request, { params }) {
-  const session = getSession();
+export async function GET(request, { params: paramsPromise }) {
+  const params = await paramsPromise;
+  const session = await getSession();
   if (!session) return new Response('Not signed in.', { status: 401 });
   if (!isManagerOrAdmin(session)) {
     return new Response('Manager or Admin access required.', { status: 403 });

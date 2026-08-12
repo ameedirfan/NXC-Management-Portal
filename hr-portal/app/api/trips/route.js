@@ -22,7 +22,7 @@ function toTrip(record) {
 }
 
 export async function GET() {
-  const session = getSession();
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
 
   let records;
@@ -39,7 +39,7 @@ export async function GET() {
 // Admin only: enter Location + Number of Days + Total Participant Count.
 // Files are uploaded afterwards, per file, via /api/trips/[id]/files.
 export async function POST(request) {
-  const session = getSession();
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   if (!canManageTrips(session)) {
     return NextResponse.json({ error: 'Admin access required.' }, { status: 403 });

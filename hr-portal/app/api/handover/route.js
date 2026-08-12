@@ -18,7 +18,7 @@ function parseAmount(value) {
 // existing tab, admin only. No new Sheets tab, nothing computed here is
 // stored anywhere, this is a read-only export.
 export async function GET() {
-  const session = getSession();
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   if (!isAdmin(session)) {
     return NextResponse.json({ error: 'Admin access required.' }, { status: 403 });

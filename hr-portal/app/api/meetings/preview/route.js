@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic';
 // "This will create an Absent record for all N roster members / N
 // Logistics members." Read only, no write happens here.
 export async function GET(request) {
-  const session = getSession();
+  const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   if (!canCreateMeeting(session)) {
     return NextResponse.json({ error: 'Admin access required.' }, { status: 403 });
