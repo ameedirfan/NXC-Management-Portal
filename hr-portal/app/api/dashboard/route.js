@@ -1,13 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
-import { readSheet, TABS } from '@/lib/sheets';
+import { readSheet, TABS, APPLICANT_STATUSES } from '@/lib/sheets';
 import { canViewDashboard } from '@/lib/authz';
 import { normalizePortfolio, dedupePortfolios, canonicalPortfolioName } from '@/lib/portfolio';
 import { friendlyReadError } from '@/lib/apiError';
 
 export const dynamic = 'force-dynamic';
-
-const APPLICANT_STATUSES = ['Pending', 'Interviewing', 'Recommended', 'Not recommended', 'Hired'];
 
 // Attendance analytics (the 3 view modes) live at /api/dashboard/attendance
 // now. This endpoint stays for the parts of the Dashboard that aren't
@@ -59,8 +57,18 @@ export async function GET() {
     .map((b) => ({ portfolio: b.label, total: b.total }))
     .sort((a, b) => a.portfolio.localeCompare(b.portfolio));
 
+  // "Have we contacted them" is a separate question from "where are they
+  // in the funnel", see spec section 3 — kept as its own count here so
+  // the two never get merged into one chart.
+  const emailedCount = applicants.filter((r) => r['Last Emailed At']).length;
+
   return NextResponse.json({
     portfolios,
-    applicants: { funnel, byPortfolio: applicantsByPortfolio },
+    applicants: {
+      funnel,
+      byPortfolio: applicantsByPortfolio,
+      emailedCount,
+      total: applicants.length,
+    },
   });
 }

@@ -16,6 +16,8 @@ export async function GET(request) {
 
   const { searchParams } = new URL(request.url);
   const portfolio = searchParams.get('portfolio') || '';
+  const status = searchParams.get('status') || '';
+  const emailed = searchParams.get('emailed') || ''; // 'never' | 'already'
   const search = (searchParams.get('search') || '').trim().toLowerCase();
 
   let records;
@@ -28,28 +30,31 @@ export async function GET(request) {
   let filtered = records;
   if (portfolio) {
     const normPortfolio = normalizePortfolio(portfolio);
-    filtered = filtered.filter(
-      (r) =>
-        normalizePortfolio(r['Portfolio']) === normPortfolio ||
-        normalizePortfolio(r['1st Preference']) === normPortfolio ||
-        normalizePortfolio(r['2nd Preference']) === normPortfolio
-    );
+    filtered = filtered.filter((r) => normalizePortfolio(r['Portfolio']) === normPortfolio);
+  }
+  if (status) {
+    filtered = filtered.filter((r) => r['Status'] === status);
+  }
+  if (emailed === 'never') {
+    filtered = filtered.filter((r) => !r['Last Emailed At']);
+  } else if (emailed === 'already') {
+    filtered = filtered.filter((r) => !!r['Last Emailed At']);
   }
   if (search) {
     filtered = filtered.filter(
       (r) =>
-        (r['Full Name'] || '').toLowerCase().includes(search) ||
+        (r['Name'] || '').toLowerCase().includes(search) ||
         (r['CMS ID'] || '').toLowerCase().includes(search)
     );
   }
 
   const applicants = filtered.map((r) => ({
     cmsId: r['CMS ID'],
-    fullName: r['Full Name'],
+    fullName: r['Name'],
     portfolio: r['Portfolio'],
-    firstPreference: r['1st Preference'],
-    secondPreference: r['2nd Preference'],
+    email: r['Email'],
     status: r['Status'],
+    lastEmailedAt: r['Last Emailed At'] || '',
   }));
 
   return NextResponse.json({ applicants });

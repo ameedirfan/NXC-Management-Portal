@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import ErrorRetry from '@/components/ui/ErrorRetry';
 import { toast } from '@/lib/toast';
 
-const STATUSES = ['Pending', 'Interviewing', 'Recommended', 'Not recommended', 'Hired'];
+const STATUSES = ['Pending', 'Interviewed', 'Reserve', 'Not Recommended', 'Selected'];
 const RECOMMENDATIONS = ['Strong yes', 'Yes', 'Neutral', 'No', 'Strong no'];
 
 export default function ApplicantPage() {
@@ -112,12 +112,15 @@ export default function ApplicantPage() {
 
       <div className="mt-6 grid gap-4 rounded-xl border border-brand-200 bg-brand-50 p-6 sm:grid-cols-2">
         <InfoRow label="CMS ID" value={applicant.cmsId} />
-        <InfoRow label="Contact" value={applicant.contactNo} />
+        <InfoRow label="Contact Number" value={applicant.contactNo} />
         <InfoRow label="Email" value={applicant.email} />
         <InfoRow label="Batch" value={applicant.batch} />
-        <InfoRow label="Department" value={applicant.department} />
-        <InfoRow label="1st preference" value={applicant.firstPreference} />
-        <InfoRow label="2nd preference" value={applicant.secondPreference} />
+        <InfoRow label="School" value={applicant.school} />
+        <InfoRow label="Portfolio" value={applicant.portfolio} />
+        <InfoRow
+          label="Last emailed"
+          value={applicant.lastEmailedAt ? new Date(applicant.lastEmailedAt).toLocaleString() : ''}
+        />
         {applicant.extraFields.map(([key, value]) => (
           <InfoRow key={key} label={key} value={value} />
         ))}

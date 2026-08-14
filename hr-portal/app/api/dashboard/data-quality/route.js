@@ -52,7 +52,7 @@ export async function GET() {
     .filter((a) => !a['Portfolio'] || !normRosterPortfolios.has(normalizePortfolio(a['Portfolio'])))
     .map((a) => ({
       cmsId: a['CMS ID'],
-      fullName: a['Full Name'] || 'No name',
+      fullName: a['Name'] || 'No name',
       portfolio: a['Portfolio'] || 'Blank',
     }));
 
