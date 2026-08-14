@@ -90,15 +90,27 @@ check in (the person's name followed by self, QR), useful for spotting
 patterns on the Dashboard's data quality section, since it is a visible
 signal rather than a hidden one.
 
-Applicants tab headers: CMS ID, Full Name, Contact No., Email Address,
-Portfolio, 1st Preference, 2nd Preference, Batch, Department, Status.
+Applicants tab headers, in this exact order: CMS ID, Name, School, Batch,
+Contact Number, Email, Portfolio, Status, Last Emailed At. Status is one
+of Pending, Interviewed, Reserve, Not Recommended, Selected, and defaults
+to Pending when a row is added (rows come from copying responses out of
+the recruitment Google Form, not from an in-app "add applicant" flow, so
+this default is a convention to follow when populating the sheet, not
+something the app enforces). Last Emailed At stays blank until the first
+successful bulk email that includes this applicant, and is overwritten,
+not appended, on every later send, see section 5 for the email feature.
 
-Add as many extra columns as you want after Status, for example why do
-you want to join, or Google Sheets proficiency out of ten. They will
-appear automatically on each applicant's page.
+Add as many extra columns as you want after Last Emailed At, for example
+why do you want to join, or Google Sheets proficiency out of ten. They
+will appear automatically on each applicant's page.
 
 Reviews tab, the app manages this one, just create the header row: CMS
 ID, Reviewer, Recommendation, Review Text, Timestamp.
+
+Email Log tab, the app manages this one, just create the header row:
+Timestamp, Sent By, Subject, Recipient Count, Recipient CMS IDs, Skipped
+(no email), Status. One row per bulk send (not per recipient, since sends
+are BCC), see section 5.
 
 Status History tab, the app manages this one, just create the header
 row: CMS ID, From Status, To Status, Changed By, Timestamp.
@@ -133,6 +145,42 @@ the Password column of the Login tab, alongside a Username, Full Name,
 CMS ID, Portfolio, and Role of admin.
 
 Run npm run dev, then visit localhost port 3000 and sign in.
+
+## 3.1 Recruitment bulk email — Gmail OAuth setup
+
+The Recruitment tab's bulk email feature sends through the real NXC
+society Gmail account, not the Sheets/Drive service account, since a
+service account cannot send mail as a personal address. This is a
+one-time setup, done once by an admin, signed in as the NXC society
+Gmail account specifically (not whatever Google account happens to be
+logged into the browser at the time).
+
+1. In the same Google Cloud project already used for Sheets and Drive,
+   go to APIs and Services, then Library, and enable the **Gmail API**.
+2. Go to APIs and Services, then OAuth consent screen. Leave the app in
+   **Testing** mode (no Google verification review needed this way).
+   Under Test users, add the NXC society Gmail address.
+3. Go to APIs and Services, then Credentials, then Create Credentials,
+   then OAuth client ID. Application type **Web application**. Under
+   Authorized redirect URIs, add
+   `http://localhost:3000/api/gmail-auth/callback` for local setup, and
+   your Vercel deployment's equivalent (`https://<your-domain>/api/gmail-auth/callback`)
+   for doing this again in production later. Save, then copy the Client
+   ID and Client Secret into `.env.local` as `GOOGLE_OAUTH_CLIENT_ID` and
+   `GOOGLE_OAUTH_CLIENT_SECRET`.
+4. Run `npm run dev`, sign in to the portal as an admin, then visit
+   `/api/gmail-auth/start` in the same browser. This redirects to
+   Google's consent screen, **sign in there as the NXC society Gmail
+   account**, not your personal one, and approve the "Send email on your
+   behalf" permission.
+5. You land back on a confirmation page showing the address you
+   authorized as and a refresh token, shown once. Copy it into
+   `.env.local` as `GOOGLE_GMAIL_REFRESH_TOKEN`. From this point on,
+   every bulk send goes out as that address, no further login step.
+
+If you ever need to redo this (revoked access, rotated credentials), go
+to myaccount.google.com/permissions while signed in as the NXC account,
+remove this app's access, then repeat step 4 onward.
 
 ## 4. Deploy to Vercel
 

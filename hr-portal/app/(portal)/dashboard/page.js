@@ -400,6 +400,28 @@ export default function DashboardPage() {
             <BarChart data={applicants.funnel} labelKey="status" valueKey="count" color="#7d5a2c" />
           </div>
 
+          {/* Deliberately its own card, not merged into the funnel above:
+              "where they are in the process" and "have we contacted them"
+              are different questions, see spec section 3 and 6. */}
+          <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
+            <h2 className="font-serif text-lg font-semibold text-brand-900">Applicants emailed</h2>
+            <p className="text-sm text-brand-500">How many applicants have received at least one email.</p>
+            <div className="mt-4 flex items-center gap-4">
+              <p className="font-serif text-3xl font-bold tabular-nums text-brand-900">
+                <AnimatedNumber value={applicants.emailedCount} /> of{' '}
+                <AnimatedNumber value={applicants.total} />
+              </p>
+              <div className="h-3 flex-1 max-w-xs overflow-hidden rounded-full bg-brand-100">
+                <div
+                  className="h-full rounded-full bg-brand-700"
+                  style={{
+                    width: `${applicants.total ? (applicants.emailedCount / applicants.total) * 100 : 0}%`,
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+
           <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
             <h2 className="font-serif text-lg font-semibold text-brand-900">Applicants by portfolio</h2>
             <BarChart data={applicants.byPortfolio} labelKey="portfolio" valueKey="total" color="#b9954f" />

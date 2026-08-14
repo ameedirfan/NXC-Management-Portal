@@ -12,6 +12,7 @@ export const TABS = {
   finance: 'Finance',
   announcements: 'Announcements',
   trips: 'Trips',
+  emailLog: 'Email Log',
 };
 
 // Columns for the Meeting ID linked Attendance schema (see upsertMeetingAttendance).
@@ -32,14 +33,25 @@ export const MEETING_HEADERS = ['Meeting ID', 'Date', 'Scope', 'Portfolio', 'Cre
 // list is just what the app treats as "core" fields with dedicated UI.
 export const CORE_APPLICANT_FIELDS = [
   'CMS ID',
-  'Full Name',
-  'Contact No.',
-  'Email Address',
-  'Portfolio',
-  '1st Preference',
-  '2nd Preference',
+  'Name',
+  'School',
   'Batch',
-  'Department',
+  'Contact Number',
+  'Email',
+  'Portfolio',
+  'Status',
+  'Last Emailed At',
+];
+
+export const APPLICANT_STATUSES = ['Pending', 'Interviewed', 'Reserve', 'Not Recommended', 'Selected'];
+
+export const EMAIL_LOG_HEADERS = [
+  'Timestamp',
+  'Sent By',
+  'Subject',
+  'Recipient Count',
+  'Recipient CMS IDs',
+  'Skipped (no email)',
   'Status',
 ];
 
@@ -179,6 +191,29 @@ export async function deleteRow(tabName, rowNumber) {
         },
       ],
     },
+  });
+  invalidateTab(tabName);
+}
+
+// Updates one or more named fields across many existing rows in a single
+// batch call. Used by the recruitment bulk email send to stamp Last
+// Emailed At (and optionally Status) on every recipient at once, instead
+// of one API call per row.
+export async function batchUpdateFields(tabName, headers, updates) {
+  // updates: [{ row, fields: { 'Column Name': value, ... } }]
+  const data = [];
+  for (const { row, fields } of updates) {
+    for (const [fieldName, value] of Object.entries(fields)) {
+      const colIndex = headers.indexOf(fieldName);
+      if (colIndex === -1) continue;
+      data.push({ range: `${tabName}!${columnLetter(colIndex)}${row}`, values: [[value]] });
+    }
+  }
+  if (data.length === 0) return;
+  const sheets = getSheetsClient();
+  await sheets.spreadsheets.values.batchUpdate({
+    spreadsheetId: SHEET_ID,
+    requestBody: { data, valueInputOption: 'USER_ENTERED' },
   });
   invalidateTab(tabName);
 }
