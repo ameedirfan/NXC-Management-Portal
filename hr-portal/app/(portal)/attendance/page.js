@@ -1,11 +1,19 @@
 'use client';
 
 import { useEffect, useState, useCallback, useMemo } from 'react';
+import dynamic from 'next/dynamic';
 import { toCSV, downloadCSV } from '@/lib/csv';
 import Pill from '@/components/ui/Pill';
 import { toast } from '@/lib/toast';
 import { SkeletonTableRows } from '@/components/ui/Skeleton';
 import ErrorRetry from '@/components/ui/ErrorRetry';
+
+// Leaflet touches the DOM on init, so it can't be part of the server
+// render — see components/VenueMap.js.
+const VenueMap = dynamic(() => import('@/components/VenueMap'), {
+  ssr: false,
+  loading: () => <p className="mt-3 text-sm text-brand-500">Loading map…</p>,
+});
 
 const STATUSES = ['Present', 'Absent', 'Leave'];
 
@@ -27,6 +35,8 @@ function meetingLabel(m) {
 function CreateMeetingSection({ portfolios, date, onCreated }) {
   const [scope, setScope] = useState('Council');
   const [portfolio, setPortfolio] = useState(portfolios[0] || '');
+  const [geoRestricted, setGeoRestricted] = useState(true);
+  const [venue, setVenue] = useState(null);
   const [confirming, setConfirming] = useState(false);
   const [previewCount, setPreviewCount] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -39,6 +49,10 @@ function CreateMeetingSection({ portfolios, date, onCreated }) {
   async function startConfirm() {
     if (scope === 'Portfolio' && !portfolio) {
       setError('Choose a portfolio first.');
+      return;
+    }
+    if (geoRestricted && !venue) {
+      setError('Pin the meeting\'s venue on the map first, or turn off "Require members to be at this location."');
       return;
     }
     setError('');
@@ -61,7 +75,14 @@ function CreateMeetingSection({ portfolios, date, onCreated }) {
     const res = await fetch('/api/meetings', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ date, scope, portfolio: scope === 'Portfolio' ? portfolio : '' }),
+      body: JSON.stringify({
+        date,
+        scope,
+        portfolio: scope === 'Portfolio' ? portfolio : '',
+        geoRestricted,
+        venueLat: geoRestricted ? venue.lat : null,
+        venueLng: geoRestricted ? venue.lng : null,
+      }),
     });
     const data = await res.json();
     setBusy(false);
@@ -109,14 +130,26 @@ function CreateMeetingSection({ portfolios, date, onCreated }) {
             </select>
           </div>
         )}
-        <button
-          onClick={startConfirm}
-          disabled={busy}
-          className="rounded-lg bg-brand-900 px-5 py-2.5 font-medium text-brand-50 hover:bg-brand-800 disabled:opacity-60"
-        >
-          Create meeting
-        </button>
       </div>
+
+      <label className="mt-4 flex items-center gap-2 text-sm font-medium text-brand-800">
+        <input
+          type="checkbox"
+          checked={geoRestricted}
+          onChange={(e) => setGeoRestricted(e.target.checked)}
+        />
+        Require members to be at this location to check in
+      </label>
+
+      {geoRestricted && <VenueMap value={venue} onChange={setVenue} className="mt-3 max-w-xl" />}
+
+      <button
+        onClick={startConfirm}
+        disabled={busy}
+        className="mt-4 rounded-lg bg-brand-900 px-5 py-2.5 font-medium text-brand-50 hover:bg-brand-800 disabled:opacity-60"
+      >
+        Create meeting
+      </button>
 
       {error && <p className="mt-3 text-sm text-red-700">{error}</p>}
 
@@ -125,6 +158,9 @@ function CreateMeetingSection({ portfolios, date, onCreated }) {
           <p className="text-brand-800">
             This will create an Absent record for all <span className="tabular-nums">{previewCount}</span>{' '}
             {scope === 'Council' ? 'roster members' : `${portfolio} members`}, for {date}.
+            {geoRestricted
+              ? ' Check in for this meeting will require being within 1 km of the pinned venue.'
+              : ' Check in for this meeting has no location requirement.'}
           </p>
           <div className="mt-3 flex gap-3">
             <button
@@ -203,7 +239,7 @@ function CheckinQrSection({ meeting }) {
           />
           <div className="text-sm">
             <p className="text-brand-500">
-              Valid for 30 minutes, until {new Date(expiresAt).toLocaleTimeString()}.
+              Valid for 15 minutes, until {new Date(expiresAt).toLocaleTimeString()}.
             </p>
             <p className="mt-2 break-all text-xs text-brand-400">{checkinUrl}</p>
           </div>
@@ -239,8 +275,8 @@ export default function AttendancePage() {
   }, []);
 
   const canMark = role === 'admin' || role === 'manager';
-  const canCreateMeeting = role === 'admin';
-  const canGenerateQr = role === 'admin';
+  const canCreateMeeting = role === 'admin' || role === 'manager';
+  const canGenerateQr = role === 'admin' || role === 'manager';
   const canVoid = role === 'admin';
 
   const loadMeetings = useCallback(() => {
@@ -358,8 +394,8 @@ export default function AttendancePage() {
         <h1 className="font-serif text-3xl font-bold text-brand-900">Attendance</h1>
         <div className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
           <p className="text-brand-700">
-            Ask your portfolio's Admin to show the meeting's check in QR code. Scan it with
-            your phone's camera to mark yourself Present.
+            Ask your portfolio's Manager or Admin to show the meeting's check in QR code. Scan it
+            with your phone's camera to mark yourself Present.
           </p>
           <p className="mt-2 text-sm text-brand-400">
             If something looks wrong with your record, ask your portfolio's Manager or Admin
@@ -413,7 +449,7 @@ export default function AttendancePage() {
       )}
 
       {!loadError && !meetingsLoading && meetings.length === 0 && !canCreateMeeting && (
-        <p className="mt-6 text-brand-400">No meeting exists for this date yet. Ask an Admin to create one.</p>
+        <p className="mt-6 text-brand-400">No meeting exists for this date yet. Ask a Manager or Admin to create one.</p>
       )}
 
       {meeting && (
@@ -429,6 +465,7 @@ export default function AttendancePage() {
             <h2 className="flex flex-wrap items-center gap-2 font-serif text-lg font-semibold text-brand-900">
               {meetingLabel(meeting)}, {meeting.date}
               {meeting.status === 'Voided' && <Pill tone="voided">Voided</Pill>}
+              {meeting.geoRestricted && <Pill tone="muted">Geo restricted, 1 km</Pill>}
             </h2>
             <div className="flex items-center gap-4">
               <a

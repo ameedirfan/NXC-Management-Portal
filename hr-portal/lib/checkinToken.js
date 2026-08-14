@@ -6,7 +6,7 @@ import crypto from 'crypto';
 // a check in code is only meant to be valid for the meeting it was
 // generated for, not for a week.
 
-const CHECKIN_TOKEN_MAX_AGE_MS = 30 * 60 * 1000; // 30 minutes
+const CHECKIN_TOKEN_MAX_AGE_MS = 15 * 60 * 1000; // 15 minutes
 
 function getSecret() {
   const secret = process.env.SESSION_SECRET;
@@ -16,14 +16,25 @@ function getSecret() {
   return secret;
 }
 
-export function createCheckinToken({ meetingId }) {
-  const body = Buffer.from(JSON.stringify({ meetingId, iat: Date.now() })).toString('base64url');
+// geoRestricted rides along in the token purely as a client-side UI hint,
+// so the check in page can decide whether to request location permission
+// "before doing anything else" (spec section 4) without a separate round
+// trip. It is never trusted for enforcement: the check in route always
+// re-reads the meeting's real Geo Restricted / Venue Latitude / Venue
+// Longitude from the sheet before deciding whether to require or check a
+// location, so a tampered token claiming geoRestricted: false changes
+// nothing about what actually gets enforced.
+export function createCheckinToken({ meetingId, geoRestricted }) {
+  const body = Buffer.from(JSON.stringify({ meetingId, geoRestricted: !!geoRestricted, iat: Date.now() })).toString(
+    'base64url'
+  );
   const sig = crypto.createHmac('sha256', getSecret()).update(body).digest('base64url');
   return `${body}.${sig}`;
 }
 
-// Returns { portfolio, date, iat } if the token is validly signed and not
-// expired, or null otherwise (tampered, malformed, or past its 30 minutes).
+// Returns { meetingId, geoRestricted, iat } if the token is validly
+// signed and not expired, or null otherwise (tampered, malformed, or
+// past its 15 minutes).
 export function verifyCheckinToken(token) {
   if (!token) return null;
   const parts = token.split('.');

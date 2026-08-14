@@ -2,13 +2,13 @@
 //
 // Roles (three tiers, see README for the full permissions table):
 //  - 'admin'   President plus the HR Directorate. Full access to
-//              everything, including Logins, Dashboard, and generating
-//              QR check in codes.
+//              everything, including Logins and Dashboard.
 //  - 'manager' HR Executives. Same data access as admin for Roster,
-//              Recruitment, and manual attendance marking across every
-//              portfolio, but cannot manage Logins, cannot view the
-//              Dashboard or Data Quality pages, and cannot generate QR
-//              check in codes.
+//              Recruitment, manual attendance marking, creating a
+//              meeting, and generating its QR check in code, across
+//              every portfolio, but cannot manage Logins and cannot view
+//              the Dashboard or Data Quality pages. Voiding a meeting
+//              stays admin only.
 //  - 'member'  Everyone else, at every level, in every other portfolio.
 //              Scoped to their own portfolio, and cannot manually mark
 //              attendance for anyone, including themselves. The only way
@@ -55,11 +55,12 @@ export function canSelfCheckIn(session) {
   return !!session;
 }
 
-// Generating a check in QR code is admin only, deliberately narrower than
-// manual marking, see the README permissions table for why (this is the
-// "verification hand" staying with President plus HR Directorate).
+// Generating a check in QR code: manager and admin, same tier as Roster,
+// Recruitment, and manual attendance marking (geo check-in spec section
+// 5 — this used to be admin only, deliberately widened to match the
+// portal's general manager-matches-admin rule).
 export function canGenerateCheckinCode(session) {
-  return isAdmin(session);
+  return isManagerOrAdmin(session);
 }
 
 // Login management was admin only; managers now get the same create/edit
@@ -68,11 +69,11 @@ export function canManageLogins(session) {
   return isManagerOrAdmin(session);
 }
 
-// Creating a meeting triggers the bulk Absent-row write, so it stays
-// paired with QR generation as an admin only action, deliberately
-// narrower than manual attendance marking on an existing meeting.
+// Creating a meeting (including setting its geo restriction and venue,
+// same action): manager and admin, same tier as QR generation above. Was
+// admin only, widened for the same reason (geo check-in spec section 5).
 export function canCreateMeeting(session) {
-  return isAdmin(session);
+  return isManagerOrAdmin(session);
 }
 
 export function canVoidMeeting(session) {

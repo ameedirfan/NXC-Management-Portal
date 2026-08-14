@@ -17,6 +17,12 @@ function toMeeting(record) {
     portfolio: record['Portfolio'] || '',
     createdBy: record['Created By'] || '',
     status: record['Status'] || '',
+    // Blank/missing (older meetings, or a sheet that hasn't gained these
+    // columns yet) reads as not geo restricted, deliberately, so nothing
+    // that predates this feature is retroactively affected.
+    geoRestricted: record['Geo Restricted'] === 'Yes',
+    venueLat: record['Venue Latitude'] ? Number(record['Venue Latitude']) : null,
+    venueLng: record['Venue Longitude'] ? Number(record['Venue Longitude']) : null,
   };
 }
 
@@ -43,26 +49,35 @@ export async function GET(request) {
   return NextResponse.json({ meetings });
 }
 
-// Creating a meeting is admin only (see lib/authz.js canCreateMeeting) and
-// immediately pre-creates every applicable person's Attendance row as
+// Creating a meeting is manager/admin (see lib/authz.js canCreateMeeting)
+// and immediately pre-creates every applicable person's Attendance row as
 // Absent, in one batch write, per the "pre-created as Absent" rule.
 export async function POST(request) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   if (!canCreateMeeting(session)) {
-    return NextResponse.json({ error: 'Admin access required to create a meeting.' }, { status: 403 });
+    return NextResponse.json({ error: 'Manager or Admin access required to create a meeting.' }, { status: 403 });
   }
 
   const body = await request.json();
   const date = (body.date || '').trim();
   const scope = (body.scope || '').trim();
   const rawPortfolio = (body.portfolio || '').trim();
+  const geoRestricted = !!body.geoRestricted;
+  const venueLat = geoRestricted ? Number(body.venueLat) : null;
+  const venueLng = geoRestricted ? Number(body.venueLng) : null;
 
   if (!date || !SCOPES.includes(scope)) {
     return NextResponse.json({ error: 'A date and a valid scope (Council or Portfolio) are required.' }, { status: 400 });
   }
   if (scope === 'Portfolio' && !rawPortfolio) {
     return NextResponse.json({ error: 'A portfolio is required for a Portfolio Meet.' }, { status: 400 });
+  }
+  if (geoRestricted && (!Number.isFinite(venueLat) || !Number.isFinite(venueLng))) {
+    return NextResponse.json(
+      { error: 'A pinned venue location is required for a geo restricted meeting.' },
+      { status: 400 }
+    );
   }
 
   const { records: roster } = await readSheet(TABS.roster);
@@ -90,6 +105,9 @@ export async function POST(request) {
       Portfolio: canonicalPortfolio,
       'Created By': session.fullName || session.username,
       Status: '',
+      'Geo Restricted': geoRestricted ? 'Yes' : 'No',
+      'Venue Latitude': geoRestricted ? venueLat : '',
+      'Venue Longitude': geoRestricted ? venueLng : '',
     });
 
     const timestamp = new Date().toISOString();
@@ -111,7 +129,16 @@ export async function POST(request) {
 
   return NextResponse.json({
     ok: true,
-    meeting: { id: meetingId, date, scope, portfolio: canonicalPortfolio, status: '' },
+    meeting: {
+      id: meetingId,
+      date,
+      scope,
+      portfolio: canonicalPortfolio,
+      status: '',
+      geoRestricted,
+      venueLat,
+      venueLng,
+    },
     absentCount: applicable.length,
   });
 }
