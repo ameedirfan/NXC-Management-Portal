@@ -10,7 +10,7 @@ export async function POST(request) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   if (!canGenerateCheckinCode(session)) {
-    return NextResponse.json({ error: 'Only admins can generate a check in code.' }, { status: 403 });
+    return NextResponse.json({ error: 'Only managers and admins can generate a check in code.' }, { status: 403 });
   }
 
   const { meetingId } = await request.json();
@@ -25,6 +25,6 @@ export async function POST(request) {
     return NextResponse.json({ error: 'This meeting has been voided.' }, { status: 400 });
   }
 
-  const token = createCheckinToken({ meetingId });
+  const token = createCheckinToken({ meetingId, geoRestricted: meeting['Geo Restricted'] === 'Yes' });
   return NextResponse.json({ token, expiresInSeconds: CHECKIN_TOKEN_MAX_AGE_SECONDS });
 }

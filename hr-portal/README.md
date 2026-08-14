@@ -259,8 +259,9 @@ so you can copy or hand out the list before closing the page. Capped at
 200 at a time.
 
 QR meeting check in, the centerpiece of how attendance actually gets
-verified, per section 9. On the Attendance page, an admin picks a
-portfolio and date and generates a check in QR, good for thirty minutes,
+verified, per section 9. On the Attendance page, a manager or admin
+creates a meeting, optionally pins its venue (see the Geo Restricted
+toggle below), and generates a check in QR, good for fifteen minutes,
 encoding a signed link (the signature reuses SESSION_SECRET, no separate
 secret to manage). Anyone signed in scans it and it marks only them, the
 request is tied to their own session's CMS ID, there is no way to check
@@ -270,6 +271,19 @@ since they legitimately move between them. If someone is not signed in
 yet when they scan, they are prompted to sign in first and land right
 back on the same check in link afterward. The resulting Attendance row is
 tagged self, QR in Marked By, kept visibly distinct from a manual entry.
+
+Geo restricted check in, a per-meeting toggle, on by default, off for
+online meetings. When on, a meeting also stores Venue Latitude and
+Venue Longitude (Meetings tab, see below), pinned on a map when the
+meeting is created. Scanning the QR then requires the member's browser
+to grant location access and report a position within 1 km of that
+venue (fixed, not configurable per meeting) before check in succeeds;
+denied permission or being outside that radius blocks check in with a
+Try Again action, never a silent unverified fallback. Meetings tab needs
+three columns for this: Geo Restricted, Venue Latitude, Venue Longitude,
+add them if they are not already there, the app is self healing about
+older meetings that predate these columns (treated as not geo
+restricted).
 
 Recruitment, all portfolios, manager or admin only. Pick all portfolios
 in the Recruitment page's dropdown to see every applicant across every
@@ -343,11 +357,23 @@ Marked By in section 2), but it does not stop a determined admin from
 manually marking someone who was not there, or someone scanning on a
 friend's behalf while holding two phones. What it does do is make this
 portfolio's attendance never uses QR a pattern the Dashboard's data
-quality section could plausibly be extended to flag. Geolocation gating,
-only counting a scan within some radius of the meeting, would close the
-checked in from the couch gap further, at the cost of a location
-permission prompt, not built here, flagged as a natural next step if you
-want it.
+quality section could plausibly be extended to flag.
+
+Geo restricted check in, what it solves and what it does not. Requiring
+a scan to originate within 1 km of the pinned venue closes the "checked
+in from the couch" gap: a screenshotted or forwarded QR code carries no
+live location, so it stops working the moment it's scanned somewhere
+else. It does not stop someone deliberately spoofing their phone's GPS,
+that remains possible with dedicated effort, an accepted tradeoff when
+this was scoped, not an oversight. The 1 km radius is intentionally
+generous, not tight: phone GPS indoors can be off by 50 to 100 meters or
+more (satellites partly blocked, falling back to WiFi/cell positioning),
+and the radius exists to absorb that drift, not to pin someone to the
+exact building. A real attendee should essentially never be wrongly
+rejected by GPS drift alone at this radius. Denied location permission
+and being outside the radius both block check in outright with a Try
+Again action, there is no unverified-but-present fallback state, a
+blocked check in stays blocked until it succeeds on retry.
 
 ## 8. Security notes
 
@@ -366,7 +392,7 @@ table. This is enforced server side, not just hidden in the UI, a member
 cannot get at Recruitment or another portfolio's Attendance data by
 editing the request either.
 
-QR check in tokens are signed and expire after thirty minutes, a
+QR check in tokens are signed and expire after fifteen minutes, a
 captured or screenshotted code stops working shortly after the meeting it
 was generated for. Self check in always marks the scanning session's own
 CMS ID, there is no parameter that lets it mark anyone else.
@@ -405,17 +431,18 @@ Three tiers, matching NXC's actual structure. Admin is President plus the
 HR Directorate. Manager is HR's Executives. Member is everyone else, at
 any level, in every other portfolio.
 
-Admin can generate a QR check in code, self check in, manually mark or
-bulk mark attendance for any portfolio, view Recruitment for any
-portfolio, review an applicant or change their status, view and add and
-edit Roster, bulk import CSV, manage Logins, and view the Dashboard and
-Data Quality.
+Admin can create a meeting and generate its QR check in code, self check
+in, manually mark or bulk mark attendance for any portfolio, view
+Recruitment for any portfolio, review an applicant or change their
+status, view and add and edit Roster, bulk import CSV, manage Logins, and
+view the Dashboard and Data Quality.
 
-Manager can self check in, manually mark or bulk mark attendance for any
-portfolio, view Recruitment for any portfolio, review an applicant or
-change their status, view and add and edit Roster, and bulk import CSV.
-Manager cannot generate a QR check in code, cannot manage Logins, and
-cannot view the Dashboard or Data Quality.
+Manager can create a meeting and generate its QR check in code (same as
+Admin, see below), self check in, manually mark or bulk mark attendance
+for any portfolio, view Recruitment for any portfolio, review an
+applicant or change their status, view and add and edit Roster, and bulk
+import CSV. Manager cannot manage Logins and cannot view the Dashboard or
+Data Quality.
 
 Member can only self check in by scanning a QR code, that is their only
 way to be marked present. Members have no Recruitment or Roster access at
@@ -424,11 +451,11 @@ the system is signing in and scanning a QR code to check themselves in at
 a meeting. If something about their own record looks wrong, that is a
 Manager or Admin fix, not a self service one.
 
-A few things worth being explicit about. QR generation is admin only,
-with no manager fallback. If nobody from the HR Directorate is physically
-at a meeting, there is currently no way to spin up a check in code that
-day, a manager can still mark attendance manually as a fallback, but that
-meeting has no QR verification step. Manager and Admin are identical on
-data access (Roster, Recruitment, attendance marking), the only things
-that separate the two tiers are Logins, Dashboard and Data Quality, and
-QR generation.
+A few things worth being explicit about. Meeting creation and QR
+generation used to be admin only; both now extend to Manager, matching
+the portal's general rule that Manager matches Admin everywhere except
+Logins, Dashboard and Data Quality, Finance, and adding/uploading on Trip
+Itineraries. A geo restricted meeting's location check applies to
+whoever is checking in, including a Manager or Admin scanning their own
+attendance, it is not bypassed by role. Voiding a meeting stays admin
+only, unchanged.

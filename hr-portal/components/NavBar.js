@@ -29,28 +29,44 @@ export const NAV_ICONS = {
   '/finance': Wallet,
 };
 
+// Fixed tab order, left to right, for every role that has more than one
+// tab: Announcements, Roster, Attendance, Recruitment, Dashboard, Trip
+// Itineraries, Finance, Contact Us. Each role's list below is that same
+// order with whatever tabs it doesn't have filtered out, not a
+// separately maintained order per role.
+//
 // Members' only attendance action is scanning a meeting's QR code (self
 // check in), the Attendance tab still shows for them so the nav is not
 // empty, the page itself explains what to do.
 const MEMBER_TABS = [
-  { href: '/attendance', label: 'Attendance' },
-  { href: '/contacts', label: 'Contact Us' },
   { href: '/announcements', label: 'Announcements' },
+  { href: '/attendance', label: 'Attendance' },
   { href: '/trips', label: 'Trip Itineraries' },
+  { href: '/contacts', label: 'Contact Us' },
 ];
 
 const MANAGER_TABS = [
+  { href: '/announcements', label: 'Announcements' },
+  { href: '/roster', label: 'Roster' },
   { href: '/attendance', label: 'Attendance' },
   { href: '/recruitment', label: 'Recruitment' },
-  { href: '/roster', label: 'Roster' },
-  { href: '/contacts', label: 'Contact Us' },
-  { href: '/announcements', label: 'Announcements' },
-  { href: '/trips', label: 'Trip Itineraries' },
   { href: '/dashboard', label: 'Dashboard' },
+  { href: '/trips', label: 'Trip Itineraries' },
+  { href: '/contacts', label: 'Contact Us' },
 ];
 
-// Finance is admin only, the one nav item managers don't get.
-const ADMIN_TABS = [...MANAGER_TABS, { href: '/finance', label: 'Finance' }];
+// Finance is admin only, the one nav item managers don't get, inserted
+// in its place in the fixed order rather than appended at the end.
+const ADMIN_TABS = [
+  { href: '/announcements', label: 'Announcements' },
+  { href: '/roster', label: 'Roster' },
+  { href: '/attendance', label: 'Attendance' },
+  { href: '/recruitment', label: 'Recruitment' },
+  { href: '/dashboard', label: 'Dashboard' },
+  { href: '/trips', label: 'Trip Itineraries' },
+  { href: '/finance', label: 'Finance' },
+  { href: '/contacts', label: 'Contact Us' },
+];
 
 export function tabsForRole(role) {
   if (role === 'admin') return ADMIN_TABS;

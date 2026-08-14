@@ -25,7 +25,20 @@ export const MEETING_ATTENDANCE_HEADERS = [
   'Timestamp',
 ];
 
-export const MEETING_HEADERS = ['Meeting ID', 'Date', 'Scope', 'Portfolio', 'Created By', 'Status'];
+// Geo Restricted / Venue Latitude / Venue Longitude back the optional
+// 1km check-in radius (see lib/geo.js and the checkin page). Radius
+// itself is a fixed system constant, not stored per meeting.
+export const MEETING_HEADERS = [
+  'Meeting ID',
+  'Date',
+  'Scope',
+  'Portfolio',
+  'Created By',
+  'Status',
+  'Geo Restricted',
+  'Venue Latitude',
+  'Venue Longitude',
+];
 
 // The Applicants tab can have any number of extra columns beyond these
 // core ones (interview questions, ratings, whatever a club adds) — those

@@ -13,7 +13,7 @@ export async function GET(request) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
   if (!canCreateMeeting(session)) {
-    return NextResponse.json({ error: 'Admin access required.' }, { status: 403 });
+    return NextResponse.json({ error: 'Manager or Admin access required.' }, { status: 403 });
   }
 
   const { searchParams } = new URL(request.url);

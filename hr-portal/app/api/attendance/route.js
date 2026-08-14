@@ -53,6 +53,11 @@ export async function GET(request) {
       scope: meeting['Scope'],
       portfolio: meeting['Portfolio'],
       status: meeting['Status'] || '',
+      // Blank/missing reads as not geo restricted, see toMeeting() in
+      // app/api/meetings/route.js for why.
+      geoRestricted: meeting['Geo Restricted'] === 'Yes',
+      venueLat: meeting['Venue Latitude'] ? Number(meeting['Venue Latitude']) : null,
+      venueLng: meeting['Venue Longitude'] ? Number(meeting['Venue Longitude']) : null,
     },
     people,
   });
