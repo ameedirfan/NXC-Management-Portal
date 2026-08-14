@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { google } from 'googleapis';
 import { getSession } from '@/lib/auth';
 import { isAdmin } from '@/lib/authz';
 import { getOAuth2Client } from '@/lib/gmail';
@@ -52,29 +51,18 @@ export async function GET(request) {
       <p>Fix: go to <a href="https://myaccount.google.com/permissions" target="_blank">myaccount.google.com/permissions</a> while signed in as the NXC account, remove access for this app, then run <code>/api/gmail-auth/start</code> again.</p>`);
   }
 
-  let emailAddress = null;
-  let profileError = null;
-  try {
-    const oauth2Client = getOAuth2Client(redirectUri);
-    oauth2Client.setCredentials(tokens);
-    const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
-    const res = await gmail.users.getProfile({ userId: 'me' });
-    emailAddress = res.data.emailAddress;
-  } catch (err) {
-    profileError = err.message;
-  }
-
+  // Deliberately does not call gmail.users.getProfile to "verify" the
+  // account: that call needs a broader scope than gmail.send alone, and
+  // requesting it just for a cosmetic check isn't worth widening what
+  // this app can do with your Gmail account. The account you just
+  // authorized as, on Google's own consent screen, is the account this
+  // token sends as — no further check needed.
   return htmlPage(`
     <h1 class="ok">Gmail authorization succeeded</h1>
-    ${
-      emailAddress
-        ? `<p>Authorized to send as: <strong>${emailAddress}</strong></p>
-           <p class="warn">Double check that's really the NXC society Gmail address, not a personal one you happened to be signed into when you clicked through consent.</p>`
-        : `<p class="warn">Could not verify the account (${profileError}). The refresh token below was still issued — double check it's for the right account before using it.</p>`
-    }
+    <p class="warn">Double check you signed into Google's consent screen just now as the NXC society Gmail account, not a personal one — that's the account this token will send as, from now on, silently.</p>
     <h2>Refresh token (shown once, copy it now)</h2>
     <pre>${tokens.refresh_token}</pre>
-    <p>Add this as <code>GOOGLE_GMAIL_REFRESH_TOKEN</code> in <code>.env.local</code> (and later in Vercel's environment variables). It is not stored anywhere by the app itself, this page is the only place it's shown.</p>
+    <p>Add this as <code>GOOGLE_GMAIL_REFRESH_TOKEN</code> in Vercel's environment variables (and <code>.env.local</code> for local dev). It is not stored anywhere by the app itself, this page is the only place it's shown.</p>
     <p>This page cannot be reloaded to show the token again, if you lose it, just run <code>/api/gmail-auth/start</code> again.</p>
   `);
 }

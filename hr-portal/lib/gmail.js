@@ -34,15 +34,6 @@ export function getGmailClient() {
   return google.gmail({ version: 'v1', auth: oauth2Client });
 }
 
-// Confirms the stored refresh token still works and returns the address
-// it's actually authorized to send as, so setup can be verified without
-// sending a real email.
-export async function getGmailProfile() {
-  const gmail = getGmailClient();
-  const res = await gmail.users.getProfile({ userId: 'me' });
-  return res.data.emailAddress;
-}
-
 function encodeSubject(subject) {
   // RFC 2047 encoded-word, so a subject with non-ASCII characters (an
   // applicant's name, an emoji, whatever) survives the raw MIME message

@@ -173,14 +173,27 @@ logged into the browser at the time).
    Google's consent screen, **sign in there as the NXC society Gmail
    account**, not your personal one, and approve the "Send email on your
    behalf" permission.
-5. You land back on a confirmation page showing the address you
-   authorized as and a refresh token, shown once. Copy it into
-   `.env.local` as `GOOGLE_GMAIL_REFRESH_TOKEN`. From this point on,
-   every bulk send goes out as that address, no further login step.
+5. You land back on a confirmation page showing a refresh token, shown
+   once. Copy it into `.env.local` as `GOOGLE_GMAIL_REFRESH_TOKEN`. Also
+   set `NXC_GMAIL_ADDRESS` to the society's Gmail address itself, the
+   same one you just signed in as, the app cannot look this address up
+   on its own (see the note below) so it needs to be told directly.
+   From this point on, every bulk send goes out as that address, no
+   further login step.
 
 If you ever need to redo this (revoked access, rotated credentials), go
 to myaccount.google.com/permissions while signed in as the NXC account,
 remove this app's access, then repeat step 4 onward.
+
+**Why the confirmation page can't verify the address for you**: the
+scope requested is `gmail.send`, and only `gmail.send`, deliberately
+the narrowest permission that can do the job. Confirming *which* account
+that token belongs to would need a broader scope (`gmail.readonly` or
+similar), and widening what this app can do with your Gmail account
+just for a cosmetic double check isn't a trade worth making. The account
+is whichever one you selected on Google's own consent screen at step 4,
+that's not in question, it just isn't independently re-confirmable
+after the fact without more access than sending mail needs.
 
 ## 4. Deploy to Vercel
 
