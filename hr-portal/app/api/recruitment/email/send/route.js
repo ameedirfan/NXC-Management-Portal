@@ -9,7 +9,7 @@ import {
   APPLICANT_STATUSES,
   EMAIL_LOG_HEADERS,
 } from '@/lib/sheets';
-import { sendGmailMessage, getGmailProfile } from '@/lib/gmail';
+import { sendGmailMessage } from '@/lib/gmail';
 import { renderAnnouncementHtml } from '@/lib/markdown';
 import { isSendableEmail } from '@/lib/email';
 import { friendlyReadError } from '@/lib/apiError';
@@ -90,11 +90,16 @@ export async function POST(request) {
   const recipientCmsIds = sendable.map((r) => r['CMS ID']);
   const html = renderAnnouncementHtml(body);
 
-  let fromAddress;
-  try {
-    fromAddress = await getGmailProfile();
-  } catch (err) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  // The gmail.send scope alone can't look this address up via the Gmail
+  // API (that needs a broader scope), so it's just the NXC society's own
+  // address, configured once — it's also literally the account the OAuth
+  // refresh token was authorized as, so this is not a separate secret.
+  const fromAddress = process.env.NXC_GMAIL_ADDRESS;
+  if (!fromAddress) {
+    return NextResponse.json(
+      { error: 'NXC_GMAIL_ADDRESS is not set in your environment variables.' },
+      { status: 500 }
+    );
   }
 
   const batches = chunk(recipientEmails, BATCH_SIZE);

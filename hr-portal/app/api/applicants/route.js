@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
 import { readSheet, TABS } from '@/lib/sheets';
 import { isManagerOrAdmin } from '@/lib/authz';
-import { normalizePortfolio } from '@/lib/portfolio';
+import { normalizePortfolio, dedupePortfolios } from '@/lib/portfolio';
 import { friendlyReadError } from '@/lib/apiError';
 
 export const dynamic = 'force-dynamic';
@@ -26,6 +26,13 @@ export async function GET(request) {
   } catch (err) {
     return NextResponse.json({ error: friendlyReadError(err) }, { status: 500 });
   }
+
+  // Computed from the full, unfiltered set so the Portfolio dropdown
+  // itself doesn't shrink based on whatever filter is currently applied.
+  // The Applicants sheet isn't linked to the Roster (spec section 1), so
+  // a portfolio can exist here with nobody on the Roster in it yet — the
+  // dropdown needs to reflect that, not just Roster's portfolio list.
+  const applicantPortfolios = dedupePortfolios(records.map((r) => r['Portfolio']));
 
   let filtered = records;
   if (portfolio) {
@@ -57,5 +64,5 @@ export async function GET(request) {
     lastEmailedAt: r['Last Emailed At'] || '',
   }));
 
-  return NextResponse.json({ applicants });
+  return NextResponse.json({ applicants, portfolios: applicantPortfolios });
 }

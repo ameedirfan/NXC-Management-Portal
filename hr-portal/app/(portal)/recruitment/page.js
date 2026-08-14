@@ -1,9 +1,10 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { toCSV, downloadCSV } from '@/lib/csv';
 import { isSendableEmail } from '@/lib/email';
+import { dedupePortfolios } from '@/lib/portfolio';
 import { SkeletonTableRows } from '@/components/ui/Skeleton';
 import ErrorRetry from '@/components/ui/ErrorRetry';
 import AccessDenied from '@/components/ui/AccessDenied';
@@ -18,7 +19,15 @@ function formatLastEmailed(iso) {
 }
 
 export default function RecruitmentPage() {
-  const [portfolios, setPortfolios] = useState([]);
+  // The Applicants sheet isn't linked to the Roster (spec section 1), so
+  // a portfolio can exist in one but not the other — the dropdown is the
+  // union of both, deduped case-insensitively, not just Roster's list.
+  const [rosterPortfolios, setRosterPortfolios] = useState([]);
+  const [applicantPortfolios, setApplicantPortfolios] = useState([]);
+  const portfolios = useMemo(
+    () => dedupePortfolios([...rosterPortfolios, ...applicantPortfolios]),
+    [rosterPortfolios, applicantPortfolios]
+  );
   const [role, setRole] = useState(null);
   const [accessDenied, setAccessDenied] = useState(false);
   const [portfolio, setPortfolio] = useState(undefined);
@@ -45,7 +54,7 @@ export default function RecruitmentPage() {
     fetch('/api/roster')
       .then((res) => res.json())
       .then((data) => {
-        setPortfolios(data.portfolios || []);
+        setRosterPortfolios(data.portfolios || []);
         setRole(data.role || 'member');
         const isManagerOrAdmin = data.role === 'admin' || data.role === 'manager';
         const preferred =
@@ -77,6 +86,7 @@ export default function RecruitmentPage() {
           return;
         }
         setApplicants(data.applicants || []);
+        setApplicantPortfolios(data.portfolios || []);
         setLoading(false);
       })
       .catch(() => {
