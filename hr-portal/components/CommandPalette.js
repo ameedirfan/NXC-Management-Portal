@@ -47,7 +47,7 @@ export default function CommandPalette({ open, onClose, role, supportsViewTransi
       className="fixed inset-0 z-100 flex justify-center px-4 pt-24"
     >
       <div onClick={onClose} className="fixed inset-0 bg-brand-950/30 backdrop-blur-xs" />
-      <div className="relative h-fit w-full max-w-lg overflow-hidden rounded-2xl border border-white/50 bg-brand-50/70 shadow-2xl backdrop-blur-xl backdrop-saturate-150">
+      <div className="relative h-fit w-full max-w-lg overflow-hidden rounded-2xl border border-white/50 border-t-white/80 bg-brand-50/70 shadow-2xl backdrop-blur-xl backdrop-saturate-150">
         <div className="flex items-center gap-2 border-b border-brand-200/70 px-4 py-3">
           <Search size={16} className="shrink-0 text-brand-500" aria-hidden="true" />
           <input
@@ -71,7 +71,7 @@ export default function CommandPalette({ open, onClose, role, supportsViewTransi
                 onClick={() => go(t.href)}
                 className="flex w-full items-center gap-2.5 rounded-lg px-3 py-2 text-left text-sm text-brand-800 hover:bg-brand-50/60"
               >
-                {Icon && <Icon size={15} aria-hidden="true" />}
+                {Icon && <Icon size={16} aria-hidden="true" />}
                 Go to {t.label}
               </button>
             );

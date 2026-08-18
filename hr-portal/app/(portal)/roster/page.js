@@ -248,7 +248,7 @@ export default function RosterPage() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-serif text-3xl font-bold text-brand-900">Roster</h1>
+          <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Roster</h1>
           <p className="mt-1 text-brand-500">
             Add and edit members here. The Google Sheet stays fully in sync and remains the
             record of truth, nothing here replaces it.
@@ -309,7 +309,7 @@ export default function RosterPage() {
           </h2>
           <div className="mt-3 max-h-64 overflow-y-auto">
             <table className="w-full text-left text-sm">
-              <thead className="text-brand-700">
+              <thead className="text-xs font-medium uppercase tracking-wide text-brand-700">
                 <tr>
                   <th className="py-1 pr-4">Row</th>
                   <th className="py-1 pr-4">Name</th>
@@ -319,7 +319,7 @@ export default function RosterPage() {
               </thead>
               <tbody>
                 {importPreview.results.map((r) => (
-                  <tr key={r.row} className="border-t border-brand-100">
+                  <tr key={r.row} className="border-t border-brand-100 hover:bg-brand-50">
                     <td className="py-1 pr-4 text-brand-400">{r.row}</td>
                     <td className="py-1 pr-4">{r.fullName || 'None'}</td>
                     <td className="py-1 pr-4 text-brand-500">{r.cmsId || 'None'}</td>
@@ -458,7 +458,7 @@ export default function RosterPage() {
 
       <div className="mt-6 overflow-x-auto rounded-xl border border-brand-200">
         <table className="w-full text-left text-sm">
-          <thead className="bg-brand-100 text-brand-700">
+          <thead className="bg-brand-100 text-xs font-medium uppercase tracking-wide text-brand-700">
             <tr>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">CMS ID</th>
@@ -484,7 +484,7 @@ export default function RosterPage() {
               </tr>
             ) : (
               filtered.map((m) => (
-                <tr key={m.cmsId} className="border-t border-brand-100">
+                <tr key={m.cmsId} className="border-t border-brand-100 hover:bg-brand-50">
                   <td className="px-4 py-3 font-medium text-brand-900">{m.fullName}</td>
                   <td className="px-4 py-3 text-brand-500">{m.cmsId}</td>
                   <td className="px-4 py-3">{m.portfolio}</td>

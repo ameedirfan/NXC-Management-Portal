@@ -25,15 +25,29 @@ export default function ComposePanel({ recipients, skipped, statuses, onClose, o
   const [testSending, setTestSending] = useState(false);
   const [sending, setSending] = useState(false);
   const [bulkStatus, setBulkStatus] = useState('');
+  const [modalState, setModalState] = useState('entering');
   const bodyRef = useRef(null);
 
   useEffect(() => {
+    const raf = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setModalState('visible'));
+    });
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  function requestClose() {
+    setModalState('exiting');
+    setTimeout(onClose, 250); // matches .nxc-modal-panel's transition duration
+  }
+
+  useEffect(() => {
     function onKeyDown(e) {
-      if (e.key === 'Escape' && !sending) onClose();
+      if (e.key === 'Escape' && !sending) requestClose();
     }
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onClose, sending]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sending]);
 
   async function handleFinalSend() {
     setConfirmError('');
@@ -140,13 +154,17 @@ export default function ComposePanel({ recipients, skipped, statuses, onClose, o
         role="dialog"
         aria-modal="true"
         aria-label="Confirm send"
-        className="fixed inset-0 z-50 flex items-end justify-end bg-brand-950/25 backdrop-blur-xs p-4 sm:items-center sm:justify-center"
+        data-state={modalState === 'visible' ? undefined : modalState}
+        className="nxc-modal-backdrop fixed inset-0 z-50 flex items-end justify-end bg-brand-950/25 backdrop-blur-xs p-4 sm:items-center sm:justify-center"
       >
-        <div className="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-white/50 bg-brand-50/70 shadow-2xl backdrop-blur-xl backdrop-saturate-150">
+        <div
+          data-state={modalState === 'visible' ? undefined : modalState}
+          className="nxc-modal-panel flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-white/50 border-t-white/80 bg-brand-50/70 shadow-2xl backdrop-blur-xl backdrop-saturate-150"
+        >
           <div className="flex items-center justify-between border-b border-brand-200 px-5 py-3">
             <h2 className="font-serif text-lg font-semibold text-brand-900">Confirm send</h2>
             <button
-              onClick={onClose}
+              onClick={requestClose}
               disabled={sending}
               className="text-sm text-brand-500 hover:underline disabled:opacity-60"
             >
@@ -228,12 +246,16 @@ export default function ComposePanel({ recipients, skipped, statuses, onClose, o
       role="dialog"
       aria-modal="true"
       aria-label="Draft recruitment email"
-      className="fixed inset-0 z-50 flex items-end justify-end bg-brand-950/25 backdrop-blur-xs p-4 sm:items-center sm:justify-center"
+      data-state={modalState === 'visible' ? undefined : modalState}
+      className="nxc-modal-backdrop fixed inset-0 z-50 flex items-end justify-end bg-brand-950/25 backdrop-blur-xs p-4 sm:items-center sm:justify-center"
     >
-      <div className="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-white/50 bg-brand-50/70 shadow-2xl backdrop-blur-xl backdrop-saturate-150">
+      <div
+        data-state={modalState === 'visible' ? undefined : modalState}
+        className="nxc-modal-panel flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-white/50 border-t-white/80 bg-brand-50/70 shadow-2xl backdrop-blur-xl backdrop-saturate-150"
+      >
         <div className="flex items-center justify-between border-b border-brand-200 px-5 py-3">
           <h2 className="font-serif text-lg font-semibold text-brand-900">Draft email</h2>
-          <button onClick={onClose} className="text-sm text-brand-500 hover:underline">
+          <button onClick={requestClose} className="text-sm text-brand-500 hover:underline">
             Close
           </button>
         </div>
@@ -310,7 +332,7 @@ export default function ComposePanel({ recipients, skipped, statuses, onClose, o
             {testSending ? 'Sending test…' : 'Send Test Copy to Myself'}
           </button>
           <button
-            onClick={onClose}
+            onClick={requestClose}
             className="rounded-lg border border-brand-300 px-5 py-2.5 font-medium text-brand-700 hover:bg-brand-100"
           >
             Cancel

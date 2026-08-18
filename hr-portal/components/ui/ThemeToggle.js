@@ -34,7 +34,7 @@ export default function ThemeToggle() {
       aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
       className="flex items-center justify-center rounded-lg border border-brand-300 bg-brand-50 p-1.5 text-brand-600 hover:bg-brand-100"
     >
-      {isDark ? <Sun size={15} aria-hidden="true" /> : <Moon size={15} aria-hidden="true" />}
+      {isDark ? <Sun size={16} aria-hidden="true" /> : <Moon size={16} aria-hidden="true" />}
     </button>
   );
 }

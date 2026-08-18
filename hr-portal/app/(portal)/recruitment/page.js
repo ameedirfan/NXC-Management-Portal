@@ -180,7 +180,7 @@ export default function RecruitmentPage() {
     <div>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="font-serif text-3xl font-bold text-brand-900">Recruitment</h1>
+          <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Recruitment</h1>
           <p className="mt-1 text-brand-500">
             Look up applicants, review interviews, and browse portfolio applications.
           </p>
@@ -303,17 +303,19 @@ export default function RecruitmentPage() {
 
         <div className="mt-4 overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="text-brand-700">
+            <thead className="text-xs font-medium uppercase tracking-wide text-brand-700">
               <tr>
                 {sendMode && (
                   <th className="py-2 pr-4">
-                    <input
-                      type="checkbox"
-                      aria-label="Select all"
-                      checked={allVisibleSelected}
-                      onChange={(e) => toggleSelectAll(e.target.checked)}
-                      disabled={sendableApplicants.length === 0}
-                    />
+                    <label className="inline-flex h-6 w-6 cursor-pointer items-center justify-center">
+                      <input
+                        type="checkbox"
+                        aria-label="Select all"
+                        checked={allVisibleSelected}
+                        onChange={(e) => toggleSelectAll(e.target.checked)}
+                        disabled={sendableApplicants.length === 0}
+                      />
+                    </label>
                   </th>
                 )}
                 <th className="py-2 pr-4">Name</th>
@@ -342,16 +344,18 @@ export default function RecruitmentPage() {
                 applicants.map((a) => {
                   const sendable = isSendableEmail(a.email);
                   return (
-                    <tr key={a.cmsId} className="border-t border-brand-100">
+                    <tr key={a.cmsId} className="border-t border-brand-100 hover:bg-brand-50">
                       {sendMode && (
                         <td className="py-2 pr-4">
-                          <input
-                            type="checkbox"
-                            aria-label={`Select ${a.fullName}`}
-                            checked={selected.has(a.cmsId)}
-                            disabled={!sendable}
-                            onChange={(e) => toggleRecipient(a, e.target.checked)}
-                          />
+                          <label className="inline-flex h-6 w-6 cursor-pointer items-center justify-center">
+                            <input
+                              type="checkbox"
+                              aria-label={`Select ${a.fullName}`}
+                              checked={selected.has(a.cmsId)}
+                              disabled={!sendable}
+                              onChange={(e) => toggleRecipient(a, e.target.checked)}
+                            />
+                          </label>
                           {!sendable && <span className="ml-2 text-xs text-brand-400">no email</span>}
                         </td>
                       )}

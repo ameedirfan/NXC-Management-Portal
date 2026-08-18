@@ -280,7 +280,7 @@ export default function LoginsPage() {
 
       <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-serif text-3xl font-bold text-brand-900">Logins</h1>
+          <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Logins</h1>
           <p className="mt-1 text-brand-500">
             Who can sign in, and with which role. Passwords are hashed before they ever touch
             the sheet.
@@ -323,7 +323,7 @@ export default function LoginsPage() {
               </p>
               <div className="mt-3 max-h-72 overflow-y-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="text-brand-700">
+                  <thead className="text-xs font-medium uppercase tracking-wide text-brand-700">
                     <tr>
                       <th className="py-1 pr-4">Name</th>
                       <th className="py-1 pr-4">Username</th>
@@ -333,7 +333,7 @@ export default function LoginsPage() {
                   </thead>
                   <tbody>
                     {bulkCreated.results.map((r) => (
-                      <tr key={r.cmsId} className="border-t border-brand-100">
+                      <tr key={r.cmsId} className="border-t border-brand-100 hover:bg-brand-50">
                         <td className="py-1 pr-4">{r.fullName || r.cmsId}</td>
                         {r.ok ? (
                           <>
@@ -374,7 +374,7 @@ export default function LoginsPage() {
               </p>
               <div className="mt-3 max-h-72 overflow-y-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="text-brand-700">
+                  <thead className="text-xs font-medium uppercase tracking-wide text-brand-700">
                     <tr>
                       <th className="py-1 pr-4">Name</th>
                       <th className="py-1 pr-4">Username</th>
@@ -384,7 +384,7 @@ export default function LoginsPage() {
                   </thead>
                   <tbody>
                     {bulkPreview.results.map((r) => (
-                      <tr key={r.cmsId} className="border-t border-brand-100">
+                      <tr key={r.cmsId} className="border-t border-brand-100 hover:bg-brand-50">
                         <td className="py-1 pr-4">{r.fullName || r.cmsId}</td>
                         {r.ok ? (
                           <>
@@ -476,7 +476,7 @@ export default function LoginsPage() {
 
               <div className="mt-3 max-h-72 overflow-y-auto rounded-lg border border-brand-200">
                 <table className="w-full text-left text-sm">
-                  <thead className="sticky top-0 bg-brand-100 text-brand-700">
+                  <thead className="sticky top-0 bg-brand-100 text-xs font-medium uppercase tracking-wide text-brand-700">
                     <tr>
                       <th className="px-3 py-2"></th>
                       <th className="px-3 py-2">Name</th>
@@ -487,13 +487,16 @@ export default function LoginsPage() {
                   </thead>
                   <tbody>
                     {bulkFiltered.map((m) => (
-                      <tr key={m.cmsId} className="border-t border-brand-100">
+                      <tr key={m.cmsId} className="border-t border-brand-100 hover:bg-brand-50">
                         <td className="px-3 py-2">
-                          <input
-                            type="checkbox"
-                            checked={bulkSelected.has(m.cmsId)}
-                            onChange={() => toggleBulkMember(m.cmsId)}
-                          />
+                          <label className="inline-flex h-6 w-6 cursor-pointer items-center justify-center">
+                            <input
+                              type="checkbox"
+                              aria-label={`Select ${m.fullName}`}
+                              checked={bulkSelected.has(m.cmsId)}
+                              onChange={() => toggleBulkMember(m.cmsId)}
+                            />
+                          </label>
                         </td>
                         <td className="px-3 py-2">{m.fullName}</td>
                         <td className="px-3 py-2 text-brand-500">{m.cmsId}</td>
@@ -642,7 +645,7 @@ export default function LoginsPage() {
 
       <div className="mt-6 overflow-x-auto rounded-xl border border-brand-200">
         <table className="w-full text-left text-sm">
-          <thead className="bg-brand-100 text-brand-700">
+          <thead className="bg-brand-100 text-xs font-medium uppercase tracking-wide text-brand-700">
             <tr>
               <th className="px-4 py-3">Username</th>
               <th className="px-4 py-3">Full Name</th>
@@ -671,7 +674,7 @@ export default function LoginsPage() {
               </tr>
             ) : (
               logins.map((l) => (
-                <tr key={l.username} className="border-t border-brand-100">
+                <tr key={l.username} className="border-t border-brand-100 hover:bg-brand-50">
                   <td className="px-4 py-3 font-medium text-brand-900">{l.username}</td>
                   <td className="px-4 py-3">{l.fullName}</td>
                   <td className="px-4 py-3 text-brand-500">{l.cmsId}</td>

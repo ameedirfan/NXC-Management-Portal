@@ -24,7 +24,7 @@ function DataTable({ columns, rows }) {
   if (rows.length === 0) return <p className="text-sm text-brand-400">Nothing on file.</p>;
   return (
     <table className="w-full text-left text-sm">
-      <thead className="bg-brand-100 text-brand-700">
+      <thead className="bg-brand-100 text-xs font-medium uppercase tracking-wide text-brand-700">
         <tr>
           {columns.map((c) => (
             <th key={c.key} className="px-3 py-2">
@@ -35,7 +35,7 @@ function DataTable({ columns, rows }) {
       </thead>
       <tbody>
         {rows.map((row, i) => (
-          <tr key={i} className="border-t border-brand-100">
+          <tr key={i} className="border-t border-brand-100 hover:bg-brand-50">
             {columns.map((c) => (
               <td key={c.key} className="px-3 py-2">
                 {row[c.key]}
@@ -159,7 +159,7 @@ export default function HandoverPage() {
     <div>
       <div className="no-print flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-serif text-3xl font-bold text-brand-900">Year-End Handover Export</h1>
+          <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Year-End Handover Export</h1>
           <p className="mt-1 text-brand-500">
             Roster, Finance, full attendance history, and Trip records, in one bundle for the next exec.
           </p>

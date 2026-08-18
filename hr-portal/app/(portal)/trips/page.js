@@ -77,7 +77,7 @@ export default function TripsPage() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-serif text-3xl font-bold text-brand-900">Trip Itineraries</h1>
+          <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Trip Itineraries</h1>
           <p className="mt-1 text-brand-500">Trips the club has run, with itinerary, seating plan, and photos.</p>
         </div>
         {canManage && (

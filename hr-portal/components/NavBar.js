@@ -129,7 +129,7 @@ export default function NavBar({ session, supportsViewTransitions = false, onOpe
                     : 'text-brand-700 hover:bg-brand-100'
                 }`}
               >
-                {Icon && <Icon size={15} strokeWidth={2} aria-hidden="true" />}
+                {Icon && <Icon size={16} strokeWidth={2} aria-hidden="true" />}
                 {t.label}
               </Link>
             );
@@ -143,7 +143,7 @@ export default function NavBar({ session, supportsViewTransitions = false, onOpe
             aria-label="Open command palette"
             className="flex items-center gap-1.5 rounded-lg border border-brand-300 bg-brand-50 px-2.5 py-1.5 text-xs font-medium text-brand-600 hover:bg-brand-100"
           >
-            <Command size={13} aria-hidden="true" />K
+            <Command size={16} aria-hidden="true" />K
           </button>
           <ThemeToggle />
           <p className="text-sm text-brand-600">

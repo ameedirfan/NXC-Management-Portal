@@ -102,7 +102,7 @@ export default function ContactsPage() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-serif text-3xl font-bold text-brand-900">Contact Us</h1>
+          <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Contact Us</h1>
           <p className="mt-1 text-brand-500">Who to reach, and how.</p>
         </div>
         {canManage && (

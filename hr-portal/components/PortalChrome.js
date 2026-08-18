@@ -36,12 +36,16 @@ export default function PortalChrome({ session, children }) {
   return (
     <FabProvider>
       <div className="min-h-screen bg-brand-50">
+        <a href="#main-content" className="nxc-skip-link no-print">
+          Skip to content
+        </a>
         <NavBar
           session={session}
           supportsViewTransitions={supportsViewTransitions}
           onOpenPalette={() => setPaletteOpen(true)}
         />
         <main
+          id="main-content"
           key={supportsViewTransitions ? undefined : pathname}
           className={`print-area mx-auto max-w-5xl px-4 py-8 ${supportsViewTransitions ? '' : 'nxc-page-in'}`}
         >

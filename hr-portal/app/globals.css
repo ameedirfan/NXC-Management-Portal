@@ -39,6 +39,11 @@
   --text-3xl--line-height: 2.25rem;
   --text-4xl: 2.25rem;
   --text-4xl--line-height: 2.5rem;
+
+  /* Strong ease-out for UI (animations.dev / Emil Kowalski's curve set),
+     replaces Tailwind's built-in ease-out everywhere motion is added —
+     the built-in curve is too weak to feel intentional. */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
 }
 
 /*
@@ -113,6 +118,18 @@ input[type='radio'] {
   border-radius: 4px;
 }
 
+/* Press feedback for every button in the app, same "no opt-in needed"
+   treatment as the focus ring above. Confirms the interface heard the
+   press before the click handler's result comes back. Excludes disabled
+   buttons (nothing to confirm) and respects prefers-reduced-motion via
+   the wildcard block further down. */
+button:not(:disabled) {
+  transition: transform 160ms var(--ease-out);
+}
+button:not(:disabled):active {
+  transform: scale(0.97);
+}
+
 /* Used by the Dashboard's Export PDF button, which triggers the browser's
    native print dialog (no PDF library needed). This hides everything
    except whatever is marked .print-area so the output is a clean report
@@ -175,18 +192,57 @@ input[type='radio'] {
   animation: nxc-confetti-fall 0.9s ease-out forwards;
 }
 
-@keyframes nxc-toast-in {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Transition-based (not @keyframes) so it's interruptible and has a real
+   exit, not just an instant unmount — see ToastHost.js's data-state. */
+.nxc-toast {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 250ms var(--ease-out), transform 250ms var(--ease-out);
 }
-.nxc-toast-in {
-  animation: nxc-toast-in 0.2s ease-out;
+.nxc-toast[data-state='entering'],
+.nxc-toast[data-state='exiting'] {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+/* Shared full-screen modal treatment (Announcements + Recruitment
+   composers, the Command Palette). Modals stay centered — no
+   transform-origin-at-trigger, they're not anchored to a button. */
+.nxc-modal-backdrop {
+  transition: opacity 250ms var(--ease-out);
+}
+.nxc-modal-backdrop[data-state='entering'],
+.nxc-modal-backdrop[data-state='exiting'] {
+  opacity: 0;
+}
+.nxc-modal-panel {
+  transform-origin: center;
+  transition: opacity 250ms var(--ease-out), transform 250ms var(--ease-out);
+}
+.nxc-modal-panel[data-state='entering'],
+.nxc-modal-panel[data-state='exiting'] {
+  opacity: 0;
+  transform: scale(0.96);
+}
+
+/* Visually hidden until keyboard-focused — lets keyboard users jump past
+   the NavBar straight to page content. */
+.nxc-skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 300;
+  transform: translateY(-150%);
+  transition: transform 200ms var(--ease-out);
+  border-radius: 0.5rem;
+  background: rgb(var(--brand-900));
+  color: rgb(var(--brand-50));
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+.nxc-skip-link:focus {
+  transform: translateY(0);
 }
 
 @media (prefers-reduced-motion: reduce) {
