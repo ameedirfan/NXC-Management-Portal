@@ -13,7 +13,7 @@ const VIEWS = [
   { key: 'council', label: 'Council-wide' },
 ];
 
-function BarChart({ data, labelKey, valueKey, unit = '', color = '#3a2814' }) {
+function BarChart({ data, labelKey, valueKey, unit = '', color = 'rgb(var(--brand-900))' }) {
   const max = Math.max(1, ...data.map((d) => d[valueKey]));
   return (
     <div className="mt-4 space-y-2">
@@ -137,7 +137,7 @@ function IndividualView({ rosterMembers }) {
             <StatTile label="Attendance %" value={data.percentage} suffix="%" />
           </div>
           <h3 className="mt-6 text-sm font-medium text-brand-700">Trend, cumulative percent present</h3>
-          <BarChart data={data.trend} labelKey="date" valueKey="presentPct" unit="%" color="#9c7539" />
+          <BarChart data={data.trend} labelKey="date" valueKey="presentPct" unit="%" color="rgb(var(--brand-500))" />
         </>
       )}
     </div>
@@ -191,12 +191,12 @@ function PortfolioView({ portfolios }) {
             <StatTile label="Attendance %" value={data.overall.percentage} suffix="%" />
           </div>
           <h3 className="mt-6 text-sm font-medium text-brand-700">Trend, percent present per meeting date</h3>
-          <BarChart data={data.trend} labelKey="date" valueKey="presentPct" unit="%" color="#9c7539" />
+          <BarChart data={data.trend} labelKey="date" valueKey="presentPct" unit="%" color="rgb(var(--brand-500))" />
 
           <h3 className="mt-6 text-sm font-medium text-brand-700">Member by member</h3>
           <div className="mt-2 overflow-x-auto rounded-lg border border-brand-200">
             <table className="w-full text-left text-sm">
-              <thead className="bg-brand-100 text-brand-700">
+              <thead className="bg-brand-100 text-xs font-medium uppercase tracking-wide text-brand-700">
                 <tr>
                   <th className="px-3 py-2">Name</th>
                   <th className="px-3 py-2">Present</th>
@@ -206,7 +206,7 @@ function PortfolioView({ portfolios }) {
               </thead>
               <tbody>
                 {data.members.map((m) => (
-                  <tr key={m.cmsId} className="border-t border-brand-100">
+                  <tr key={m.cmsId} className="border-t border-brand-100 hover:bg-brand-50">
                     <td className="px-3 py-2">{m.fullName}</td>
                     <td className="px-3 py-2 tabular-nums">{m.present}</td>
                     <td className="px-3 py-2 tabular-nums">{m.absent}</td>
@@ -238,10 +238,10 @@ function CouncilView({ data, loading }) {
             <StatTile label="Attendance %" value={data.overall.percentage} suffix="%" />
           </div>
           <h3 className="mt-6 text-sm font-medium text-brand-700">Trend, percent present per meeting date</h3>
-          <BarChart data={data.trend} labelKey="date" valueKey="presentPct" unit="%" color="#9c7539" />
+          <BarChart data={data.trend} labelKey="date" valueKey="presentPct" unit="%" color="rgb(var(--brand-500))" />
 
           <h3 className="mt-6 text-sm font-medium text-brand-700">By portfolio, plus Council Meets</h3>
-          <BarChart data={data.byPortfolio} labelKey="label" valueKey="percentage" unit="%" color="#5f4322" />
+          <BarChart data={data.byPortfolio} labelKey="label" valueKey="percentage" unit="%" color="rgb(var(--brand-700))" />
         </>
       )}
     </div>
@@ -331,7 +331,7 @@ export default function DashboardPage() {
     <div>
       <div className="no-print flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-serif text-3xl font-bold text-brand-900">Dashboard</h1>
+          <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Dashboard</h1>
           <p className="mt-1 text-brand-500">Attendance across three views, and the recruitment funnel.</p>
         </div>
         <div className="flex gap-2">
@@ -397,7 +397,7 @@ export default function DashboardPage() {
           <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
             <h2 className="font-serif text-lg font-semibold text-brand-900">Applicant funnel</h2>
             <p className="text-sm text-brand-500">Every applicant, across every portfolio, grouped by status.</p>
-            <BarChart data={applicants.funnel} labelKey="status" valueKey="count" color="#7d5a2c" />
+            <BarChart data={applicants.funnel} labelKey="status" valueKey="count" color="rgb(var(--brand-600))" />
           </div>
 
           {/* Deliberately its own card, not merged into the funnel above:
@@ -424,7 +424,7 @@ export default function DashboardPage() {
 
           <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
             <h2 className="font-serif text-lg font-semibold text-brand-900">Applicants by portfolio</h2>
-            <BarChart data={applicants.byPortfolio} labelKey="portfolio" valueKey="total" color="#b9954f" />
+            <BarChart data={applicants.byPortfolio} labelKey="portfolio" valueKey="total" color="rgb(var(--brand-400))" />
           </div>
 
           <DataQualitySection dataQuality={dataQuality} />

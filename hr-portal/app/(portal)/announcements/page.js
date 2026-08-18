@@ -22,15 +22,29 @@ function ComposePanel({ initial, onClose, onSent, onSendConfirmed, onSendFailed 
   const [message, setMessage] = useState(initial?.message || '');
   const [audience, setAudience] = useState(initial?.audience || 'All');
   const [error, setError] = useState('');
+  const [modalState, setModalState] = useState('entering');
   const textareaRef = useRef(null);
 
   useEffect(() => {
+    const raf = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setModalState('visible'));
+    });
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  function requestClose() {
+    setModalState('exiting');
+    setTimeout(onClose, 250); // matches .nxc-modal-panel's transition duration
+  }
+
+  useEffect(() => {
     function onKeyDown(e) {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') requestClose();
     }
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [onClose]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   function wrapSelection(before, after = before) {
     const el = textareaRef.current;
@@ -91,14 +105,18 @@ function ComposePanel({ initial, onClose, onSent, onSendConfirmed, onSendFailed 
       role="dialog"
       aria-modal="true"
       aria-label={initial ? 'Edit announcement' : 'New announcement'}
-      className="fixed inset-0 z-50 flex items-end justify-end bg-brand-950/25 backdrop-blur-xs p-4 sm:items-center sm:justify-center"
+      data-state={modalState === 'visible' ? undefined : modalState}
+      className="nxc-modal-backdrop fixed inset-0 z-50 flex items-end justify-end bg-brand-950/25 backdrop-blur-xs p-4 sm:items-center sm:justify-center"
     >
-      <div className="flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-white/50 bg-brand-50/70 shadow-2xl backdrop-blur-xl backdrop-saturate-150">
+      <div
+        data-state={modalState === 'visible' ? undefined : modalState}
+        className="nxc-modal-panel flex max-h-[85vh] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-white/50 border-t-white/80 bg-brand-50/70 shadow-2xl backdrop-blur-xl backdrop-saturate-150"
+      >
         <div className="flex items-center justify-between border-b border-brand-200 px-5 py-3">
           <h2 className="font-serif text-lg font-semibold text-brand-900">
             {initial ? 'Edit announcement' : 'New announcement'}
           </h2>
-          <button onClick={onClose} className="text-sm text-brand-500 hover:underline">
+          <button onClick={requestClose} className="text-sm text-brand-500 hover:underline">
             Close
           </button>
         </div>
@@ -165,7 +183,7 @@ function ComposePanel({ initial, onClose, onSent, onSendConfirmed, onSendFailed 
             {initial ? 'Save changes' : 'Send'}
           </button>
           <button
-            onClick={onClose}
+            onClick={requestClose}
             className="rounded-lg border border-brand-300 px-5 py-2.5 font-medium text-brand-700 hover:bg-brand-100"
           >
             Cancel
@@ -248,7 +266,7 @@ export default function AnnouncementsPage() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="font-serif text-3xl font-bold text-brand-900">Announcements</h1>
+          <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Announcements</h1>
           <p className="mt-1 text-brand-500">Only what's relevant to your role shows up here.</p>
         </div>
         {canManage && (
@@ -308,10 +326,16 @@ export default function AnnouncementsPage() {
                   {deleteConfirmId === a.id ? (
                     <span className="flex items-center gap-2 text-sm">
                       <span className="text-brand-700">Delete this announcement?</span>
-                      <button onClick={() => handleDelete(a.id)} className="font-medium text-red-700 hover:underline">
+                      <button
+                        onClick={() => handleDelete(a.id)}
+                        className="rounded-lg border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50"
+                      >
                         Confirm
                       </button>
-                      <button onClick={() => setDeleteConfirmId(null)} className="text-brand-500 hover:underline">
+                      <button
+                        onClick={() => setDeleteConfirmId(null)}
+                        className="rounded-lg border border-brand-300 px-3 py-1.5 text-sm font-medium text-brand-700 hover:bg-brand-100"
+                      >
                         Cancel
                       </button>
                     </span>

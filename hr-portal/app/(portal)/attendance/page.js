@@ -391,7 +391,7 @@ export default function AttendancePage() {
   if (role !== null && !canMark) {
     return (
       <div>
-        <h1 className="font-serif text-3xl font-bold text-brand-900">Attendance</h1>
+        <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Attendance</h1>
         <div className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
           <p className="text-brand-700">
             Ask your portfolio's Manager or Admin to show the meeting's check in QR code. Scan it
@@ -408,7 +408,7 @@ export default function AttendancePage() {
 
   return (
     <div>
-      <h1 className="font-serif text-3xl font-bold text-brand-900">Attendance</h1>
+      <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Attendance</h1>
       <p className="mt-1 text-brand-500">Pick a date, then a meeting, to mark attendance.</p>
 
       <div className="mt-6 max-w-xs">
@@ -526,7 +526,7 @@ export default function AttendancePage() {
 
           <div className="mt-3 overflow-hidden rounded-xl border border-brand-200">
             <table className="w-full text-left">
-              <thead className="bg-brand-100 text-sm text-brand-700">
+              <thead className="bg-brand-100 text-xs font-medium uppercase tracking-wide text-brand-700">
                 <tr>
                   <th className="px-4 py-3">Name</th>
                   <th className="px-4 py-3">Designation</th>
@@ -544,7 +544,7 @@ export default function AttendancePage() {
                   </tr>
                 ) : (
                   people.map((p) => (
-                    <tr key={p.cmsId} className="border-t border-brand-100">
+                    <tr key={p.cmsId} className="border-t border-brand-100 hover:bg-brand-50">
                       <td className="px-4 py-3">{p.fullName}</td>
                       <td className="px-4 py-3 text-brand-500">{p.designation}</td>
                       <td className="px-4 py-3">

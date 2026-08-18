@@ -94,7 +94,7 @@ export default function ApplicantPage() {
       </Link>
 
       <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="font-serif text-3xl font-bold text-brand-900">{applicant.fullName}</h1>
+        <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">{applicant.fullName}</h1>
         <select
           value={applicant.status || ''}
           onChange={(e) => handleStatusChange(e.target.value)}
