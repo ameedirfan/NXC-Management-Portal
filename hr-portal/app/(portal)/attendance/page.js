@@ -7,6 +7,7 @@ import Pill from '@/components/ui/Pill';
 import { toast } from '@/lib/toast';
 import { SkeletonTableRows } from '@/components/ui/Skeleton';
 import ErrorRetry from '@/components/ui/ErrorRetry';
+import { useRosterInfo } from '@/components/RosterInfoProvider';
 
 // Leaflet touches the DOM on init, so it can't be part of the server
 // render — see components/VenueMap.js.
@@ -250,8 +251,7 @@ function CheckinQrSection({ meeting }) {
 }
 
 export default function AttendancePage() {
-  const [role, setRole] = useState(null);
-  const [portfolios, setPortfolios] = useState([]);
+  const { role, portfolios } = useRosterInfo();
   const [date, setDate] = useState(todayISO());
   const [meetings, setMeetings] = useState([]);
   const [meetingsLoading, setMeetingsLoading] = useState(true);
@@ -264,15 +264,6 @@ export default function AttendancePage() {
   const [voidBusy, setVoidBusy] = useState(false);
   const [voidConfirming, setVoidConfirming] = useState(false);
   const [loadError, setLoadError] = useState('');
-
-  useEffect(() => {
-    fetch('/api/roster')
-      .then((res) => res.json())
-      .then((data) => {
-        setRole(data.role || 'member');
-        setPortfolios(data.portfolios || []);
-      });
-  }, []);
 
   const canMark = role === 'admin' || role === 'manager';
   const canCreateMeeting = role === 'admin' || role === 'manager';

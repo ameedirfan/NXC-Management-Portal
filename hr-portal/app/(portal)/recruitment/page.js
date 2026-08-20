@@ -9,6 +9,7 @@ import { SkeletonTableRows } from '@/components/ui/Skeleton';
 import ErrorRetry from '@/components/ui/ErrorRetry';
 import AccessDenied from '@/components/ui/AccessDenied';
 import ComposePanel from './ComposePanel';
+import { useRosterInfo } from '@/components/RosterInfoProvider';
 
 const STATUSES = ['Pending', 'Interviewed', 'Reserve', 'Not Recommended', 'Selected'];
 
@@ -22,13 +23,15 @@ export default function RecruitmentPage() {
   // The Applicants sheet isn't linked to the Roster (spec section 1), so
   // a portfolio can exist in one but not the other — the dropdown is the
   // union of both, deduped case-insensitively, not just Roster's list.
-  const [rosterPortfolios, setRosterPortfolios] = useState([]);
+  // role/portfolios/defaultPortfolio come from context (fetched once per
+  // session in PortalChrome), not a fetch local to this page — this page
+  // used to re-hit /api/roster on every single navigation into it.
+  const { role, portfolios: rosterPortfolios, defaultPortfolio, loading: rosterInfoLoading } = useRosterInfo();
   const [applicantPortfolios, setApplicantPortfolios] = useState([]);
   const portfolios = useMemo(
     () => dedupePortfolios([...rosterPortfolios, ...applicantPortfolios]),
     [rosterPortfolios, applicantPortfolios]
   );
-  const [role, setRole] = useState(null);
   const [accessDenied, setAccessDenied] = useState(false);
   const [portfolio, setPortfolio] = useState(undefined);
   const [statusFilter, setStatusFilter] = useState('');
@@ -51,21 +54,16 @@ export default function RecruitmentPage() {
   const canView = role === 'admin' || role === 'manager';
 
   useEffect(() => {
-    fetch('/api/roster')
-      .then((res) => res.json())
-      .then((data) => {
-        setRosterPortfolios(data.portfolios || []);
-        setRole(data.role || 'member');
-        const isManagerOrAdmin = data.role === 'admin' || data.role === 'manager';
-        const preferred =
-          data.defaultPortfolio && data.portfolios?.includes(data.defaultPortfolio)
-            ? data.defaultPortfolio
-            : isManagerOrAdmin
-            ? ''
-            : data.portfolios?.[0] || '';
-        setPortfolio(preferred);
-      });
-  }, []);
+    if (rosterInfoLoading) return;
+    const isManagerOrAdmin = role === 'admin' || role === 'manager';
+    const preferred =
+      defaultPortfolio && rosterPortfolios.includes(defaultPortfolio)
+        ? defaultPortfolio
+        : isManagerOrAdmin
+        ? ''
+        : rosterPortfolios[0] || '';
+    setPortfolio(preferred);
+  }, [rosterInfoLoading, role, defaultPortfolio, rosterPortfolios]);
 
   const loadApplicants = useCallback(() => {
     if (portfolio === undefined || !canView) return;

@@ -9,7 +9,7 @@ import { NAV_ICONS, tabsForRole } from '@/components/NavBar';
 // the app it's used (the other is the Announcement compose panel) — a
 // genuinely floating layer sitting on top of page content, so the blur
 // does real work separating it from the background.
-export default function CommandPalette({ open, onClose, role, supportsViewTransitions }) {
+export default function CommandPalette({ open, onClose, role, supportsViewTransitions, onNavigate }) {
   const [query, setQuery] = useState('');
   const router = useRouter();
   const tabs = tabsForRole(role);
@@ -32,6 +32,7 @@ export default function CommandPalette({ open, onClose, role, supportsViewTransi
 
   function go(href) {
     onClose();
+    onNavigate?.();
     if (supportsViewTransitions) {
       document.startViewTransition(() => router.push(href));
     } else {
