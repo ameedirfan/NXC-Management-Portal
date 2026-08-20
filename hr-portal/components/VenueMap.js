@@ -130,7 +130,7 @@ export default function VenueMap({ value, onChange, className = '' }) {
         >
           {locating ? 'Getting location…' : 'Use my current location'}
         </button>
-        <p className="text-xs text-brand-500">Or tap the map to pin manually, drag the pin to fine tune.</p>
+        <p className="text-xs text-brand-700">Or tap the map to pin manually, drag the pin to fine tune.</p>
       </div>
 
       {locateError && <p className="mt-2 text-sm text-red-700">{locateError}</p>}
@@ -138,7 +138,7 @@ export default function VenueMap({ value, onChange, className = '' }) {
       <div ref={containerRef} className="mt-3 h-72 w-full overflow-hidden rounded-lg border border-brand-300" />
 
       {value && (
-        <p className="mt-2 text-xs text-brand-500">
+        <p className="mt-2 text-xs text-brand-700">
           Pinned at {value.lat.toFixed(5)}, {value.lng.toFixed(5)}
         </p>
       )}

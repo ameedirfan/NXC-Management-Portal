@@ -249,7 +249,7 @@ export default function RosterPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Roster</h1>
-          <p className="mt-1 text-brand-500">
+          <p className="mt-1 text-brand-700">
             Add and edit members here. The Google Sheet stays fully in sync and remains the
             record of truth, nothing here replaces it.
           </p>
@@ -266,7 +266,7 @@ export default function RosterPage() {
           {portfolioStats.map((p) => (
             <div key={p.portfolio} className="rounded-lg border border-brand-200 bg-brand-50 px-4 py-2.5">
               <p className="text-sm font-medium text-brand-900">{p.portfolio}</p>
-              <p className="text-xs tabular-nums text-brand-500">
+              <p className="text-xs tabular-nums text-brand-700">
                 {p.headcount} member{p.headcount === 1 ? '' : 's'} · {p.percentage}% attendance
               </p>
             </div>
@@ -320,9 +320,9 @@ export default function RosterPage() {
               <tbody>
                 {importPreview.results.map((r) => (
                   <tr key={r.row} className="border-t border-brand-100 hover:bg-brand-50">
-                    <td className="py-1 pr-4 text-brand-400">{r.row}</td>
+                    <td className="py-1 pr-4 text-brand-700">{r.row}</td>
                     <td className="py-1 pr-4">{r.fullName || 'None'}</td>
-                    <td className="py-1 pr-4 text-brand-500">{r.cmsId || 'None'}</td>
+                    <td className="py-1 pr-4 text-brand-700">{r.cmsId || 'None'}</td>
                     <td className={`py-1 pr-4 ${r.ok ? 'text-emerald-700' : 'text-red-700'}`}>
                       {r.ok ? 'OK' : r.errors.join('. ')}
                     </td>
@@ -346,7 +346,7 @@ export default function RosterPage() {
               Cancel
             </button>
             {importPreview.totalCount - importPreview.validCount > 0 && (
-              <span className="text-sm text-brand-400">
+              <span className="text-sm text-brand-700">
                 {importPreview.totalCount - importPreview.validCount} rows will be skipped.
               </span>
             )}
@@ -417,7 +417,7 @@ export default function RosterPage() {
                     onChange={(e) => setForm((prev) => ({ ...prev, [f.key]: e.target.value }))}
                     disabled={f.key === 'cmsId' && editingCmsId !== null}
                     list={f.suggest ? `${f.key}-options` : undefined}
-                    className="mt-1 w-full rounded-lg border border-brand-300 px-3 py-2 disabled:bg-brand-100 disabled:text-brand-400"
+                    className="mt-1 w-full rounded-lg border border-brand-300 px-3 py-2 disabled:bg-brand-100 disabled:text-brand-700"
                   />
                   {f.suggest && (
                     <datalist id={`${f.key}-options`}>
@@ -431,7 +431,7 @@ export default function RosterPage() {
             )}
           </div>
           {editingCmsId !== null && (
-            <p className="mt-2 text-xs text-brand-400">
+            <p className="mt-2 text-xs text-brand-700">
               CMS ID can't be changed here. It's how attendance, applications, and logins are
               linked to this person. Fix a wrong CMS ID directly in the Roster tab.
             </p>
@@ -478,7 +478,7 @@ export default function RosterPage() {
               />
             ) : filtered.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-6 text-center text-brand-400">
+                <td colSpan={7} className="px-4 py-6 text-center text-brand-700">
                   No members found.
                 </td>
               </tr>
@@ -486,11 +486,11 @@ export default function RosterPage() {
               filtered.map((m) => (
                 <tr key={m.cmsId} className="border-t border-brand-100 hover:bg-brand-50">
                   <td className="px-4 py-3 font-medium text-brand-900">{m.fullName}</td>
-                  <td className="px-4 py-3 text-brand-500">{m.cmsId}</td>
+                  <td className="px-4 py-3 text-brand-700">{m.cmsId}</td>
                   <td className="px-4 py-3">{m.portfolio}</td>
                   <td className="px-4 py-3">{m.designation}</td>
                   <td className="px-4 py-3">{m.wing}</td>
-                  <td className="px-4 py-3 text-brand-500">{m.contactNo}</td>
+                  <td className="px-4 py-3 text-brand-700">{m.contactNo}</td>
                   <td className="px-4 py-3 text-right">
                     <button
                       onClick={() => openEditForm(m)}

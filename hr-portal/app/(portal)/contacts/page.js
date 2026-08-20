@@ -103,7 +103,7 @@ export default function ContactsPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Contact Us</h1>
-          <p className="mt-1 text-brand-500">Who to reach, and how.</p>
+          <p className="mt-1 text-brand-700">Who to reach, and how.</p>
         </div>
         {canManage && (
           <button
@@ -216,8 +216,8 @@ export default function ContactsPage() {
             >
               <div>
                 <p className="font-semibold text-brand-900">{c.fullName}</p>
-                <p className="text-sm text-brand-500">{c.position}</p>
-                {c.email && <p className="mt-1 text-sm text-brand-500">{c.email}</p>}
+                <p className="text-sm text-brand-700">{c.position}</p>
+                {c.email && <p className="mt-1 text-sm text-brand-700">{c.email}</p>}
               </div>
               <div className="flex shrink-0 items-center gap-3">
                 <p className="text-right font-medium text-brand-800">{c.phone}</p>

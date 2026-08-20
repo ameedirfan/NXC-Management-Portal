@@ -6,7 +6,7 @@
 // the network, since serving stale data offline would be actively
 // misleading.
 
-const CACHE_NAME = 'nxc-portal-shell-v1';
+const CACHE_NAME = 'nxc-portal-shell-v2';
 const SHELL_URLS = ['/login', '/manifest.json', '/icons/icon-192.png', '/icons/icon-512.png'];
 
 self.addEventListener('install', (event) => {

@@ -1,11 +1,15 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { toCSV, downloadCSV } from '@/lib/csv';
 import { Skeleton } from '@/components/ui/Skeleton';
 import AnimatedNumber from '@/components/ui/AnimatedNumber';
 import ErrorRetry from '@/components/ui/ErrorRetry';
+import TiltCard from '@/components/motion/TiltCard';
+import CursorSpotlight from '@/components/motion/CursorSpotlight';
+import AmbientGlow from '@/components/motion/AmbientGlow';
+import { useTier1Reveal } from '@/lib/motion';
 
 const VIEWS = [
   { key: 'individual', label: 'Individual' },
@@ -13,23 +17,40 @@ const VIEWS = [
   { key: 'council', label: 'Council-wide' },
 ];
 
+// Tier 1: bars grow in once, staggered, when the data first arrives —
+// starts at 0 width and transitions to the real width on the next paint.
+// Re-renders with the same data don't replay this (the width just stays
+// put, nothing to transition from/to), only a genuinely new dataset does.
 function BarChart({ data, labelKey, valueKey, unit = '', color = 'rgb(var(--brand-900))' }) {
   const max = Math.max(1, ...data.map((d) => d[valueKey]));
+  const [grown, setGrown] = useState(false);
+
+  useEffect(() => {
+    setGrown(false);
+    const raf = requestAnimationFrame(() => setGrown(true));
+    return () => cancelAnimationFrame(raf);
+  }, [data]);
+
   return (
     <div className="mt-4 space-y-2">
-      {data.length === 0 && <p className="text-sm text-brand-400">No data yet.</p>}
-      {data.map((d) => (
+      {data.length === 0 && <p className="text-sm text-brand-700">No data yet.</p>}
+      {data.map((d, i) => (
         <div key={d[labelKey]} className="flex items-center gap-3 text-sm">
           <span className="w-32 shrink-0 truncate text-brand-700" title={d[labelKey]}>
             {d[labelKey]}
           </span>
           <div className="h-4 flex-1 overflow-hidden rounded-sm bg-brand-100">
             <div
-              className="h-full rounded-sm"
-              style={{ width: `${(d[valueKey] / max) * 100}%`, backgroundColor: color }}
+              className="h-full rounded-sm transition-[width] duration-700"
+              style={{
+                width: grown ? `${(d[valueKey] / max) * 100}%` : '0%',
+                backgroundColor: color,
+                transitionTimingFunction: 'var(--ease-out)',
+                transitionDelay: `${Math.min(i, 10) * 40}ms`,
+              }}
             />
           </div>
-          <span className="w-14 shrink-0 text-right tabular-nums text-brand-500">
+          <span className="w-14 shrink-0 text-right tabular-nums text-brand-700">
             {d[valueKey]}
             {unit}
           </span>
@@ -74,15 +95,18 @@ function DashboardCardSkeleton({ tiles = 3 }) {
   );
 }
 
+// Tier 1: summary/stat tiles get the dimensional tilt treatment (spec
+// 3.1) — never used on dense table rows, only these once-glanced-at
+// cards.
 function StatTile({ label, value, suffix = '' }) {
   return (
-    <div className="rounded-lg border border-brand-200 bg-brand-50 px-4 py-3">
-      <p className="text-xs uppercase tracking-wide text-brand-500">{label}</p>
+    <TiltCard className="rounded-lg border border-brand-200 bg-brand-50 px-4 py-3">
+      <p className="text-xs uppercase tracking-wide text-brand-700">{label}</p>
       <p className="mt-1 font-serif text-2xl font-bold tabular-nums text-brand-900">
         <AnimatedNumber value={value} />
         {suffix}
       </p>
-    </div>
+    </TiltCard>
   );
 }
 
@@ -127,7 +151,7 @@ function IndividualView({ rosterMembers }) {
         <p className="mt-4 text-sm text-red-700">{data.error}</p>
       ) : (
         <>
-          <p className="mt-1 text-sm text-brand-500">
+          <p className="mt-1 text-sm text-brand-700">
             {data.person.fullName}, {data.person.portfolio}
           </p>
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -226,7 +250,7 @@ function CouncilView({ data, loading }) {
   return (
     <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
       <h2 className="font-serif text-lg font-semibold text-brand-900">Council-wide attendance</h2>
-      <p className="text-sm text-brand-500">Every meeting on file, every portfolio, rolled up.</p>
+      <p className="text-sm text-brand-700">Every meeting on file, every portfolio, rolled up.</p>
 
       {loading || !data ? (
         <StatBlockSkeleton tiles={3} />
@@ -329,16 +353,28 @@ export default function DashboardPage() {
 
   return (
     <div>
-      <div className="no-print flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Dashboard</h1>
-          <p className="mt-1 text-brand-500">Attendance across three views, and the recruitment funnel.</p>
+      {/* Fixed dark chrome zone (spec 3.1/6.2) — deliberately not the
+          theme-flipping bg-brand-900 utility, a literal dark surface
+          regardless of light/dark toggle, same reasoning as the Logo
+          component: the spotlight/glow only make sense against a
+          surface that's reliably dark. Colors are the existing
+          brand-900/50/200 hex values, just applied directly instead of
+          through the token that inverts under .dark. */}
+      <div
+        className="no-print relative isolate flex flex-wrap items-center justify-between gap-3 overflow-hidden rounded-2xl px-6 py-6"
+        style={{ background: 'linear-gradient(135deg, #3A2814, #241809)' }}
+      >
+        <AmbientGlow />
+        <CursorSpotlight />
+        <div className="relative">
+          <h1 className="font-serif text-3xl font-bold tracking-tight text-[#F9F4E8]">Dashboard</h1>
+          <p className="mt-1 text-[#E6D3AB]">Attendance across three views, and the recruitment funnel.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="relative flex gap-2">
           {role === 'admin' && (
             <Link
               href="/handover"
-              className="rounded-lg border border-brand-300 px-4 py-2 text-sm font-medium text-brand-700 hover:bg-brand-100"
+              className="rounded-lg border border-[#7D5A2C] px-4 py-2 text-sm font-medium text-[#F2E9D3] hover:bg-white/10"
             >
               Year-End Handover Export
             </Link>
@@ -346,14 +382,14 @@ export default function DashboardPage() {
           <button
             onClick={exportAllCSV}
             disabled={!applicants}
-            className="rounded-lg border border-brand-300 px-4 py-2 text-sm font-medium text-brand-700 hover:bg-brand-100 disabled:opacity-60"
+            className="rounded-lg border border-[#7D5A2C] px-4 py-2 text-sm font-medium text-[#F2E9D3] hover:bg-white/10 disabled:opacity-60"
           >
             Export CSV
           </button>
           <button
             onClick={() => window.print()}
             disabled={!applicants}
-            className="rounded-lg border border-brand-300 px-4 py-2 text-sm font-medium text-brand-700 hover:bg-brand-100 disabled:opacity-60"
+            className="rounded-lg border border-[#7D5A2C] px-4 py-2 text-sm font-medium text-[#F2E9D3] hover:bg-white/10 disabled:opacity-60"
             title="Uses your browser's print dialog. Choose Save as PDF as the destination."
           >
             Export PDF
@@ -396,7 +432,7 @@ export default function DashboardPage() {
 
           <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
             <h2 className="font-serif text-lg font-semibold text-brand-900">Applicant funnel</h2>
-            <p className="text-sm text-brand-500">Every applicant, across every portfolio, grouped by status.</p>
+            <p className="text-sm text-brand-700">Every applicant, across every portfolio, grouped by status.</p>
             <BarChart data={applicants.funnel} labelKey="status" valueKey="count" color="rgb(var(--brand-600))" />
           </div>
 
@@ -405,7 +441,7 @@ export default function DashboardPage() {
               are different questions, see spec section 3 and 6. */}
           <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
             <h2 className="font-serif text-lg font-semibold text-brand-900">Applicants emailed</h2>
-            <p className="text-sm text-brand-500">How many applicants have received at least one email.</p>
+            <p className="text-sm text-brand-700">How many applicants have received at least one email.</p>
             <div className="mt-4 flex items-center gap-4">
               <p className="font-serif text-3xl font-bold tabular-nums text-brand-900">
                 <AnimatedNumber value={applicants.emailedCount} /> of{' '}
@@ -446,10 +482,10 @@ function DataQualitySection({ dataQuality }) {
   return (
     <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
       <h2 className="font-serif text-lg font-semibold text-brand-900">Data quality</h2>
-      <p className="text-sm text-brand-500">Housekeeping checks across Roster, Logins, and Applicants.</p>
+      <p className="text-sm text-brand-700">Housekeeping checks across Roster, Logins, and Applicants.</p>
 
       {issueCount === 0 ? (
-        <p className="mt-4 text-sm text-brand-400">No issues found.</p>
+        <p className="mt-4 text-sm text-brand-700">No issues found.</p>
       ) : (
         <div className="mt-4 space-y-4">
           <IssueList
@@ -496,7 +532,7 @@ function IssueList({ title, items, render, linkFor, linkLabel }) {
           </a>
         )}
       </div>
-      <ul className="mt-2 space-y-1 text-sm text-brand-500">
+      <ul className="mt-2 space-y-1 text-sm text-brand-700">
         {items.map((item, i) => (
           <li key={i}>{render(item)}</li>
         ))}

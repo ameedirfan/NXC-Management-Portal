@@ -274,14 +274,14 @@ export default function LoginsPage() {
 
   return (
     <div>
-      <Link href="/roster" className="text-sm text-brand-500 hover:underline">
+      <Link href="/roster" className="text-sm text-brand-700 hover:underline">
         Back to roster
       </Link>
 
       <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Logins</h1>
-          <p className="mt-1 text-brand-500">
+          <p className="mt-1 text-brand-700">
             Who can sign in, and with which role. Passwords are hashed before they ever touch
             the sheet.
           </p>
@@ -306,7 +306,7 @@ export default function LoginsPage() {
         <div className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <h2 className="font-serif text-lg font-semibold text-brand-900">Bulk create logins</h2>
-            <button onClick={closeBulk} className="text-sm text-brand-500 hover:underline">
+            <button onClick={closeBulk} className="text-sm text-brand-700 hover:underline">
               Close
             </button>
           </div>
@@ -435,7 +435,7 @@ export default function LoginsPage() {
                       </option>
                     ))}
                   </select>
-                  <p className="mt-1 text-xs text-brand-400">
+                  <p className="mt-1 text-xs text-brand-700">
                     Each person keeps their own portfolio from the roster, this only sets the role.
                   </p>
                 </div>
@@ -471,7 +471,7 @@ export default function LoginsPage() {
                 >
                   Clear selection
                 </button>
-                <span className="ml-auto text-sm text-brand-500">{bulkSelected.size} selected</span>
+                <span className="ml-auto text-sm text-brand-700">{bulkSelected.size} selected</span>
               </div>
 
               <div className="mt-3 max-h-72 overflow-y-auto rounded-lg border border-brand-200">
@@ -499,7 +499,7 @@ export default function LoginsPage() {
                           </label>
                         </td>
                         <td className="px-3 py-2">{m.fullName}</td>
-                        <td className="px-3 py-2 text-brand-500">{m.cmsId}</td>
+                        <td className="px-3 py-2 text-brand-700">{m.cmsId}</td>
                         <td className="px-3 py-2">{m.portfolio}</td>
                         <td className="px-3 py-2">{loginCmsIds.has(m.cmsId) ? 'Yes' : 'No'}</td>
                       </tr>
@@ -574,7 +574,7 @@ export default function LoginsPage() {
                 value={form.fullName}
                 onChange={(e) => setForm((p) => ({ ...p, fullName: e.target.value }))}
                 disabled={linkedCmsId !== CUSTOM_OPTION}
-                className="mt-1 w-full rounded-lg border border-brand-300 px-3 py-2 disabled:bg-brand-100 disabled:text-brand-400"
+                className="mt-1 w-full rounded-lg border border-brand-300 px-3 py-2 disabled:bg-brand-100 disabled:text-brand-700"
               />
             </div>
             <div>
@@ -583,7 +583,7 @@ export default function LoginsPage() {
                 value={form.cmsId}
                 onChange={(e) => setForm((p) => ({ ...p, cmsId: e.target.value }))}
                 disabled={linkedCmsId !== CUSTOM_OPTION}
-                className="mt-1 w-full rounded-lg border border-brand-300 px-3 py-2 disabled:bg-brand-100 disabled:text-brand-400"
+                className="mt-1 w-full rounded-lg border border-brand-300 px-3 py-2 disabled:bg-brand-100 disabled:text-brand-700"
               />
             </div>
             <div>
@@ -595,7 +595,7 @@ export default function LoginsPage() {
                 onChange={(e) => setForm((p) => ({ ...p, portfolio: e.target.value }))}
                 disabled={linkedCmsId !== CUSTOM_OPTION}
                 list="login-portfolio-options"
-                className="mt-1 w-full rounded-lg border border-brand-300 px-3 py-2 disabled:bg-brand-100 disabled:text-brand-400"
+                className="mt-1 w-full rounded-lg border border-brand-300 px-3 py-2 disabled:bg-brand-100 disabled:text-brand-700"
               />
               <datalist id="login-portfolio-options">
                 {portfolioOptions.map((p) => (
@@ -664,7 +664,7 @@ export default function LoginsPage() {
               />
             ) : logins.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-brand-400">
+                <td colSpan={6} className="px-4 py-10 text-center text-brand-700">
                   No logins yet.{' '}
                   <button onClick={openAddForm} className="font-medium text-brand-900 hover:underline">
                     Add the first one
@@ -677,7 +677,7 @@ export default function LoginsPage() {
                 <tr key={l.username} className="border-t border-brand-100 hover:bg-brand-50">
                   <td className="px-4 py-3 font-medium text-brand-900">{l.username}</td>
                   <td className="px-4 py-3">{l.fullName}</td>
-                  <td className="px-4 py-3 text-brand-500">{l.cmsId}</td>
+                  <td className="px-4 py-3 text-brand-700">{l.cmsId}</td>
                   <td className="px-4 py-3">{l.portfolio}</td>
                   <td className="px-4 py-3 capitalize">{l.role}</td>
                   <td className="px-4 py-3 text-right">

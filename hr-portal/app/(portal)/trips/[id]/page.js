@@ -14,7 +14,7 @@ const SLOTS = [
 ];
 
 function PreviewFor({ slot, url }) {
-  if (!url) return <p className="text-sm text-brand-400">Not uploaded yet.</p>;
+  if (!url) return <p className="text-sm text-brand-700">Not uploaded yet.</p>;
   if (slot.key === 'groupPhoto') {
     return <img src={url} alt={slot.label} className="w-full rounded-lg border border-brand-200" />;
   }
@@ -96,14 +96,14 @@ export default function TripDetailPage() {
 
   return (
     <div>
-      <Link href="/trips" className="text-sm text-brand-500 hover:underline">
+      <Link href="/trips" className="text-sm text-brand-700 hover:underline">
         Back to Trip Itineraries
       </Link>
 
       <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">{trip.location}</h1>
-          <p className="mt-1 tabular-nums text-brand-500">
+          <p className="mt-1 tabular-nums text-brand-700">
             {trip.days} day{String(trip.days) === '1' ? '' : 's'} · {trip.participantCount} participants
           </p>
         </div>

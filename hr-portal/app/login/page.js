@@ -1,8 +1,8 @@
 'use client';
 
 import { Suspense, useState } from 'react';
-import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Logo from '@/components/Logo';
 
 function LoginForm() {
   const router = useRouter();
@@ -48,9 +48,9 @@ function LoginForm() {
     <div className="flex min-h-screen items-center justify-center bg-brand-950 px-4">
       <div className="w-full max-w-sm rounded-2xl bg-brand-50 p-8 shadow-xl">
         <div className="flex flex-col items-center text-center">
-          <Image src="/logo.png" alt="NXC" width={88} height={88} className="h-22 w-22 object-contain" />
+          <Logo size={88} />
           <h1 className="mt-3 font-serif text-2xl font-bold text-brand-900">NXC Management Portal</h1>
-          <p className="mt-1 text-sm text-brand-500">Sign in to continue.</p>
+          <p className="mt-1 text-sm text-brand-700">Sign in to continue.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">

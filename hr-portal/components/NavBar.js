@@ -1,7 +1,7 @@
 'use client';
 
-import Image from 'next/image';
 import Link from 'next/link';
+import Logo from '@/components/Logo';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   ClipboardList,
@@ -107,10 +107,10 @@ export default function NavBar({ session, supportsViewTransitions = false, onOpe
     <header className="no-print border-b border-brand-200 bg-brand-50">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-4 py-4">
         <div className="flex items-center gap-3">
-          <Image src="/logo.png" alt="NXC" width={40} height={40} className="h-10 w-10 object-contain" />
+          <Logo size={40} />
           <div>
             <p className="font-serif text-lg font-bold leading-tight text-brand-900">NXC Portal</p>
-            <p className="text-xs uppercase tracking-wide text-brand-500">Management Portal</p>
+            <p className="text-xs uppercase tracking-wide text-brand-700">Management Portal</p>
             <p className="text-xs font-medium text-brand-600">Portal made by Ameed Irfan</p>
           </div>
         </div>

@@ -179,7 +179,7 @@ export default function RecruitmentPage() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Recruitment</h1>
-          <p className="mt-1 text-brand-500">
+          <p className="mt-1 text-brand-700">
             Look up applicants, review interviews, and browse portfolio applications.
           </p>
         </div>
@@ -334,7 +334,7 @@ export default function RecruitmentPage() {
                 </tr>
               ) : applicants.length === 0 ? (
                 <tr>
-                  <td colSpan={columnCount} className="py-6 text-center text-brand-400">
+                  <td colSpan={columnCount} className="py-6 text-center text-brand-700">
                     No applicants found.
                   </td>
                 </tr>
@@ -354,7 +354,7 @@ export default function RecruitmentPage() {
                               onChange={(e) => toggleRecipient(a, e.target.checked)}
                             />
                           </label>
-                          {!sendable && <span className="ml-2 text-xs text-brand-400">no email</span>}
+                          {!sendable && <span className="ml-2 text-xs text-brand-700">no email</span>}
                         </td>
                       )}
                       <td className="py-2 pr-4">
@@ -365,11 +365,11 @@ export default function RecruitmentPage() {
                           {a.fullName}
                         </Link>
                       </td>
-                      <td className="py-2 pr-4 text-brand-500">{a.cmsId}</td>
+                      <td className="py-2 pr-4 text-brand-700">{a.cmsId}</td>
                       {showPortfolioColumn && <td className="py-2 pr-4">{a.portfolio}</td>}
                       <td className="py-2 pr-4">{a.status || 'None yet'}</td>
                       {sendMode && (
-                        <td className="py-2 pr-4 text-brand-500">{formatLastEmailed(a.lastEmailedAt)}</td>
+                        <td className="py-2 pr-4 text-brand-700">{formatLastEmailed(a.lastEmailedAt)}</td>
                       )}
                     </tr>
                   );

@@ -23,10 +23,33 @@ export default function FinancePage() {
   const [accessDenied, setAccessDenied] = useState(false);
   const [loadError, setLoadError] = useState('');
   const [formOpen, setFormOpen] = useState(false);
+  const [modalState, setModalState] = useState('entering');
   const [editingRow, setEditingRow] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [fieldErrors, setFieldErrors] = useState({});
   const [saving, setSaving] = useState(false);
+
+  // Tier 1 modal open/close (spec 6.7/8) — same enter+exit transition
+  // pattern as the Announcements composer, the app's one other glass
+  // surface. Escape closes it; the actual unmount is delayed to let the
+  // exit transition play instead of cutting it off.
+  useEffect(() => {
+    if (!formOpen) return;
+    const raf = requestAnimationFrame(() => {
+      requestAnimationFrame(() => setModalState('visible'));
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [formOpen]);
+
+  useEffect(() => {
+    if (!formOpen) return;
+    function onKeyDown(e) {
+      if (e.key === 'Escape') closeForm();
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formOpen]);
 
   const load = useCallback(() => {
     setLoading(true);
@@ -60,6 +83,7 @@ export default function FinancePage() {
     setEditingRow(null);
     setForm(EMPTY_FORM);
     setFieldErrors({});
+    setModalState('entering');
     setFormOpen(true);
   }
 
@@ -72,12 +96,16 @@ export default function FinancePage() {
       type: entry.type,
     });
     setFieldErrors({});
+    setModalState('entering');
     setFormOpen(true);
   }
 
   function closeForm() {
-    setFormOpen(false);
-    setFieldErrors({});
+    setModalState('exiting');
+    setTimeout(() => {
+      setFormOpen(false);
+      setFieldErrors({});
+    }, 250); // matches .nxc-modal-panel's transition duration
   }
 
   function validate() {
@@ -116,7 +144,7 @@ export default function FinancePage() {
       return;
     }
     toast(isEdit ? 'Entry updated' : 'Entry added');
-    setFormOpen(false);
+    closeForm();
     load();
   }
 
@@ -143,7 +171,7 @@ export default function FinancePage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Finance</h1>
-          <p className="mt-1 text-brand-500">Income and expenses. The Google Sheet remains the record of truth.</p>
+          <p className="mt-1 text-brand-700">Income and expenses. The Google Sheet remains the record of truth.</p>
         </div>
         <div className="flex gap-3">
           <button
@@ -174,16 +202,16 @@ export default function FinancePage() {
 
       {summary && (
         <div className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
-          <p className="text-xs uppercase tracking-wide text-brand-500">Treasury Balance</p>
+          <p className="text-xs uppercase tracking-wide text-brand-700">Treasury Balance</p>
           <p className="mt-1 font-serif text-4xl font-bold tabular-nums text-brand-900">
             <AnimatedNumber value={summary.treasuryBalance} format={formatMoney} />
           </p>
-          <p className="mt-2 text-sm text-brand-500">
+          <p className="mt-2 text-sm text-brand-700">
             Opening balance <span className="tabular-nums">{formatMoney(summary.openingBalance)}</span>, plus{' '}
             <span className="tabular-nums">{formatMoney(summary.totalIncome)}</span> income, minus{' '}
             <span className="tabular-nums">{formatMoney(summary.totalExpense)}</span> expense.
           </p>
-          <p className="mt-2 text-xs text-brand-400">
+          <p className="mt-2 text-xs text-brand-700">
             To set the opening balance, add a row directly in the Finance sheet with Type = "Opening
             Balance" and Amount = the starting figure. There's no app-side field for it on purpose,
             whatever's in that row is what every calculation starts from.
@@ -192,7 +220,18 @@ export default function FinancePage() {
       )}
 
       {formOpen && (
-        <form onSubmit={handleSubmit} className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={editingRow !== null ? 'Edit entry' : 'Add entry'}
+          data-state={modalState === 'visible' ? undefined : modalState}
+          className="nxc-modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-brand-950/25 backdrop-blur-xs p-4"
+        >
+        <form
+          onSubmit={handleSubmit}
+          data-state={modalState === 'visible' ? undefined : modalState}
+          className="nxc-modal-panel w-full max-w-lg rounded-xl border border-white/50 border-t-white/80 bg-brand-50/70 p-6 shadow-2xl backdrop-blur-xl backdrop-saturate-150"
+        >
           <h2 className="font-serif text-lg font-semibold text-brand-900">
             {editingRow !== null ? 'Edit entry' : 'Add entry'}
           </h2>
@@ -268,6 +307,7 @@ export default function FinancePage() {
             </button>
           </div>
         </form>
+        </div>
       )}
 
       {!loadError && (
@@ -292,7 +332,7 @@ export default function FinancePage() {
               />
             ) : entries.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-brand-400">
+                <td colSpan={6} className="px-4 py-10 text-center text-brand-700">
                   No entries yet.{' '}
                   <button onClick={openAddForm} className="font-medium text-brand-900 hover:underline">
                     Add the first one
@@ -303,7 +343,7 @@ export default function FinancePage() {
             ) : (
               entries.map((e) => (
                 <tr key={e.row} className="border-t border-brand-100 hover:bg-brand-50">
-                  <td className="px-4 py-3 tabular-nums text-brand-500">{e.date}</td>
+                  <td className="px-4 py-3 tabular-nums text-brand-700">{e.date}</td>
                   <td className="px-4 py-3 font-medium text-brand-900">{e.description}</td>
                   <td className="px-4 py-3 tabular-nums">
                     <Pill tone={e.amount < 0 ? 'expense' : 'income'}>
@@ -314,7 +354,7 @@ export default function FinancePage() {
                   <td className="px-4 py-3">
                     <Pill tone={e.amount < 0 ? 'expense' : 'income'}>{e.type}</Pill>
                   </td>
-                  <td className="px-4 py-3 text-brand-500">{e.recordedBy}</td>
+                  <td className="px-4 py-3 text-brand-700">{e.recordedBy}</td>
                   <td className="px-4 py-3 text-right">
                     <button
                       onClick={() => openEditForm(e)}
