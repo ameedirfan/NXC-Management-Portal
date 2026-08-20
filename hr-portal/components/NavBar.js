@@ -123,7 +123,7 @@ export default function NavBar({ session, supportsViewTransitions = false, onOpe
                 key={t.href}
                 href={t.href}
                 onClick={(e) => handleNavClick(e, t.href)}
-                className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition ${
+                className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition active:scale-[0.97] ${
                   pathname?.startsWith(t.href)
                     ? 'bg-brand-900 text-brand-50'
                     : 'text-brand-700 hover:bg-brand-100'

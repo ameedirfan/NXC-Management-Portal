@@ -245,6 +245,41 @@ button:not(:disabled):active {
   transform: translateY(0);
 }
 
+/* Slim top progress bar, shown the instant an internal navigation is
+   clicked (PortalChrome) — every portal route is fully dynamic (the
+   layout reads the session cookie), so there is a real gap between the
+   click and the destination's own content appearing. This closes the
+   "did my click even register" gap; app/(portal)/loading.js closes the
+   next one (server render in flight). Indeterminate, so it communicates
+   "working on it" rather than a real progress fraction. */
+@keyframes nxc-progress-sweep {
+  0% {
+    transform: translateX(-100%);
+  }
+  60% {
+    transform: translateX(40%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+.nxc-progress-bar {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: 300;
+  height: 2px;
+  overflow: hidden;
+  background: rgb(var(--brand-200));
+}
+.nxc-progress-bar::after {
+  content: '';
+  display: block;
+  height: 100%;
+  width: 40%;
+  background: rgb(var(--brand-700));
+  animation: nxc-progress-sweep 1s var(--ease-out) infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
