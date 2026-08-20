@@ -78,7 +78,7 @@ export default function TripsPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Trip Itineraries</h1>
-          <p className="mt-1 text-brand-500">Trips the club has run, with itinerary, seating plan, and photos.</p>
+          <p className="mt-1 text-brand-700">Trips the club has run, with itinerary, seating plan, and photos.</p>
         </div>
         {canManage && (
           <button
@@ -153,7 +153,7 @@ export default function TripsPage() {
               Cancel
             </button>
           </div>
-          <p className="mt-2 text-xs text-brand-400">
+          <p className="mt-2 text-xs text-brand-700">
             Upload the Itinerary, Seating Plan, and Group Photo from the trip's page after it's added.
           </p>
         </form>
@@ -190,12 +190,12 @@ export default function TripsPage() {
               {t.groupPhotoLink ? (
                 <img src={t.groupPhotoLink} alt={t.location} className="h-32 w-full rounded-lg object-cover" />
               ) : (
-                <div className="flex h-32 w-full items-center justify-center rounded-lg bg-brand-100 text-sm text-brand-400">
+                <div className="flex h-32 w-full items-center justify-center rounded-lg bg-brand-100 text-sm text-brand-700">
                   No photo yet
                 </div>
               )}
               <p className="mt-3 font-serif text-lg font-semibold text-brand-900">{t.location}</p>
-              <p className="text-sm tabular-nums text-brand-500">
+              <p className="text-sm tabular-nums text-brand-700">
                 {t.days} day{String(t.days) === '1' ? '' : 's'} · {t.participantCount} participants
               </p>
             </Link>

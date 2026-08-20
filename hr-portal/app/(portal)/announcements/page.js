@@ -116,7 +116,7 @@ function ComposePanel({ initial, onClose, onSent, onSendConfirmed, onSendFailed 
           <h2 className="font-serif text-lg font-semibold text-brand-900">
             {initial ? 'Edit announcement' : 'New announcement'}
           </h2>
-          <button onClick={requestClose} className="text-sm text-brand-500 hover:underline">
+          <button onClick={requestClose} className="text-sm text-brand-700 hover:underline">
             Close
           </button>
         </div>
@@ -166,10 +166,10 @@ function ComposePanel({ initial, onClose, onSent, onSendConfirmed, onSendFailed 
             className="mt-3 w-full rounded-lg border border-brand-300 px-3 py-2 font-mono text-sm"
           />
 
-          <p className="mt-4 text-xs font-medium uppercase tracking-wide text-brand-500">Preview</p>
+          <p className="mt-4 text-xs font-medium uppercase tracking-wide text-brand-700">Preview</p>
           <div
             className="mt-1 rounded-lg border border-brand-200 bg-brand-50 px-3 py-2 text-sm text-brand-900"
-            dangerouslySetInnerHTML={{ __html: renderAnnouncementHtml(message) || '<span class="text-brand-400">Nothing yet.</span>' }}
+            dangerouslySetInnerHTML={{ __html: renderAnnouncementHtml(message) || '<span class="text-brand-700">Nothing yet.</span>' }}
           />
 
           {error && <p className="mt-3 text-sm text-red-700">{error}</p>}
@@ -267,7 +267,7 @@ export default function AnnouncementsPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Announcements</h1>
-          <p className="mt-1 text-brand-500">Only what's relevant to your role shows up here.</p>
+          <p className="mt-1 text-brand-700">Only what's relevant to your role shows up here.</p>
         </div>
         {canManage && (
           <button
@@ -309,7 +309,7 @@ export default function AnnouncementsPage() {
                 className="text-brand-900"
                 dangerouslySetInnerHTML={{ __html: renderAnnouncementHtml(a.message) }}
               />
-              <p className="mt-3 flex flex-wrap items-center gap-2 text-xs text-brand-500">
+              <p className="mt-3 flex flex-wrap items-center gap-2 text-xs text-brand-700">
                 <span>
                   Posted by {a.author} — {formatDate(a.timestamp)}
                 </span>

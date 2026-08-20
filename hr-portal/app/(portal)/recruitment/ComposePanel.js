@@ -166,7 +166,7 @@ export default function ComposePanel({ recipients, skipped, statuses, onClose, o
             <button
               onClick={requestClose}
               disabled={sending}
-              className="text-sm text-brand-500 hover:underline disabled:opacity-60"
+              className="text-sm text-brand-700 hover:underline disabled:opacity-60"
             >
               Close
             </button>
@@ -208,9 +208,9 @@ export default function ComposePanel({ recipients, skipped, statuses, onClose, o
             </select>
 
             <div className="mt-4 rounded-lg border border-brand-200 bg-brand-50 p-4">
-              <p className="text-xs font-medium uppercase tracking-wide text-brand-500">Subject</p>
+              <p className="text-xs font-medium uppercase tracking-wide text-brand-700">Subject</p>
               <p className="mt-1 text-sm text-brand-900">{subject}</p>
-              <p className="mt-3 text-xs font-medium uppercase tracking-wide text-brand-500">Body</p>
+              <p className="mt-3 text-xs font-medium uppercase tracking-wide text-brand-700">Body</p>
               <div
                 className="mt-1 text-sm text-brand-900"
                 dangerouslySetInnerHTML={{ __html: renderAnnouncementHtml(body) }}
@@ -255,7 +255,7 @@ export default function ComposePanel({ recipients, skipped, statuses, onClose, o
       >
         <div className="flex items-center justify-between border-b border-brand-200 px-5 py-3">
           <h2 className="font-serif text-lg font-semibold text-brand-900">Draft email</h2>
-          <button onClick={requestClose} className="text-sm text-brand-500 hover:underline">
+          <button onClick={requestClose} className="text-sm text-brand-700 hover:underline">
             Close
           </button>
         </div>
@@ -306,11 +306,11 @@ export default function ComposePanel({ recipients, skipped, statuses, onClose, o
             className="mt-3 w-full rounded-lg border border-brand-300 px-3 py-2 font-mono text-sm"
           />
 
-          <p className="mt-4 text-xs font-medium uppercase tracking-wide text-brand-500">Preview</p>
+          <p className="mt-4 text-xs font-medium uppercase tracking-wide text-brand-700">Preview</p>
           <div
             className="mt-1 rounded-lg border border-brand-200 bg-brand-50 px-3 py-2 text-sm text-brand-900"
             dangerouslySetInnerHTML={{
-              __html: renderAnnouncementHtml(body) || '<span class="text-brand-400">Nothing yet.</span>',
+              __html: renderAnnouncementHtml(body) || '<span class="text-brand-700">Nothing yet.</span>',
             }}
           />
 

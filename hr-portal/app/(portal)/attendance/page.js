@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import { toCSV, downloadCSV } from '@/lib/csv';
 import Pill from '@/components/ui/Pill';
@@ -8,12 +8,13 @@ import { toast } from '@/lib/toast';
 import { SkeletonTableRows } from '@/components/ui/Skeleton';
 import ErrorRetry from '@/components/ui/ErrorRetry';
 import { useRosterInfo } from '@/components/RosterInfoProvider';
+import { useTier2Flash } from '@/lib/motion';
 
 // Leaflet touches the DOM on init, so it can't be part of the server
 // render — see components/VenueMap.js.
 const VenueMap = dynamic(() => import('@/components/VenueMap'), {
   ssr: false,
-  loading: () => <p className="mt-3 text-sm text-brand-500">Loading map…</p>,
+  loading: () => <p className="mt-3 text-sm text-brand-700">Loading map…</p>,
 });
 
 const STATUSES = ['Present', 'Absent', 'Leave'];
@@ -98,7 +99,7 @@ function CreateMeetingSection({ portfolios, date, onCreated }) {
   return (
     <div className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
       <h2 className="font-serif text-lg font-semibold text-brand-900">Create a meeting</h2>
-      <p className="text-sm text-brand-500">
+      <p className="text-sm text-brand-700">
         Creates an Absent record for everyone in scope right away, marking a specific person
         Present happens afterwards, on this page or via the QR code.
       </p>
@@ -214,7 +215,7 @@ function CheckinQrSection({ meeting }) {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="font-serif text-lg font-semibold text-brand-900">Meeting check in QR</h2>
-          <p className="text-sm text-brand-500">
+          <p className="text-sm text-brand-700">
             Members scan this to mark themselves Present for {meetingLabel(meeting)}, {meeting.date}.
           </p>
         </div>
@@ -239,10 +240,10 @@ function CheckinQrSection({ meeting }) {
             className="rounded-lg border border-brand-200"
           />
           <div className="text-sm">
-            <p className="text-brand-500">
+            <p className="text-brand-700">
               Valid for 15 minutes, until {new Date(expiresAt).toLocaleTimeString()}.
             </p>
-            <p className="mt-2 break-all text-xs text-brand-400">{checkinUrl}</p>
+            <p className="mt-2 break-all text-xs text-brand-700">{checkinUrl}</p>
           </div>
         </div>
       )}
@@ -264,6 +265,8 @@ export default function AttendancePage() {
   const [voidBusy, setVoidBusy] = useState(false);
   const [voidConfirming, setVoidConfirming] = useState(false);
   const [loadError, setLoadError] = useState('');
+  const rowRefs = useRef(new Map());
+  const flash = useTier2Flash();
 
   const canMark = role === 'admin' || role === 'manager';
   const canCreateMeeting = role === 'admin' || role === 'manager';
@@ -319,12 +322,19 @@ export default function AttendancePage() {
     setSelectedMeetingId(newMeetingId);
   }
 
+  // Tier 2 (spec 6.3): instant colour swap + sub-150ms scale pulse,
+  // nothing more. The state update below is always one map() over the
+  // array regardless of whether one row or all forty changed — the
+  // flash() calls just add a CSS pulse to each affected row's DOM node
+  // in the same synchronous pass, never a per-row delay.
   function setStatus(cmsId, status) {
     setPeople((prev) => prev.map((p) => (p.cmsId === cmsId ? { ...p, status } : p)));
+    flash(rowRefs.current.get(cmsId));
   }
 
   function markAll(status) {
     setPeople((prev) => prev.map((p) => ({ ...p, status })));
+    rowRefs.current.forEach((el) => flash(el));
   }
 
   function exportCSV() {
@@ -388,7 +398,7 @@ export default function AttendancePage() {
             Ask your portfolio's Manager or Admin to show the meeting's check in QR code. Scan it
             with your phone's camera to mark yourself Present.
           </p>
-          <p className="mt-2 text-sm text-brand-400">
+          <p className="mt-2 text-sm text-brand-700">
             If something looks wrong with your record, ask your portfolio's Manager or Admin
             to correct it.
           </p>
@@ -400,7 +410,7 @@ export default function AttendancePage() {
   return (
     <div>
       <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Attendance</h1>
-      <p className="mt-1 text-brand-500">Pick a date, then a meeting, to mark attendance.</p>
+      <p className="mt-1 text-brand-700">Pick a date, then a meeting, to mark attendance.</p>
 
       <div className="mt-6 max-w-xs">
         <label className="block text-sm font-medium text-brand-800">Meeting date</label>
@@ -440,7 +450,7 @@ export default function AttendancePage() {
       )}
 
       {!loadError && !meetingsLoading && meetings.length === 0 && !canCreateMeeting && (
-        <p className="mt-6 text-brand-400">No meeting exists for this date yet. Ask a Manager or Admin to create one.</p>
+        <p className="mt-6 text-brand-700">No meeting exists for this date yet. Ask a Manager or Admin to create one.</p>
       )}
 
       {meeting && (
@@ -501,7 +511,7 @@ export default function AttendancePage() {
 
           {people.length > 0 && (
             <div className="mt-6 flex flex-wrap items-center gap-2">
-              <span className="text-sm text-brand-500">Mark everyone:</span>
+              <span className="text-sm text-brand-700">Mark everyone:</span>
               {STATUSES.map((s) => (
                 <button
                   key={s}
@@ -529,15 +539,22 @@ export default function AttendancePage() {
                   <SkeletonTableRows rows={5} columns={3} widths={['w-2/3', 'w-1/2', 'w-24']} />
                 ) : people.length === 0 ? (
                   <tr>
-                    <td colSpan={3} className="px-4 py-6 text-center text-brand-400">
+                    <td colSpan={3} className="px-4 py-6 text-center text-brand-700">
                       No one on this meeting yet.
                     </td>
                   </tr>
                 ) : (
                   people.map((p) => (
-                    <tr key={p.cmsId} className="border-t border-brand-100 hover:bg-brand-50">
+                    <tr
+                      key={p.cmsId}
+                      ref={(el) => {
+                        if (el) rowRefs.current.set(p.cmsId, el);
+                        else rowRefs.current.delete(p.cmsId);
+                      }}
+                      className="border-t border-brand-100 hover:bg-brand-50"
+                    >
                       <td className="px-4 py-3">{p.fullName}</td>
-                      <td className="px-4 py-3 text-brand-500">{p.designation}</td>
+                      <td className="px-4 py-3 text-brand-700">{p.designation}</td>
                       <td className="px-4 py-3">
                         <div className="flex gap-4">
                           {STATUSES.map((s) => (
@@ -575,7 +592,7 @@ export default function AttendancePage() {
             >
               Export CSV
             </button>
-            {message && <span className="text-sm text-brand-500">{message}</span>}
+            {message && <span className="text-sm text-brand-700">{message}</span>}
           </div>
         </>
       )}

@@ -6,11 +6,11 @@ export default function EmptyState({ icon: Icon, title, description, actionLabel
     <div className={`col-span-full flex flex-col items-center rounded-xl border border-dashed border-brand-300 bg-brand-50 px-6 py-12 text-center ${className}`}>
       {Icon && (
         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-brand-100">
-          <Icon size={24} className="text-brand-500" aria-hidden="true" />
+          <Icon size={24} className="text-brand-700" aria-hidden="true" />
         </div>
       )}
       <p className="mt-4 font-serif text-lg font-semibold text-brand-900">{title}</p>
-      {description && <p className="mt-1 max-w-sm text-sm text-brand-500">{description}</p>}
+      {description && <p className="mt-1 max-w-sm text-sm text-brand-700">{description}</p>}
       {actionLabel && onAction && (
         <button
           onClick={onAction}

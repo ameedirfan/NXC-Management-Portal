@@ -1,9 +1,9 @@
 'use client';
 
 import { Suspense, useCallback, useEffect, useState } from 'react';
-import Image from 'next/image';
 import { useSearchParams } from 'next/navigation';
 import Confetti from '@/components/ui/Confetti';
+import Logo from '@/components/Logo';
 
 // Reads the token's unsigned body just to peek at geoRestricted, purely
 // a UI hint for whether to request location before submitting. Never
@@ -120,19 +120,15 @@ function CheckinContent() {
     <div className="flex min-h-screen items-center justify-center bg-brand-950 px-4">
       <div className="relative w-full max-w-sm rounded-2xl bg-brand-50 p-8 text-center shadow-xl">
         <Confetti burstKey={confettiKey} />
-        <Image
-          src="/logo.png"
-          alt="NXC"
-          width={64}
-          height={64}
-          className="mx-auto h-16 w-16 object-contain"
-        />
+        <div className="mx-auto">
+          <Logo size={64} />
+        </div>
         <h1 className="mt-3 font-serif text-xl font-bold text-brand-900">Meeting check in</h1>
 
-        {status === 'checking' && <p className="mt-4 text-brand-500">Checking you in…</p>}
+        {status === 'checking' && <p className="mt-4 text-brand-700">Checking you in…</p>}
 
         {status === 'requesting-location' && (
-          <p className="mt-4 text-brand-500">Getting your location…</p>
+          <p className="mt-4 text-brand-700">Getting your location…</p>
         )}
 
         {status === 'needs-login' && (
@@ -164,7 +160,7 @@ function CheckinContent() {
           <>
             <p className="mt-4 text-2xl">✅</p>
             <p className="mt-2 text-brand-800">{message}</p>
-            <p className="mt-4 text-sm text-brand-500">You can close this page now.</p>
+            <p className="mt-4 text-sm text-brand-700">You can close this page now.</p>
             <div
               className="nxc-toast-in fixed inset-x-0 bottom-5 z-200 flex justify-center px-4"
               aria-live="polite"

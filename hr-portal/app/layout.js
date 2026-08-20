@@ -1,15 +1,7 @@
-import { Inter, Playfair_Display } from 'next/font/google';
 import './globals.css';
 import RegisterServiceWorker from '@/components/RegisterServiceWorker';
 import { THEME_INIT_SCRIPT } from '@/lib/themeScript';
-
-const inter = Inter({ subsets: ['latin'], display: 'swap' });
-const crest = Playfair_Display({
-  subsets: ['latin'],
-  weight: ['600', '700'],
-  variable: '--font-crest',
-  display: 'swap',
-});
+import { fraunces, generalSans } from '@/lib/fonts';
 
 export const metadata = {
   title: 'NXC Management Portal',
@@ -20,10 +12,11 @@ export const metadata = {
     title: 'NXC Portal',
     statusBarStyle: 'default',
   },
-  icons: {
-    icon: '/icons/icon-192.png',
-    apple: '/icons/icon-192.png',
-  },
+  // Favicon and Apple touch icon come from app/icon.png and
+  // app/apple-icon.png via Next's file-convention metadata — generated
+  // fresh from the real logo cutout (centered, padded, no clipping),
+  // not the old cropped-screenshot version. No manual `icons` override
+  // needed here; the PWA install icons in manifest.json were the same fix.
 };
 
 export const viewport = {
@@ -32,7 +25,7 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={crest.variable} suppressHydrationWarning>
+    <html lang="en" className={`${fraunces.variable} ${generalSans.variable}`} suppressHydrationWarning>
       <head>
         {/* Blocking, runs before paint: sets .dark before hydration so
             there's no flash of the wrong theme on load. */}
@@ -67,7 +60,7 @@ export default function RootLayout({ children }) {
           }}
         />
       </head>
-      <body className={`${inter.className} bg-brand-50 text-brand-950 antialiased`}>
+      <body className="font-sans bg-brand-50 text-brand-950 antialiased">
         <RegisterServiceWorker />
         {children}
       </body>

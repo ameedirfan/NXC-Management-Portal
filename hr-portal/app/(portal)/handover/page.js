@@ -21,7 +21,7 @@ function Section({ title, children }) {
 }
 
 function DataTable({ columns, rows }) {
-  if (rows.length === 0) return <p className="text-sm text-brand-400">Nothing on file.</p>;
+  if (rows.length === 0) return <p className="text-sm text-brand-700">Nothing on file.</p>;
   return (
     <table className="w-full text-left text-sm">
       <thead className="bg-brand-100 text-xs font-medium uppercase tracking-wide text-brand-700">
@@ -160,7 +160,7 @@ export default function HandoverPage() {
       <div className="no-print flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Year-End Handover Export</h1>
-          <p className="mt-1 text-brand-500">
+          <p className="mt-1 text-brand-700">
             Roster, Finance, full attendance history, and Trip records, in one bundle for the next exec.
           </p>
         </div>
@@ -203,11 +203,11 @@ export default function HandoverPage() {
       ) : (
         <div className="mt-6 space-y-6">
           <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
-            <p className="text-xs uppercase tracking-wide text-brand-500">Treasury Balance</p>
+            <p className="text-xs uppercase tracking-wide text-brand-700">Treasury Balance</p>
             <p className="mt-1 font-serif text-3xl font-bold tabular-nums text-brand-900">
               <AnimatedNumber value={data.finance.treasuryBalance} format={formatMoney} />
             </p>
-            <p className="mt-1 text-sm text-brand-500">
+            <p className="mt-1 text-sm text-brand-700">
               Opening {formatMoney(data.finance.openingBalance)}, income {formatMoney(data.finance.totalIncome)},
               expense {formatMoney(data.finance.totalExpense)}
             </p>
