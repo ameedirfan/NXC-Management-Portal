@@ -60,7 +60,17 @@ export default function RootLayout({ children }) {
           }}
         />
       </head>
-      <body className="font-sans bg-brand-50 text-brand-950 antialiased">
+      {/* Light theme's page canvas is brand-100, not brand-50 — brand-50
+          (#F9F4E8) is only marginally off pure white and read as harsh,
+          especially now that the ambient background needs a visible
+          surface to show against. brand-100 (#F2E9D3) is a full step
+          warmer, still from the existing palette (no new hue), and
+          research-backed as easier on the eyes than near-white. Dark
+          theme is untouched (still brand-50's dark value) — explicitly
+          confirmed as already working. Cards/inputs elsewhere still use
+          brand-50, so this also gives cards a gentle "lifted" look
+          against the slightly deeper page background. */}
+      <body className="font-sans bg-brand-100 dark:bg-brand-50 text-brand-950 antialiased">
         <RegisterServiceWorker />
         {children}
       </body>
