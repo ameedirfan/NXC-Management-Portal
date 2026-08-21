@@ -1,12 +1,14 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { Phone } from 'lucide-react';
 import { Skeleton } from '@/components/ui/Skeleton';
 import EmptyState from '@/components/ui/EmptyState';
 import ErrorRetry from '@/components/ui/ErrorRetry';
 import { toast } from '@/lib/toast';
 import { useFabAction } from '@/components/FabProvider';
+import { useTier1Reveal } from '@/lib/motion';
+import ChromeHeader, { chromeHeaderPrimaryButtonClass } from '@/components/motion/ChromeHeader';
 
 const EMPTY_FORM = { fullName: '', position: '', phone: '', email: '' };
 
@@ -14,6 +16,8 @@ export default function ContactsPage() {
   const [contacts, setContacts] = useState([]);
   const [canManage, setCanManage] = useState(false);
   const [loading, setLoading] = useState(true);
+  const contentRef = useRef(null);
+  useTier1Reveal(contentRef, { selector: '[data-tier1]', deps: [loading] });
   const [loadError, setLoadError] = useState('');
   const [formOpen, setFormOpen] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
@@ -99,21 +103,18 @@ export default function ContactsPage() {
   }
 
   return (
-    <div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Contact Us</h1>
-          <p className="mt-1 text-brand-700">Who to reach, and how.</p>
-        </div>
-        {canManage && (
-          <button
-            onClick={openAddForm}
-            className="rounded-lg bg-brand-900 px-5 py-2.5 font-medium text-brand-50 hover:bg-brand-800"
-          >
-            Add contact
-          </button>
-        )}
-      </div>
+    <div ref={contentRef}>
+      <ChromeHeader
+        title="Contact Us"
+        subtitle="Who to reach, and how."
+        actions={
+          canManage && (
+            <button onClick={openAddForm} className={chromeHeaderPrimaryButtonClass}>
+              Add contact
+            </button>
+          )
+        }
+      />
 
       {formOpen && (
         <form onSubmit={handleSubmit} className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
@@ -183,7 +184,7 @@ export default function ContactsPage() {
         </form>
       )}
 
-      <div className="mt-6 grid gap-3 sm:grid-cols-2">
+      <div data-tier1 className="mt-6 grid gap-3 sm:grid-cols-2">
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="flex items-center justify-between gap-4 rounded-xl border border-brand-200 bg-brand-50 p-4">

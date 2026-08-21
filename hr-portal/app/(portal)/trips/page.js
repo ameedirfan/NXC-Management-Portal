@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { MapPinned } from 'lucide-react';
 import { SkeletonCard } from '@/components/ui/Skeleton';
@@ -8,6 +8,8 @@ import EmptyState from '@/components/ui/EmptyState';
 import ErrorRetry from '@/components/ui/ErrorRetry';
 import { toast } from '@/lib/toast';
 import { useFabAction } from '@/components/FabProvider';
+import { useTier1Reveal } from '@/lib/motion';
+import ChromeHeader, { chromeHeaderPrimaryButtonClass } from '@/components/motion/ChromeHeader';
 
 const EMPTY_FORM = { location: '', days: '', participantCount: '' };
 
@@ -16,6 +18,8 @@ export default function TripsPage() {
   const [canManage, setCanManage] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
+  const contentRef = useRef(null);
+  useTier1Reveal(contentRef, { selector: '[data-tier1]', deps: [loading] });
   const [formOpen, setFormOpen] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [fieldErrors, setFieldErrors] = useState({});
@@ -74,21 +78,18 @@ export default function TripsPage() {
   }
 
   return (
-    <div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Trip Itineraries</h1>
-          <p className="mt-1 text-brand-700">Trips the club has run, with itinerary, seating plan, and photos.</p>
-        </div>
-        {canManage && (
-          <button
-            onClick={() => setFormOpen((v) => !v)}
-            className="rounded-lg bg-brand-900 px-5 py-2.5 font-medium text-brand-50 hover:bg-brand-800"
-          >
-            Add trip
-          </button>
-        )}
-      </div>
+    <div ref={contentRef}>
+      <ChromeHeader
+        title="Trip Itineraries"
+        subtitle="Trips the club has run, with itinerary, seating plan, and photos."
+        actions={
+          canManage && (
+            <button onClick={() => setFormOpen((v) => !v)} className={chromeHeaderPrimaryButtonClass}>
+              Add trip
+            </button>
+          )
+        }
+      />
 
       {formOpen && (
         <form onSubmit={handleSubmit} className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
@@ -159,7 +160,7 @@ export default function TripsPage() {
         </form>
       )}
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div data-tier1 className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {loading ? (
           <>
             <SkeletonCard />

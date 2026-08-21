@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { toCSV, downloadCSV } from '@/lib/csv';
 import { isSendableEmail } from '@/lib/email';
@@ -10,6 +10,8 @@ import ErrorRetry from '@/components/ui/ErrorRetry';
 import AccessDenied from '@/components/ui/AccessDenied';
 import ComposePanel from './ComposePanel';
 import { useRosterInfo } from '@/components/RosterInfoProvider';
+import { useTier1Reveal } from '@/lib/motion';
+import ChromeHeader, { chromeHeaderButtonClass, chromeHeaderPrimaryButtonClass } from '@/components/motion/ChromeHeader';
 
 const STATUSES = ['Pending', 'Interviewed', 'Reserve', 'Not Recommended', 'Selected'];
 
@@ -41,6 +43,8 @@ export default function RecruitmentPage() {
   const [applicants, setApplicants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
+  const contentRef = useRef(null);
+  useTier1Reveal(contentRef, { selector: '[data-tier1]', deps: [loading] });
 
   const [sendMode, setSendMode] = useState(false);
   // Map, not Set: keyed by CMS ID but storing the full applicant object at
@@ -175,27 +179,21 @@ export default function RecruitmentPage() {
   }
 
   return (
-    <div>
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Recruitment</h1>
-          <p className="mt-1 text-brand-700">
-            Look up applicants, review interviews, and browse portfolio applications.
-          </p>
-        </div>
-        <button
-          onClick={toggleSendMode}
-          className={
-            sendMode
-              ? 'rounded-lg border border-brand-300 px-4 py-2 text-sm font-medium text-brand-700 hover:bg-brand-100'
-              : 'rounded-lg bg-brand-900 px-4 py-2 text-sm font-medium text-brand-50 hover:bg-brand-800'
-          }
-        >
-          {sendMode ? 'Cancel' : 'Send Email'}
-        </button>
-      </div>
+    <div ref={contentRef}>
+      <ChromeHeader
+        title="Recruitment"
+        subtitle="Look up applicants, review interviews, and browse portfolio applications."
+        actions={
+          <button
+            onClick={toggleSendMode}
+            className={sendMode ? chromeHeaderButtonClass : chromeHeaderPrimaryButtonClass}
+          >
+            {sendMode ? 'Cancel' : 'Send Email'}
+          </button>
+        }
+      />
 
-      <div className="mt-6 flex flex-wrap gap-4">
+      <div data-tier1 className="mt-6 flex flex-wrap gap-4">
         <div>
           <label className="block text-sm font-medium text-brand-800">Portfolio</label>
           <select
@@ -299,7 +297,7 @@ export default function RecruitmentPage() {
           </div>
         )}
 
-        <div className="mt-4 overflow-x-auto">
+        <div data-tier1 className="mt-4 overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="text-xs font-medium uppercase tracking-wide text-brand-700">
               <tr>

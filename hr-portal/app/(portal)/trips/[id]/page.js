@@ -1,11 +1,13 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Skeleton } from '@/components/ui/Skeleton';
 import ErrorRetry from '@/components/ui/ErrorRetry';
 import { toast } from '@/lib/toast';
+import { useTier1Reveal } from '@/lib/motion';
+import ChromeHeader from '@/components/motion/ChromeHeader';
 
 const SLOTS = [
   { key: 'itinerary', label: 'Itinerary', linkKey: 'itineraryLink', accept: 'application/pdf' },
@@ -32,6 +34,8 @@ export default function TripDetailPage() {
   const [trip, setTrip] = useState(null);
   const [canManage, setCanManage] = useState(false);
   const [loading, setLoading] = useState(true);
+  const contentRef = useRef(null);
+  useTier1Reveal(contentRef, { selector: '[data-tier1]', deps: [loading] });
   const [uploadingSlot, setUploadingSlot] = useState(null);
   const [uploadError, setUploadError] = useState('');
   const [loadError, setLoadError] = useState('');
@@ -95,23 +99,20 @@ export default function TripDetailPage() {
   if (!trip) return <p className="text-red-700">Trip not found.</p>;
 
   return (
-    <div>
+    <div ref={contentRef}>
       <Link href="/trips" className="text-sm text-brand-700 hover:underline">
         Back to Trip Itineraries
       </Link>
 
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">{trip.location}</h1>
-          <p className="mt-1 tabular-nums text-brand-700">
-            {trip.days} day{String(trip.days) === '1' ? '' : 's'} · {trip.participantCount} participants
-          </p>
-        </div>
-      </div>
+      <ChromeHeader
+        className="mt-2"
+        title={trip.location}
+        subtitle={`${trip.days} day${String(trip.days) === '1' ? '' : 's'} · ${trip.participantCount} participants`}
+      />
 
       {uploadError && <p className="mt-4 text-sm text-red-700">{uploadError}</p>}
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-3">
+      <div data-tier1 className="mt-6 grid gap-6 lg:grid-cols-3">
         {SLOTS.map((slot) => (
           <div key={slot.key} className="rounded-xl border border-brand-200 bg-brand-50 p-5">
             <div className="flex items-center justify-between gap-2">

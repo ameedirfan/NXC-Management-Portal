@@ -1,11 +1,13 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { toCSV, downloadCSV } from '@/lib/csv';
 import { Skeleton } from '@/components/ui/Skeleton';
 import AnimatedNumber from '@/components/ui/AnimatedNumber';
 import ErrorRetry from '@/components/ui/ErrorRetry';
 import AccessDenied from '@/components/ui/AccessDenied';
+import { useTier1Reveal } from '@/lib/motion';
+import ChromeHeader, { chromeHeaderButtonClass } from '@/components/motion/ChromeHeader';
 
 function formatMoney(n) {
   return n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -86,6 +88,8 @@ const TRIPS_COLS = [
 export default function HandoverPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const contentRef = useRef(null);
+  useTier1Reveal(contentRef, { selector: '[data-tier1]', deps: [loading] });
   const [accessDenied, setAccessDenied] = useState(false);
   const [loadError, setLoadError] = useState('');
 
@@ -156,32 +160,26 @@ export default function HandoverPage() {
   }
 
   return (
-    <div>
-      <div className="no-print flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Year-End Handover Export</h1>
-          <p className="mt-1 text-brand-700">
-            Roster, Finance, full attendance history, and Trip records, in one bundle for the next exec.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={exportCSV}
-            disabled={!data}
-            className="rounded-lg border border-brand-300 px-4 py-2 text-sm font-medium text-brand-700 hover:bg-brand-100 disabled:opacity-60"
-          >
-            Export CSV
-          </button>
-          <button
-            onClick={() => window.print()}
-            disabled={!data}
-            className="rounded-lg border border-brand-300 px-4 py-2 text-sm font-medium text-brand-700 hover:bg-brand-100 disabled:opacity-60"
-            title="Uses your browser's print dialog. Choose Save as PDF as the destination."
-          >
-            Export PDF
-          </button>
-        </div>
-      </div>
+    <div ref={contentRef}>
+      <ChromeHeader
+        title="Year-End Handover Export"
+        subtitle="Roster, Finance, full attendance history, and Trip records, in one bundle for the next exec."
+        actions={
+          <>
+            <button onClick={exportCSV} disabled={!data} className={chromeHeaderButtonClass}>
+              Export CSV
+            </button>
+            <button
+              onClick={() => window.print()}
+              disabled={!data}
+              className={chromeHeaderButtonClass}
+              title="Uses your browser's print dialog. Choose Save as PDF as the destination."
+            >
+              Export PDF
+            </button>
+          </>
+        }
+      />
 
       {loading || !data ? (
         loadError ? (
@@ -201,7 +199,7 @@ export default function HandoverPage() {
           </div>
         )
       ) : (
-        <div className="mt-6 space-y-6">
+        <div data-tier1 className="mt-6 space-y-6">
           <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
             <p className="text-xs uppercase tracking-wide text-brand-700">Treasury Balance</p>
             <p className="mt-1 font-serif text-3xl font-bold tabular-nums text-brand-900">

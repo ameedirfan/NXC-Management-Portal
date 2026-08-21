@@ -7,6 +7,7 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import ErrorRetry from '@/components/ui/ErrorRetry';
 import { toast } from '@/lib/toast';
 import { useTier1Reveal, useTier2Flash } from '@/lib/motion';
+import ChromeHeader from '@/components/motion/ChromeHeader';
 
 const STATUSES = ['Pending', 'Interviewed', 'Reserve', 'Not Recommended', 'Selected'];
 const RECOMMENDATIONS = ['Strong yes', 'Yes', 'Neutral', 'No', 'Strong no'];
@@ -28,7 +29,7 @@ export default function ApplicantPage() {
   const flash = useTier2Flash();
   // Tier 1: this page opens once per lookup, not forty times a session
   // (spec 6.4/7) — a real staggered reveal is fine here.
-  useTier1Reveal(pageRef, { selector: '[data-tier1]' });
+  useTier1Reveal(pageRef, { selector: '[data-tier1]', deps: [loading] });
 
   const load = useCallback(() => {
     setLoading(true);
@@ -101,25 +102,25 @@ export default function ApplicantPage() {
         Back to Recruitment
       </Link>
 
-      <div
-        ref={statusRowRef}
-        data-tier1
-        className="mt-2 flex flex-wrap items-center justify-between gap-3 rounded-lg"
-      >
-        <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">{applicant.fullName}</h1>
-        <select
-          value={applicant.status || ''}
-          onChange={(e) => handleStatusChange(e.target.value)}
-          disabled={statusSaving}
-          className="rounded-lg border border-brand-300 bg-brand-50 px-3 py-2 font-medium"
-        >
-          <option value="">No status yet</option>
-          {STATUSES.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </select>
+      <div ref={statusRowRef} data-tier1 className="mt-2 rounded-2xl">
+        <ChromeHeader
+          title={applicant.fullName}
+          actions={
+            <select
+              value={applicant.status || ''}
+              onChange={(e) => handleStatusChange(e.target.value)}
+              disabled={statusSaving}
+              className="rounded-lg border border-brand-300 bg-brand-50 px-3 py-2 font-medium text-brand-900"
+            >
+              <option value="">No status yet</option>
+              {STATUSES.map((s) => (
+                <option key={s} value={s}>
+                  {s}
+                </option>
+              ))}
+            </select>
+          }
+        />
       </div>
 
       <div data-tier1 className="mt-6 grid gap-4 rounded-xl border border-brand-200 bg-brand-50 p-6 sm:grid-cols-2">

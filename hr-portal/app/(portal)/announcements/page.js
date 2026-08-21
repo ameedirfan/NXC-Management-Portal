@@ -9,6 +9,8 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import EmptyState from '@/components/ui/EmptyState';
 import ErrorRetry from '@/components/ui/ErrorRetry';
 import { useFabAction } from '@/components/FabProvider';
+import { useTier1Reveal } from '@/lib/motion';
+import ChromeHeader, { chromeHeaderPrimaryButtonClass } from '@/components/motion/ChromeHeader';
 
 const AUDIENCES = ['All', 'Members', 'Managers', 'Admins'];
 
@@ -198,6 +200,8 @@ export default function AnnouncementsPage() {
   const [announcements, setAnnouncements] = useState([]);
   const [canManage, setCanManage] = useState(false);
   const [loading, setLoading] = useState(true);
+  const contentRef = useRef(null);
+  useTier1Reveal(contentRef, { selector: '[data-tier1]', deps: [loading] });
   const [loadError, setLoadError] = useState('');
   const [composeOpen, setComposeOpen] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -263,23 +267,20 @@ export default function AnnouncementsPage() {
   }
 
   return (
-    <div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Announcements</h1>
-          <p className="mt-1 text-brand-700">Only what's relevant to your role shows up here.</p>
-        </div>
-        {canManage && (
-          <button
-            onClick={openCompose}
-            className="rounded-lg bg-brand-900 px-5 py-2.5 font-medium text-brand-50 hover:bg-brand-800"
-          >
-            New Announcement
-          </button>
-        )}
-      </div>
+    <div ref={contentRef}>
+      <ChromeHeader
+        title="Announcements"
+        subtitle="Only what's relevant to your role shows up here."
+        actions={
+          canManage && (
+            <button onClick={openCompose} className={chromeHeaderPrimaryButtonClass}>
+              New Announcement
+            </button>
+          )
+        }
+      />
 
-      <div className="mt-6 space-y-4">
+      <div data-tier1 className="mt-6 space-y-4">
         {loading ? (
           Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="rounded-xl border border-brand-200 bg-brand-50 p-5">

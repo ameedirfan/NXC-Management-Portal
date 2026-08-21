@@ -79,6 +79,12 @@ export function useTier1Reveal(containerRef, {
   stagger = 0.06,
   duration = 0.6,
   delay = 0,
+  // Extra dependency values that should re-fire the reveal — a ref
+  // alone doesn't retrigger an effect, so anything that conditionally
+  // mounts the target content (a `loading` flag flipping, data arriving)
+  // needs to be passed here or this only ever runs once, before the
+  // real container exists.
+  deps = [],
 } = {}) {
   const reduced = usePrefersReducedMotion();
 
@@ -115,7 +121,7 @@ export function useTier1Reveal(containerRef, {
       ctx?.revert();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reduced]);
+  }, [reduced, ...deps]);
 }
 
 // Tier 1 — a one-off scale-bounce confirmation (QR generated, announcement

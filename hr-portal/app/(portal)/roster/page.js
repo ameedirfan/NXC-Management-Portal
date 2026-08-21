@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { toCSV, downloadCSV, parseCSV } from '@/lib/csv';
 import { dedupePortfolios } from '@/lib/portfolio';
@@ -9,6 +9,9 @@ import ErrorRetry from '@/components/ui/ErrorRetry';
 import AccessDenied from '@/components/ui/AccessDenied';
 import { useFabAction } from '@/components/FabProvider';
 import { toast } from '@/lib/toast';
+import { useTier1Reveal } from '@/lib/motion';
+import ChromeHeader, { chromeHeaderButtonClass } from '@/components/motion/ChromeHeader';
+import TiltCard from '@/components/motion/TiltCard';
 
 const NEW_PORTFOLIO_OPTION = '__new_portfolio__';
 
@@ -47,6 +50,8 @@ export default function RosterPage() {
   const [loading, setLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
   const [search, setSearch] = useState('');
+  const contentRef = useRef(null);
+  useTier1Reveal(contentRef, { selector: '[data-tier1]', deps: [loading] });
   const [formOpen, setFormOpen] = useState(false);
   const [editingCmsId, setEditingCmsId] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -245,31 +250,31 @@ export default function RosterPage() {
   }
 
   return (
-    <div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Roster</h1>
-          <p className="mt-1 text-brand-700">
-            Add and edit members here. The Google Sheet stays fully in sync and remains the
-            record of truth, nothing here replaces it.
-          </p>
-        </div>
-        {(role === 'admin' || role === 'manager') && (
-          <Link href="/roster/logins" className="text-sm font-medium text-brand-900 hover:underline">
-            Manage logins
-          </Link>
-        )}
-      </div>
+    <div ref={contentRef}>
+      <ChromeHeader
+        title="Roster"
+        subtitle="Add and edit members here. The Google Sheet stays fully in sync and remains the record of truth, nothing here replaces it."
+        actions={
+          (role === 'admin' || role === 'manager') && (
+            <Link href="/roster/logins" className={chromeHeaderButtonClass}>
+              Manage logins
+            </Link>
+          )
+        }
+      />
 
       {portfolioStats.length > 0 && (
-        <div className="mt-6 flex flex-wrap gap-3">
+        <div data-tier1 className="mt-6 flex flex-wrap gap-3">
           {portfolioStats.map((p) => (
-            <div key={p.portfolio} className="rounded-lg border border-brand-200 bg-brand-50 px-4 py-2.5">
+            <TiltCard
+              key={p.portfolio}
+              className="rounded-lg border border-brand-200 bg-brand-50 px-4 py-2.5"
+            >
               <p className="text-sm font-medium text-brand-900">{p.portfolio}</p>
               <p className="text-xs tabular-nums text-brand-700">
                 {p.headcount} member{p.headcount === 1 ? '' : 's'} · {p.percentage}% attendance
               </p>
-            </div>
+            </TiltCard>
           ))}
         </div>
       )}
@@ -456,7 +461,7 @@ export default function RosterPage() {
         </form>
       )}
 
-      <div className="mt-6 overflow-x-auto rounded-xl border border-brand-200">
+      <div data-tier1 className="mt-6 overflow-x-auto rounded-xl border border-brand-200">
         <table className="w-full text-left text-sm">
           <thead className="bg-brand-100 text-xs font-medium uppercase tracking-wide text-brand-700">
             <tr>
