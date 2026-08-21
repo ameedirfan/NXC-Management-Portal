@@ -29,5 +29,8 @@ export default function ChromeHeader({ title, subtitle, actions, noPrint = true,
 // background instead of each page inventing its own dark-safe colors.
 export const chromeHeaderButtonClass =
   'rounded-lg border border-[#7D5A2C] px-4 py-2 text-sm font-medium text-[#F2E9D3] hover:bg-white/10 disabled:opacity-60';
+// text-black, not the brand-950 tone used elsewhere — measured 6.18:1
+// against this gold, under the 7:1 floor. True black clears it at
+// 7.47:1 without changing the gold itself.
 export const chromeHeaderPrimaryButtonClass =
-  'rounded-lg bg-[#B9954F] px-4 py-2 text-sm font-medium text-[#241809] hover:bg-[#CDA968]';
+  'rounded-lg bg-[#B9954F] px-4 py-2 text-sm font-medium text-black hover:bg-[#CDA968]';

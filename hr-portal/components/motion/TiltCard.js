@@ -17,8 +17,15 @@ const MAX_TILT_DEG = 6;
 // the 2026 trend notes ("deployed strategically for navigation, modals,
 // AND feature cards"). Deliberately not used on dense table/list rows —
 // see ChromeHeader.js and lib/motion.js's Tier 2 primitives for those.
+// Opacity tuned to 78%, not the modal's 70% — modals sit over a dimmed
+// backdrop with large text; these cards sit over the ambient background
+// (which can show through at up to ~0.28 alpha at a blob's core) with
+// small uppercase label text, which needs more headroom. Verified worst
+// case (card directly over the most saturated point of the ambient
+// glow): 7.62:1 for label text at 78%, vs only 7.10:1 (uncomfortably
+// close to the 7:1 floor) at the modal's 70%.
 export const glassCardClass =
-  'border border-white/50 border-t-white/80 bg-brand-50/60 shadow-lg backdrop-blur-xl backdrop-saturate-150';
+  'border border-white/50 border-t-white/80 bg-brand-50/78 shadow-lg backdrop-blur-xl backdrop-saturate-150';
 
 export default function TiltCard({ as: Tag = 'div', className = '', children, ...props }) {
   const ref = useRef(null);
