@@ -1,12 +1,11 @@
 'use client';
 
-import { Suspense, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import Logo from '@/components/Logo';
 
 function LoginForm() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -33,8 +32,15 @@ function LoginForm() {
 
       // Bounces back to wherever the person was headed (e.g. a QR check
       // in link) if one was given, only ever a relative path, never an
-      // external URL, so this cannot be used as an open redirect.
-      const next = searchParams.get('next');
+      // external URL, so this cannot be used as an open redirect. Reads
+      // window.location directly (not useSearchParams()) — that hook
+      // forces this page behind a Suspense boundary, and with a null
+      // fallback the page rendered completely blank until JS loaded and
+      // resolved it (confirmed via raw SSR output: Next bails to
+      // BAILOUT_TO_CLIENT_SIDE_RENDERING). Reading the query string here
+      // instead — only needed at submit time, never during render — gets
+      // the exact same value with no SSR/hydration dependency at all.
+      const next = new URLSearchParams(window.location.search).get('next');
       const dest = next && next.startsWith('/') && !next.startsWith('//') ? next : '/attendance';
       router.push(dest);
       router.refresh();
@@ -45,7 +51,7 @@ function LoginForm() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-brand-950 px-4">
+    <main className="flex min-h-screen items-center justify-center bg-brand-950 px-4">
       <div className="w-full max-w-sm rounded-2xl bg-brand-50 p-8 shadow-xl">
         <div className="flex flex-col items-center text-center">
           <Logo size={88} />
@@ -55,8 +61,11 @@ function LoginForm() {
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-brand-800">Username</label>
+            <label htmlFor="login-username" className="block text-sm font-medium text-brand-800">
+              Username
+            </label>
             <input
+              id="login-username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="mt-1 w-full rounded-lg border border-brand-300 bg-brand-50 px-3 py-2 focus:border-brand-700 focus:outline-hidden focus:ring-1 focus:ring-brand-700"
@@ -65,8 +74,11 @@ function LoginForm() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-brand-800">Password</label>
+            <label htmlFor="login-password" className="block text-sm font-medium text-brand-800">
+              Password
+            </label>
             <input
+              id="login-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -87,14 +99,10 @@ function LoginForm() {
           </button>
         </form>
       </div>
-    </div>
+    </main>
   );
 }
 
 export default function LoginPage() {
-  return (
-    <Suspense fallback={null}>
-      <LoginForm />
-    </Suspense>
-  );
+  return <LoginForm />;
 }

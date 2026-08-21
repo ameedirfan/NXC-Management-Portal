@@ -8,6 +8,8 @@ import CommandPalette from '@/components/CommandPalette';
 import { FabProvider } from '@/components/FabProvider';
 import Fab from '@/components/ui/Fab';
 import { RosterInfoProvider } from '@/components/RosterInfoProvider';
+import AmbientBackground from '@/components/motion/AmbientBackground';
+import PortalCursorSpotlight from '@/components/motion/PortalCursorSpotlight';
 
 // Everything global and interactive for a signed-in page lives here, one
 // level below the server layout (which owns the session check).
@@ -68,7 +70,14 @@ export default function PortalChrome({ session, children }) {
           navigation, exactly the per-navigation refetch this exists to
           avoid. */}
       <RosterInfoProvider>
-        <div className="min-h-screen bg-brand-50">
+        {/* No bg-brand-50 here — <body> (layout.js) already supplies the
+            page's base color as the true canvas background. Duplicating
+            it on this wrapper would paint as a normal in-flow box, which
+            sits ABOVE the ambient layer's negative z-index in the
+            stacking order and hid it completely. */}
+        <div className="min-h-screen">
+          <AmbientBackground />
+          <PortalCursorSpotlight />
           {navigating && <div className="nxc-progress-bar no-print" aria-hidden="true" />}
           <a href="#main-content" className="nxc-skip-link no-print">
             Skip to content

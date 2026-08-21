@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { toCSV, downloadCSV } from '@/lib/csv';
 import Pill from '@/components/ui/Pill';
 import { Skeleton, SkeletonTableRows } from '@/components/ui/Skeleton';
@@ -9,6 +9,8 @@ import AccessDenied from '@/components/ui/AccessDenied';
 import { toast } from '@/lib/toast';
 import AnimatedNumber from '@/components/ui/AnimatedNumber';
 import { useFabAction } from '@/components/FabProvider';
+import { useTier1Reveal } from '@/lib/motion';
+import ChromeHeader, { chromeHeaderButtonClass, chromeHeaderPrimaryButtonClass } from '@/components/motion/ChromeHeader';
 
 const EMPTY_FORM = { date: '', description: '', amount: '', type: '' };
 
@@ -22,6 +24,8 @@ export default function FinancePage() {
   const [loading, setLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
   const [loadError, setLoadError] = useState('');
+  const contentRef = useRef(null);
+  useTier1Reveal(contentRef, { selector: '[data-tier1]', deps: [loading] });
   const [formOpen, setFormOpen] = useState(false);
   const [modalState, setModalState] = useState('entering');
   const [editingRow, setEditingRow] = useState(null);
@@ -167,28 +171,21 @@ export default function FinancePage() {
   }
 
   return (
-    <div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Finance</h1>
-          <p className="mt-1 text-brand-700">Income and expenses. The Google Sheet remains the record of truth.</p>
-        </div>
-        <div className="flex gap-3">
-          <button
-            onClick={openAddForm}
-            className="rounded-lg bg-brand-900 px-5 py-2.5 font-medium text-brand-50 hover:bg-brand-800"
-          >
-            Add entry
-          </button>
-          <button
-            onClick={exportCSV}
-            disabled={entries.length === 0}
-            className="rounded-lg border border-brand-300 px-4 py-2 text-sm font-medium text-brand-700 hover:bg-brand-100 disabled:opacity-60"
-          >
-            Export CSV
-          </button>
-        </div>
-      </div>
+    <div ref={contentRef}>
+      <ChromeHeader
+        title="Finance"
+        subtitle="Income and expenses. The Google Sheet remains the record of truth."
+        actions={
+          <>
+            <button onClick={openAddForm} className={chromeHeaderPrimaryButtonClass}>
+              Add entry
+            </button>
+            <button onClick={exportCSV} disabled={entries.length === 0} className={chromeHeaderButtonClass}>
+              Export CSV
+            </button>
+          </>
+        }
+      />
 
       {loadError && <ErrorRetry className="mt-6" message={loadError} onRetry={load} />}
 
@@ -201,7 +198,7 @@ export default function FinancePage() {
       )}
 
       {summary && (
-        <div className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
+        <div data-tier1 className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
           <p className="text-xs uppercase tracking-wide text-brand-700">Treasury Balance</p>
           <p className="mt-1 font-serif text-4xl font-bold tabular-nums text-brand-900">
             <AnimatedNumber value={summary.treasuryBalance} format={formatMoney} />
@@ -311,7 +308,7 @@ export default function FinancePage() {
       )}
 
       {!loadError && (
-      <div className="mt-6 overflow-x-auto rounded-xl border border-brand-200">
+      <div data-tier1 className="mt-6 overflow-x-auto rounded-xl border border-brand-200">
         <table className="w-full text-left text-sm">
           <thead className="bg-brand-100 text-xs font-medium uppercase tracking-wide text-brand-700">
             <tr>

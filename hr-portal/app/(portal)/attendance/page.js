@@ -8,7 +8,8 @@ import { toast } from '@/lib/toast';
 import { SkeletonTableRows } from '@/components/ui/Skeleton';
 import ErrorRetry from '@/components/ui/ErrorRetry';
 import { useRosterInfo } from '@/components/RosterInfoProvider';
-import { useTier2Flash } from '@/lib/motion';
+import { useTier1Reveal, useTier2Flash } from '@/lib/motion';
+import ChromeHeader from '@/components/motion/ChromeHeader';
 
 // Leaflet touches the DOM on init, so it can't be part of the server
 // render — see components/VenueMap.js.
@@ -267,6 +268,10 @@ export default function AttendancePage() {
   const [loadError, setLoadError] = useState('');
   const rowRefs = useRef(new Map());
   const flash = useTier2Flash();
+  const contentRef = useRef(null);
+  // Tier 1: opening the page for a new meeting date (spec 6.3) — fires
+  // once per newly-selected meeting, not on every row edit within it.
+  useTier1Reveal(contentRef, { selector: '[data-tier1]', deps: [meeting?.id] });
 
   const canMark = role === 'admin' || role === 'manager';
   const canCreateMeeting = role === 'admin' || role === 'manager';
@@ -392,7 +397,7 @@ export default function AttendancePage() {
   if (role !== null && !canMark) {
     return (
       <div>
-        <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Attendance</h1>
+        <ChromeHeader title="Attendance" />
         <div className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
           <p className="text-brand-700">
             Ask your portfolio's Manager or Admin to show the meeting's check in QR code. Scan it
@@ -408,11 +413,10 @@ export default function AttendancePage() {
   }
 
   return (
-    <div>
-      <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Attendance</h1>
-      <p className="mt-1 text-brand-700">Pick a date, then a meeting, to mark attendance.</p>
+    <div ref={contentRef}>
+      <ChromeHeader title="Attendance" subtitle="Pick a date, then a meeting, to mark attendance." />
 
-      <div className="mt-6 max-w-xs">
+      <div data-tier1 className="mt-6 max-w-xs">
         <label className="block text-sm font-medium text-brand-800">Meeting date</label>
         <input
           type="date"
@@ -462,7 +466,7 @@ export default function AttendancePage() {
             </div>
           )}
 
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+          <div data-tier1 className="mt-6 flex flex-wrap items-center justify-between gap-3">
             <h2 className="flex flex-wrap items-center gap-2 font-serif text-lg font-semibold text-brand-900">
               {meetingLabel(meeting)}, {meeting.date}
               {meeting.status === 'Voided' && <Pill tone="voided">Voided</Pill>}
@@ -507,7 +511,11 @@ export default function AttendancePage() {
             </div>
           </div>
 
-          {canGenerateQr && <CheckinQrSection meeting={meeting} />}
+          {canGenerateQr && (
+            <div data-tier1>
+              <CheckinQrSection meeting={meeting} />
+            </div>
+          )}
 
           {people.length > 0 && (
             <div className="mt-6 flex flex-wrap items-center gap-2">
@@ -525,7 +533,7 @@ export default function AttendancePage() {
             </div>
           )}
 
-          <div className="mt-3 overflow-hidden rounded-xl border border-brand-200">
+          <div data-tier1 className="mt-3 overflow-hidden rounded-xl border border-brand-200">
             <table className="w-full text-left">
               <thead className="bg-brand-100 text-xs font-medium uppercase tracking-wide text-brand-700">
                 <tr>

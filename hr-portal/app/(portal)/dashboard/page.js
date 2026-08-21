@@ -6,9 +6,8 @@ import { toCSV, downloadCSV } from '@/lib/csv';
 import { Skeleton } from '@/components/ui/Skeleton';
 import AnimatedNumber from '@/components/ui/AnimatedNumber';
 import ErrorRetry from '@/components/ui/ErrorRetry';
-import TiltCard from '@/components/motion/TiltCard';
-import CursorSpotlight from '@/components/motion/CursorSpotlight';
-import AmbientGlow from '@/components/motion/AmbientGlow';
+import TiltCard, { glassCardClass } from '@/components/motion/TiltCard';
+import ChromeHeader, { chromeHeaderButtonClass } from '@/components/motion/ChromeHeader';
 import { useTier1Reveal } from '@/lib/motion';
 
 const VIEWS = [
@@ -100,7 +99,7 @@ function DashboardCardSkeleton({ tiles = 3 }) {
 // cards.
 function StatTile({ label, value, suffix = '' }) {
   return (
-    <TiltCard className="rounded-lg border border-brand-200 bg-brand-50 px-4 py-3">
+    <TiltCard className={`rounded-lg px-4 py-3 ${glassCardClass}`}>
       <p className="text-xs uppercase tracking-wide text-brand-700">{label}</p>
       <p className="mt-1 font-serif text-2xl font-bold tabular-nums text-brand-900">
         <AnimatedNumber value={value} />
@@ -283,6 +282,11 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
   const [loadError, setLoadError] = useState('');
+  const contentRef = useRef(null);
+  // Tier 1: cards stagger in once when the page's data finishes loading
+  // — this ref/selector pair re-fires each time the content section
+  // remounts (loading -> loaded), not on every unrelated re-render.
+  useTier1Reveal(contentRef, { selector: '[data-tier1]', deps: [loading] });
 
   const load = useCallback(() => {
     setLoading(true);
@@ -353,49 +357,30 @@ export default function DashboardPage() {
 
   return (
     <div>
-      {/* Fixed dark chrome zone (spec 3.1/6.2) — deliberately not the
-          theme-flipping bg-brand-900 utility, a literal dark surface
-          regardless of light/dark toggle, same reasoning as the Logo
-          component: the spotlight/glow only make sense against a
-          surface that's reliably dark. Colors are the existing
-          brand-900/50/200 hex values, just applied directly instead of
-          through the token that inverts under .dark. */}
-      <div
-        className="no-print relative isolate flex flex-wrap items-center justify-between gap-3 overflow-hidden rounded-2xl px-6 py-6"
-        style={{ background: 'linear-gradient(135deg, #3A2814, #241809)' }}
-      >
-        <AmbientGlow />
-        <CursorSpotlight />
-        <div className="relative">
-          <h1 className="font-serif text-3xl font-bold tracking-tight text-[#F9F4E8]">Dashboard</h1>
-          <p className="mt-1 text-[#E6D3AB]">Attendance across three views, and the recruitment funnel.</p>
-        </div>
-        <div className="relative flex gap-2">
-          {role === 'admin' && (
-            <Link
-              href="/handover"
-              className="rounded-lg border border-[#7D5A2C] px-4 py-2 text-sm font-medium text-[#F2E9D3] hover:bg-white/10"
+      <ChromeHeader
+        title="Dashboard"
+        subtitle="Attendance across three views, and the recruitment funnel."
+        actions={
+          <>
+            {role === 'admin' && (
+              <Link href="/handover" className={chromeHeaderButtonClass}>
+                Year-End Handover Export
+              </Link>
+            )}
+            <button onClick={exportAllCSV} disabled={!applicants} className={chromeHeaderButtonClass}>
+              Export CSV
+            </button>
+            <button
+              onClick={() => window.print()}
+              disabled={!applicants}
+              className={chromeHeaderButtonClass}
+              title="Uses your browser's print dialog. Choose Save as PDF as the destination."
             >
-              Year-End Handover Export
-            </Link>
-          )}
-          <button
-            onClick={exportAllCSV}
-            disabled={!applicants}
-            className="rounded-lg border border-[#7D5A2C] px-4 py-2 text-sm font-medium text-[#F2E9D3] hover:bg-white/10 disabled:opacity-60"
-          >
-            Export CSV
-          </button>
-          <button
-            onClick={() => window.print()}
-            disabled={!applicants}
-            className="rounded-lg border border-[#7D5A2C] px-4 py-2 text-sm font-medium text-[#F2E9D3] hover:bg-white/10 disabled:opacity-60"
-            title="Uses your browser's print dialog. Choose Save as PDF as the destination."
-          >
-            Export PDF
-          </button>
-        </div>
-      </div>
+              Export PDF
+            </button>
+          </>
+        }
+      />
 
       {loading || !applicants ? (
         loadError ? (
@@ -407,7 +392,7 @@ export default function DashboardPage() {
           </div>
         )
       ) : (
-        <div className="mt-6 space-y-6">
+        <div ref={contentRef} className="mt-6 space-y-6">
           <div className="no-print flex flex-wrap gap-2">
             {VIEWS.map((v) => (
               <button
@@ -424,13 +409,13 @@ export default function DashboardPage() {
             ))}
           </div>
 
-          <div key={viewMode} className="nxc-page-in">
+          <div key={viewMode} data-tier1 className="nxc-page-in">
             {viewMode === 'individual' && <IndividualView rosterMembers={rosterMembers} />}
             {viewMode === 'portfolio' && <PortfolioView portfolios={portfolios} />}
             {viewMode === 'council' && <CouncilView data={councilData} loading={loading} />}
           </div>
 
-          <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
+          <div data-tier1 className="rounded-xl border border-brand-200 bg-brand-50 p-6">
             <h2 className="font-serif text-lg font-semibold text-brand-900">Applicant funnel</h2>
             <p className="text-sm text-brand-700">Every applicant, across every portfolio, grouped by status.</p>
             <BarChart data={applicants.funnel} labelKey="status" valueKey="count" color="rgb(var(--brand-600))" />
@@ -439,7 +424,7 @@ export default function DashboardPage() {
           {/* Deliberately its own card, not merged into the funnel above:
               "where they are in the process" and "have we contacted them"
               are different questions, see spec section 3 and 6. */}
-          <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
+          <div data-tier1 className="rounded-xl border border-brand-200 bg-brand-50 p-6">
             <h2 className="font-serif text-lg font-semibold text-brand-900">Applicants emailed</h2>
             <p className="text-sm text-brand-700">How many applicants have received at least one email.</p>
             <div className="mt-4 flex items-center gap-4">
@@ -458,12 +443,14 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
+          <div data-tier1 className="rounded-xl border border-brand-200 bg-brand-50 p-6">
             <h2 className="font-serif text-lg font-semibold text-brand-900">Applicants by portfolio</h2>
             <BarChart data={applicants.byPortfolio} labelKey="portfolio" valueKey="total" color="rgb(var(--brand-400))" />
           </div>
 
-          <DataQualitySection dataQuality={dataQuality} />
+          <div data-tier1>
+            <DataQualitySection dataQuality={dataQuality} />
+          </div>
         </div>
       )}
     </div>

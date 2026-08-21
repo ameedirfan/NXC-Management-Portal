@@ -60,7 +60,18 @@ export default function RootLayout({ children }) {
           }}
         />
       </head>
-      <body className="font-sans bg-brand-50 text-brand-950 antialiased">
+      {/* Light theme's page canvas, #EFE4C9 — warmer than brand-100
+          (#F2E9D3) per Ameed's follow-up ask, but deliberately NOT the
+          next full palette step, brand-200 (#E6D3AB): that would drop
+          text-brand-700 (used pervasively for secondary text across the
+          app, just fixed to clear the 7:1 floor) to 6.17:1, undoing that
+          fix. This is a calculated point ~25% of the way from brand-100
+          toward brand-200 — verified at 7.18:1 for brand-700 text, real
+          margin instead of a coin-flip. Dark theme is untouched (still
+          brand-50's dark value) — explicitly confirmed as already
+          working. Cards/inputs elsewhere still use brand-50, so they
+          keep reading as gently "lifted" off the page. */}
+      <body className="font-sans bg-[#EFE4C9] dark:bg-brand-50 text-brand-950 antialiased">
         <RegisterServiceWorker />
         {children}
       </body>

@@ -1,9 +1,21 @@
 'use client';
 
-import { Suspense, useCallback, useEffect, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
 import Confetti from '@/components/ui/Confetti';
 import Logo from '@/components/Logo';
+
+// Reads the token synchronously on first render rather than via
+// useSearchParams() — that hook forces this page behind a Suspense
+// boundary, and with a null fallback the page rendered completely
+// blank until JS loaded (confirmed via raw SSR output: Next bails to
+// BAILOUT_TO_CLIENT_SIDE_RENDERING). Safe from a hydration mismatch:
+// `window` is undefined during SSR so this returns '' there, and the
+// only JSX that reads `token` (the "Sign in" link's href) is behind a
+// status branch that never renders on the first paint either way.
+function readTokenFromLocation() {
+  if (typeof window === 'undefined') return '';
+  return new URLSearchParams(window.location.search).get('token') || '';
+}
 
 // Reads the token's unsigned body just to peek at geoRestricted, purely
 // a UI hint for whether to request location before submitting. Never
@@ -26,8 +38,7 @@ function peekGeoRestricted(token) {
 // would drop the token from the URL. This page handles its own sign in
 // prompt instead, preserving the token through a login round trip.
 function CheckinContent() {
-  const searchParams = useSearchParams();
-  const token = searchParams.get('token') || '';
+  const [token] = useState(readTokenFromLocation);
   // checking, needs-login, requesting-location, location-blocked,
   // out-of-range, success, error. location-blocked and out-of-range are
   // the two "blocked, Try Again" states from spec section 4 — neither
@@ -117,7 +128,7 @@ function CheckinContent() {
   const loginHref = `/login?next=${encodeURIComponent(`/checkin?token=${token}`)}`;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-brand-950 px-4">
+    <main className="flex min-h-screen items-center justify-center bg-brand-950 px-4">
       <div className="relative w-full max-w-sm rounded-2xl bg-brand-50 p-8 text-center shadow-xl">
         <Confetti burstKey={confettiKey} />
         <div className="mx-auto">
@@ -179,14 +190,10 @@ function CheckinContent() {
           </>
         )}
       </div>
-    </div>
+    </main>
   );
 }
 
 export default function CheckinPage() {
-  return (
-    <Suspense fallback={null}>
-      <CheckinContent />
-    </Suspense>
-  );
+  return <CheckinContent />;
 }

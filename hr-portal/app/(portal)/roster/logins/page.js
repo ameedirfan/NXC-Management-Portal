@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { dedupePortfolios } from '@/lib/portfolio';
 import { toCSV, downloadCSV } from '@/lib/csv';
@@ -9,6 +9,8 @@ import ErrorRetry from '@/components/ui/ErrorRetry';
 import AccessDenied from '@/components/ui/AccessDenied';
 import { toast } from '@/lib/toast';
 import { useFabAction } from '@/components/FabProvider';
+import { useTier1Reveal } from '@/lib/motion';
+import ChromeHeader, { chromeHeaderButtonClass, chromeHeaderPrimaryButtonClass } from '@/components/motion/ChromeHeader';
 
 const CUSTOM_OPTION = '__custom__';
 const ROLES = ['member', 'manager', 'admin'];
@@ -25,6 +27,8 @@ export default function LoginsPage() {
   const [logins, setLogins] = useState([]);
   const [rosterMembers, setRosterMembers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const contentRef = useRef(null);
+  useTier1Reveal(contentRef, { selector: '[data-tier1]', deps: [loading] });
   const [accessDenied, setAccessDenied] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [editingUsername, setEditingUsername] = useState(null);
@@ -273,34 +277,26 @@ export default function LoginsPage() {
   }
 
   return (
-    <div>
+    <div ref={contentRef}>
       <Link href="/roster" className="text-sm text-brand-700 hover:underline">
         Back to roster
       </Link>
 
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-serif text-3xl font-bold tracking-tight text-brand-900">Logins</h1>
-          <p className="mt-1 text-brand-700">
-            Who can sign in, and with which role. Passwords are hashed before they ever touch
-            the sheet.
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <button
-            onClick={openBulk}
-            className="rounded-lg border border-brand-300 px-5 py-2.5 font-medium text-brand-700 hover:bg-brand-100"
-          >
-            Bulk create logins
-          </button>
-          <button
-            onClick={openAddForm}
-            className="rounded-lg bg-brand-900 px-5 py-2.5 font-medium text-brand-50 hover:bg-brand-800"
-          >
-            Add login
-          </button>
-        </div>
-      </div>
+      <ChromeHeader
+        className="mt-2"
+        title="Logins"
+        subtitle="Who can sign in, and with which role. Passwords are hashed before they ever touch the sheet."
+        actions={
+          <>
+            <button onClick={openBulk} className={chromeHeaderButtonClass}>
+              Bulk create logins
+            </button>
+            <button onClick={openAddForm} className={chromeHeaderPrimaryButtonClass}>
+              Add login
+            </button>
+          </>
+        }
+      />
 
       {bulkOpen && (
         <div className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
@@ -643,7 +639,7 @@ export default function LoginsPage() {
         </form>
       )}
 
-      <div className="mt-6 overflow-x-auto rounded-xl border border-brand-200">
+      <div data-tier1 className="mt-6 overflow-x-auto rounded-xl border border-brand-200">
         <table className="w-full text-left text-sm">
           <thead className="bg-brand-100 text-xs font-medium uppercase tracking-wide text-brand-700">
             <tr>

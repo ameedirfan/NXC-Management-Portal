@@ -343,6 +343,45 @@ button:not(:disabled):active {
     transform: translate(3%, -4%) scale(1.08);
   }
 }
+/* Tier 3 — the persistent portal-wide mesh (AmbientBackground.js), a
+   slower breathing pulse rather than the header glow's drift, tuned to
+   read as "alive" without ever drawing the eye the way a moving object
+   would — opacity/scale only, no position change, so it never competes
+   with anything actually being read. */
+@keyframes nxc-ambient-pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+.nxc-ambient-mesh {
+  border-radius: 9999px;
+  filter: blur(90px);
+  animation: nxc-ambient-pulse 14s ease-in-out infinite;
+}
+
+/* Tier 3 — portal-wide cursor glow (PortalCursorSpotlight.js). Fixed to
+   the viewport, -z-10 (same layer as the ambient mesh), so it can only
+   ever brighten the background wash — it is never capable of sitting
+   over text since it's behind the entire page, not just visually dim. */
+.nxc-portal-spotlight {
+  position: fixed;
+  inset: 0;
+  z-index: -10;
+  pointer-events: none;
+  background: radial-gradient(
+    600px circle at var(--portal-spot-x, 50%) var(--portal-spot-y, 50%),
+    rgb(var(--brand-400) / 0.10),
+    transparent 70%
+  );
+  opacity: var(--portal-spot-opacity, 0);
+  transition: opacity 400ms var(--ease-out);
+}
+
 .nxc-ambient-glow {
   position: absolute;
   border-radius: 9999px;
