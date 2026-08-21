@@ -11,6 +11,15 @@ import { usePrefersReducedMotion } from '@/lib/motion';
 // listener attached under reduced motion.
 const MAX_TILT_DEG = 6;
 
+// Shared glass recipe for feature/summary cards — same frosted-glass
+// language as the Announcements/Recruitment/Finance modals (spec's one
+// other glass surface family), extended to cards per Ameed's read of
+// the 2026 trend notes ("deployed strategically for navigation, modals,
+// AND feature cards"). Deliberately not used on dense table/list rows —
+// see ChromeHeader.js and lib/motion.js's Tier 2 primitives for those.
+export const glassCardClass =
+  'border border-white/50 border-t-white/80 bg-brand-50/60 shadow-lg backdrop-blur-xl backdrop-saturate-150';
+
 export default function TiltCard({ as: Tag = 'div', className = '', children, ...props }) {
   const ref = useRef(null);
   const reduced = usePrefersReducedMotion();

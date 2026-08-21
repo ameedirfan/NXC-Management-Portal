@@ -6,7 +6,7 @@ import { toCSV, downloadCSV } from '@/lib/csv';
 import { Skeleton } from '@/components/ui/Skeleton';
 import AnimatedNumber from '@/components/ui/AnimatedNumber';
 import ErrorRetry from '@/components/ui/ErrorRetry';
-import TiltCard from '@/components/motion/TiltCard';
+import TiltCard, { glassCardClass } from '@/components/motion/TiltCard';
 import ChromeHeader, { chromeHeaderButtonClass } from '@/components/motion/ChromeHeader';
 import { useTier1Reveal } from '@/lib/motion';
 
@@ -99,7 +99,7 @@ function DashboardCardSkeleton({ tiles = 3 }) {
 // cards.
 function StatTile({ label, value, suffix = '' }) {
   return (
-    <TiltCard className="rounded-lg border border-brand-200 bg-brand-50 px-4 py-3">
+    <TiltCard className={`rounded-lg px-4 py-3 ${glassCardClass}`}>
       <p className="text-xs uppercase tracking-wide text-brand-700">{label}</p>
       <p className="mt-1 font-serif text-2xl font-bold tabular-nums text-brand-900">
         <AnimatedNumber value={value} />

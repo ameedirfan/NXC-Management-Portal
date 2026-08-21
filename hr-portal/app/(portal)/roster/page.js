@@ -11,7 +11,7 @@ import { useFabAction } from '@/components/FabProvider';
 import { toast } from '@/lib/toast';
 import { useTier1Reveal } from '@/lib/motion';
 import ChromeHeader, { chromeHeaderButtonClass } from '@/components/motion/ChromeHeader';
-import TiltCard from '@/components/motion/TiltCard';
+import TiltCard, { glassCardClass } from '@/components/motion/TiltCard';
 
 const NEW_PORTFOLIO_OPTION = '__new_portfolio__';
 
@@ -266,10 +266,7 @@ export default function RosterPage() {
       {portfolioStats.length > 0 && (
         <div data-tier1 className="mt-6 flex flex-wrap gap-3">
           {portfolioStats.map((p) => (
-            <TiltCard
-              key={p.portfolio}
-              className="rounded-lg border border-brand-200 bg-brand-50 px-4 py-2.5"
-            >
+            <TiltCard key={p.portfolio} className={`rounded-lg px-4 py-2.5 ${glassCardClass}`}>
               <p className="text-sm font-medium text-brand-900">{p.portfolio}</p>
               <p className="text-xs tabular-nums text-brand-700">
                 {p.headcount} member{p.headcount === 1 ? '' : 's'} · {p.percentage}% attendance
