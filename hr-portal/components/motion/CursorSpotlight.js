@@ -9,6 +9,11 @@ import { usePrefersReducedMotion } from '@/lib/motion';
 // aria-hidden, and the mousemove listener is never attached at all
 // under reduced motion (not just visually suppressed — no listener, no
 // per-frame style writes).
+//
+// Also follows touch while a finger is actually in contact with this
+// zone — touch has no "hover" to fake, a finger only exists to the
+// browser while touching, so this fades out on lift rather than
+// pretending to track something that isn't there between touches.
 export default function CursorSpotlight() {
   const ref = useRef(null);
   const reduced = usePrefersReducedMotion();
@@ -19,21 +24,37 @@ export default function CursorSpotlight() {
     const parent = el?.parentElement;
     if (!el || !parent) return;
 
-    function handleMove(e) {
+    function moveTo(clientX, clientY) {
       const rect = parent.getBoundingClientRect();
-      el.style.setProperty('--spot-x', `${e.clientX - rect.left}px`);
-      el.style.setProperty('--spot-y', `${e.clientY - rect.top}px`);
+      el.style.setProperty('--spot-x', `${clientX - rect.left}px`);
+      el.style.setProperty('--spot-y', `${clientY - rect.top}px`);
       el.style.setProperty('--spot-opacity', '1');
     }
-    function handleLeave() {
+    function fadeOut() {
       el.style.setProperty('--spot-opacity', '0');
     }
 
-    parent.addEventListener('mousemove', handleMove);
-    parent.addEventListener('mouseleave', handleLeave);
+    function handleMouseMove(e) {
+      moveTo(e.clientX, e.clientY);
+    }
+    function handleTouch(e) {
+      const t = e.touches[0];
+      if (t) moveTo(t.clientX, t.clientY);
+    }
+
+    parent.addEventListener('mousemove', handleMouseMove);
+    parent.addEventListener('mouseleave', fadeOut);
+    parent.addEventListener('touchstart', handleTouch, { passive: true });
+    parent.addEventListener('touchmove', handleTouch, { passive: true });
+    parent.addEventListener('touchend', fadeOut, { passive: true });
+    parent.addEventListener('touchcancel', fadeOut, { passive: true });
     return () => {
-      parent.removeEventListener('mousemove', handleMove);
-      parent.removeEventListener('mouseleave', handleLeave);
+      parent.removeEventListener('mousemove', handleMouseMove);
+      parent.removeEventListener('mouseleave', fadeOut);
+      parent.removeEventListener('touchstart', handleTouch);
+      parent.removeEventListener('touchmove', handleTouch);
+      parent.removeEventListener('touchend', fadeOut);
+      parent.removeEventListener('touchcancel', fadeOut);
     };
   }, [reduced]);
 
