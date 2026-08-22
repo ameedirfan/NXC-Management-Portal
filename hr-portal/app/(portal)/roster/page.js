@@ -255,7 +255,7 @@ export default function RosterPage() {
     <div ref={contentRef}>
       <ChromeHeader
         title="Roster"
-        subtitle="Add and edit members here. The Google Sheet stays fully in sync and remains the record of truth, nothing here replaces it."
+        subtitle="Add and edit members here."
         actions={
           (role === 'admin' || role === 'manager') && (
             <Link href="/roster/logins" className={chromeHeaderButtonClass}>
@@ -436,8 +436,8 @@ export default function RosterPage() {
           </div>
           {editingCmsId !== null && (
             <p className="mt-2 text-xs text-brand-700">
-              CMS ID can't be changed here. It's how attendance, applications, and logins are
-              linked to this person. Fix a wrong CMS ID directly in the Roster tab.
+              CMS ID can't be changed here — it links attendance, applications, and logins to this
+              person. Fix it in the Roster sheet instead.
             </p>
           )}
           {formError && <p className="mt-3 text-sm text-red-700">{formError}</p>}

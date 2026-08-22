@@ -179,7 +179,7 @@ export default function FinancePage() {
     <div ref={contentRef}>
       <ChromeHeader
         title="Finance"
-        subtitle="Income and expenses. The Google Sheet remains the record of truth."
+        subtitle="Income and expenses."
         actions={
           <>
             <button onClick={openAddForm} className={chromeHeaderPrimaryButtonClass}>
@@ -214,9 +214,7 @@ export default function FinancePage() {
             <span className="tabular-nums">{formatMoney(summary.totalExpense)}</span> expense.
           </p>
           <p className="mt-2 text-xs text-brand-700">
-            To set the opening balance, add a row directly in the Finance sheet with Type = "Opening
-            Balance" and Amount = the starting figure. There's no app-side field for it on purpose,
-            whatever's in that row is what every calculation starts from.
+            To set the opening balance, add a row in the Finance sheet with Type = "Opening Balance".
           </p>
         </div>
       )}

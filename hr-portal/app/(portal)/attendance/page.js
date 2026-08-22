@@ -101,8 +101,7 @@ function CreateMeetingSection({ portfolios, date, onCreated }) {
     <div className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
       <h2 className="font-serif text-lg font-semibold text-brand-900">Create a meeting</h2>
       <p className="text-sm text-brand-700">
-        Creates an Absent record for everyone in scope right away, marking a specific person
-        Present happens afterwards, on this page or via the QR code.
+        Marks everyone Absent by default. Mark people Present here or via the QR code.
       </p>
 
       <div className="mt-4 flex flex-wrap items-end gap-3">
