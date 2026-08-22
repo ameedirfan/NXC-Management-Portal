@@ -338,7 +338,7 @@ export default function RecruitmentPage() {
                 applicants.map((a) => {
                   const sendable = isSendableEmail(a.email);
                   return (
-                    <tr key={a.cmsId} className="border-t border-brand-100 hover:bg-brand-50">
+                    <tr key={a.cmsId} className="nxc-glass-row border-t border-brand-100/50">
                       {sendMode && (
                         <td className="py-2 pr-4">
                           <label className="inline-flex h-6 w-6 cursor-pointer items-center justify-center">

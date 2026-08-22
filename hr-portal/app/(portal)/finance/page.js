@@ -310,9 +310,9 @@ export default function FinancePage() {
       )}
 
       {!loadError && (
-      <Tier1Item ref={ledgerRef} className="mt-6 overflow-x-auto rounded-xl border border-brand-200">
+      <Tier1Item ref={ledgerRef} className="mt-6 overflow-x-auto nxc-glass-table rounded-xl backdrop-blur-xl backdrop-saturate-150">
         <table className="w-full text-left text-sm">
-          <thead className="bg-brand-100 text-xs font-medium uppercase tracking-wide text-brand-700">
+          <thead className="nxc-glass-head text-xs font-medium uppercase tracking-wide text-brand-700">
             <tr>
               <th className="px-4 py-3">Date</th>
               <th className="px-4 py-3">Description</th>
@@ -341,7 +341,7 @@ export default function FinancePage() {
               </tr>
             ) : (
               entries.map((e) => (
-                <tr key={e.row} className="border-t border-brand-100 hover:bg-brand-50">
+                <tr key={e.row} className="nxc-glass-row border-t border-brand-100/50">
                   <td className="px-4 py-3 tabular-nums text-brand-700">{e.date}</td>
                   <td className="px-4 py-3 font-medium text-brand-900">{e.description}</td>
                   <td className="px-4 py-3 tabular-nums">

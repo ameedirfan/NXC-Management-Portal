@@ -219,7 +219,7 @@ function PortfolioView({ portfolios }) {
           <h3 className="mt-6 text-sm font-medium text-brand-700">Member by member</h3>
           <div className="mt-2 overflow-x-auto rounded-lg border border-brand-200">
             <table className="w-full text-left text-sm">
-              <thead className="bg-brand-100 text-xs font-medium uppercase tracking-wide text-brand-700">
+              <thead className="nxc-glass-head text-xs font-medium uppercase tracking-wide text-brand-700">
                 <tr>
                   <th className="px-3 py-2">Name</th>
                   <th className="px-3 py-2">Present</th>
@@ -229,7 +229,7 @@ function PortfolioView({ portfolios }) {
               </thead>
               <tbody>
                 {data.members.map((m) => (
-                  <tr key={m.cmsId} className="border-t border-brand-100 hover:bg-brand-50">
+                  <tr key={m.cmsId} className="nxc-glass-row border-t border-brand-100/50">
                     <td className="px-3 py-2">{m.fullName}</td>
                     <td className="px-3 py-2 tabular-nums">{m.present}</td>
                     <td className="px-3 py-2 tabular-nums">{m.absent}</td>

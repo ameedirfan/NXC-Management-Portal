@@ -386,6 +386,73 @@ button:not(:disabled):active {
   animation: nxc-ambient-pulse 14s ease-in-out infinite;
 }
 
+/* Glossy glass for data tables.
+
+   The expensive/illegible way to do this is a backdrop-filter on every
+   row — forty blur layers, with text sitting directly on blurred
+   content. This does it the other way round: ONE blur on the table
+   surface (which picks up the ambient background behind it, so it reads
+   as real glass), and the rows get gloss from gradients and hairline
+   highlights only. No per-row backdrop-filter, so the cost is constant
+   rather than per-row, and text still sits on near-solid ground.
+
+   0.72 opacity is picked, not guessed: against the most saturated point
+   of the ambient mesh it keeps text-brand-700 (the secondary colour
+   used throughout the tables) at ~7.5:1, clear of the spec's 7:1 floor
+   with real margin, while still letting ~28% of the backdrop through. */
+/* NOTE: the blur itself is applied with Tailwind's backdrop-blur-xl /
+   backdrop-saturate-150 utilities on the element, not here. A raw
+   `backdrop-filter` declaration in this file is silently dropped by
+   Tailwind v4's CSS processor — verified by reading the compiled rule
+   back out of document.styleSheets, where background/border/shadow
+   survived and the filter had vanished. Every glass surface already
+   working in this app (the modal panels, the stat cards) uses the
+   utilities for the same reason. */
+.nxc-glass-table {
+  background: rgb(var(--brand-50) / 0.72);
+  border: 1px solid rgb(255 255 255 / 0.45);
+  border-top-color: rgb(255 255 255 / 0.75);
+  box-shadow: 0 10px 34px -14px rgb(var(--brand-900) / 0.30);
+}
+
+/* Header band: frostier than the rows so the column labels read as a
+   distinct layer of the same material. */
+.nxc-glass-head {
+  background: rgb(var(--brand-200) / 0.55);
+  box-shadow: inset 0 -1px 0 rgb(255 255 255 / 0.35);
+}
+
+/* The gloss itself: a soft top-lit gradient plus a hairline specular
+   highlight along each row's top edge — the thing that reads as
+   "polished glass" rather than "translucent panel". Background-color is
+   left free for the hover state so the two never fight. */
+.nxc-glass-row {
+  background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.10), rgb(255 255 255 / 0) 60%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.22);
+  transition: background-color 160ms var(--ease-out);
+}
+.nxc-glass-row:hover {
+  background-color: rgb(255 255 255 / 0.18);
+}
+
+/* Dark mode: the same material, lit from a dimmer source. The white
+   highlights would blow out against the dark palette at light-mode
+   strength, so they're pulled well down. */
+.dark .nxc-glass-table {
+  border-color: rgb(255 255 255 / 0.10);
+  border-top-color: rgb(255 255 255 / 0.18);
+}
+.dark .nxc-glass-head {
+  box-shadow: inset 0 -1px 0 rgb(255 255 255 / 0.10);
+}
+.dark .nxc-glass-row {
+  background-image: linear-gradient(to bottom, rgb(255 255 255 / 0.05), rgb(255 255 255 / 0) 60%);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.07);
+}
+.dark .nxc-glass-row:hover {
+  background-color: rgb(255 255 255 / 0.07);
+}
+
 /* Elements the WelcomeIntro timeline reveals. They start hidden so the
    sequence can play, and GSAP sets inline opacity as it animates them
    in (inline beats this class).
