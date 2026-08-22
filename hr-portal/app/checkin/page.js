@@ -157,7 +157,7 @@ function CheckinContent() {
         {(status === 'location-blocked' || status === 'out-of-range') && (
           <>
             <p className="mt-4 text-2xl">📍</p>
-            <p className="mt-2 text-red-700">{message}</p>
+            <p className="mt-2 nxc-error-text">{message}</p>
             <button
               onClick={requestLocation}
               className="mt-4 inline-block w-full rounded-lg bg-brand-900 py-2.5 font-medium text-brand-50 hover:bg-brand-800"
@@ -186,7 +186,7 @@ function CheckinContent() {
         {status === 'error' && (
           <>
             <p className="mt-4 text-2xl">⚠️</p>
-            <p className="mt-2 text-red-700">{message}</p>
+            <p className="mt-2 nxc-error-text">{message}</p>
           </>
         )}
       </div>

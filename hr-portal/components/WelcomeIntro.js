@@ -4,8 +4,12 @@ import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import { usePrefersReducedMotion, initGsap } from '@/lib/motion';
 import { tabsForRole } from '@/components/NavBar';
+import { WELCOME_COOKIE } from '@/lib/welcome';
 
-export const WELCOME_COOKIE = 'nxc_welcome_seen';
+// Re-exported for existing importers; the definition lives in
+// lib/welcome.js so the server layout can read it as a real string
+// rather than a client reference.
+export { WELCOME_COOKIE };
 
 function roleLine(session) {
   if (session.role === 'admin') return 'Admin';

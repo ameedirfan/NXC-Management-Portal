@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { toCSV, downloadCSV } from '@/lib/csv';
 import { isSendableEmail } from '@/lib/email';

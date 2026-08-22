@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -94,7 +94,7 @@ export default function TripDetailPage() {
     );
   }
   if (loadError) return <ErrorRetry message={loadError} onRetry={load} />;
-  if (!trip) return <p className="text-red-700">Trip not found.</p>;
+  if (!trip) return <p className="nxc-error-text">Trip not found.</p>;
 
   return (
     <Tier1Group replayKey={loading}>
@@ -108,7 +108,7 @@ export default function TripDetailPage() {
         subtitle={`${trip.days} day${String(trip.days) === '1' ? '' : 's'} · ${trip.participantCount} participants`}
       />
 
-      {uploadError && <p className="mt-4 text-sm text-red-700">{uploadError}</p>}
+      {uploadError && <p className="mt-4 text-sm nxc-error-text">{uploadError}</p>}
 
       <Tier1Item className="mt-6 grid gap-6 lg:grid-cols-3">
         {SLOTS.map((slot) => (

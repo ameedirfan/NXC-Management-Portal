@@ -178,7 +178,7 @@ export default function ComposePanel({ recipients, skipped, statuses, onClose, o
             </p>
 
             {skipped.length > 0 && (
-              <p className="mt-2 text-sm text-brand-600">
+              <p className="mt-2 text-sm text-brand-700">
                 {skipped.length} skipped, no email on file:{' '}
                 {skipped.map((a) => a.fullName || a.cmsId).join(', ')}.
               </p>
@@ -217,7 +217,7 @@ export default function ComposePanel({ recipients, skipped, statuses, onClose, o
               />
             </div>
 
-            {confirmError && <p className="mt-3 text-sm text-red-700">{confirmError}</p>}
+            {confirmError && <p className="mt-3 text-sm nxc-error-text">{confirmError}</p>}
           </div>
 
           <div className="flex flex-wrap items-center gap-3 border-t border-brand-200 px-5 py-3">
@@ -261,7 +261,7 @@ export default function ComposePanel({ recipients, skipped, statuses, onClose, o
         </div>
 
         <div className="flex-1 overflow-y-auto px-5 py-4">
-          <p className="text-sm text-brand-600">
+          <p className="text-sm text-brand-700">
             {recipients.length} recipient{recipients.length === 1 ? '' : 's'} selected.
           </p>
 
@@ -314,7 +314,7 @@ export default function ComposePanel({ recipients, skipped, statuses, onClose, o
             }}
           />
 
-          {error && <p className="mt-3 text-sm text-red-700">{error}</p>}
+          {error && <p className="mt-3 text-sm nxc-error-text">{error}</p>}
         </div>
 
         <div className="flex flex-wrap items-center gap-3 border-t border-brand-200 px-5 py-3">

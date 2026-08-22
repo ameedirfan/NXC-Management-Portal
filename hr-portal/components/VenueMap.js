@@ -133,7 +133,7 @@ export default function VenueMap({ value, onChange, className = '' }) {
         <p className="text-xs text-brand-700">Or tap the map to pin manually, drag the pin to fine tune.</p>
       </div>
 
-      {locateError && <p className="mt-2 text-sm text-red-700">{locateError}</p>}
+      {locateError && <p className="mt-2 text-sm nxc-error-text">{locateError}</p>}
 
       {/* `isolate` matters more than it looks. Leaflet hard-codes a tall
           z-index ladder on its own panes and controls (up to 1000), and

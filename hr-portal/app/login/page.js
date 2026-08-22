@@ -88,7 +88,7 @@ function LoginForm() {
             />
           </div>
 
-          {error && <p className="text-sm text-red-700">{error}</p>}
+          {error && <p className="text-sm nxc-error-text">{error}</p>}
 
           <button
             type="submit"

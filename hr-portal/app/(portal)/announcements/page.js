@@ -175,7 +175,7 @@ function ComposePanel({ initial, onClose, onSent, onSendConfirmed, onSendFailed 
             dangerouslySetInnerHTML={{ __html: renderAnnouncementHtml(message) || '<span class="text-brand-700">Nothing yet.</span>' }}
           />
 
-          {error && <p className="mt-3 text-sm text-red-700">{error}</p>}
+          {error && <p className="mt-3 text-sm nxc-error-text">{error}</p>}
         </div>
 
         <div className="flex items-center gap-3 border-t border-brand-200 px-5 py-3">
@@ -341,7 +341,7 @@ export default function AnnouncementsPage() {
                       <span className="text-brand-700">Delete this announcement?</span>
                       <button
                         onClick={() => handleDelete(a.id)}
-                        className="rounded-lg border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50"
+                        className="rounded-lg border border-red-300 px-3 py-1.5 text-sm font-medium nxc-error-text hover:bg-red-50"
                       >
                         Confirm
                       </button>
@@ -355,7 +355,7 @@ export default function AnnouncementsPage() {
                   ) : (
                     <button
                       onClick={() => setDeleteConfirmId(a.id)}
-                      className="text-sm font-medium text-red-700 hover:underline"
+                      className="text-sm font-medium nxc-error-text hover:underline"
                     >
                       Delete
                     </button>
