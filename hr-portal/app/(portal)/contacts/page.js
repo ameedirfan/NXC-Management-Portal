@@ -7,8 +7,9 @@ import EmptyState from '@/components/ui/EmptyState';
 import ErrorRetry from '@/components/ui/ErrorRetry';
 import { toast } from '@/lib/toast';
 import { useFabAction } from '@/components/FabProvider';
-import { useTier1Reveal } from '@/lib/motion';
+import { playTier1Success } from '@/lib/motion';
 import ChromeHeader, { chromeHeaderPrimaryButtonClass } from '@/components/motion/ChromeHeader';
+import { motion, AnimatePresence } from 'motion/react';
 
 const EMPTY_FORM = { fullName: '', position: '', phone: '', email: '' };
 
@@ -17,7 +18,7 @@ export default function ContactsPage() {
   const [canManage, setCanManage] = useState(false);
   const [loading, setLoading] = useState(true);
   const contentRef = useRef(null);
-  useTier1Reveal(contentRef, { selector: '[data-tier1]', deps: [loading] });
+  const gridRef = useRef(null);
   const [loadError, setLoadError] = useState('');
   const [formOpen, setFormOpen] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
@@ -46,7 +47,7 @@ export default function ContactsPage() {
     load();
   }, [load]);
 
-  useFabAction(canManage ? '+ Contact' : undefined, () => openAddForm());
+  useFabAction(canManage ? 'Contact' : undefined, () => openAddForm());
 
   function openAddForm() {
     setEditingRow(null);
@@ -100,6 +101,7 @@ export default function ContactsPage() {
     toast(isEdit ? 'Contact updated' : 'Contact added');
     setFormOpen(false);
     load();
+    requestAnimationFrame(() => playTier1Success(gridRef.current));
   }
 
   return (
@@ -184,7 +186,7 @@ export default function ContactsPage() {
         </form>
       )}
 
-      <div data-tier1 className="mt-6 grid gap-3 sm:grid-cols-2">
+      <div ref={gridRef} className="mt-6 grid gap-3 sm:grid-cols-2">
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="flex items-center justify-between gap-4 rounded-xl border border-brand-200 bg-brand-50 p-4">
@@ -210,29 +212,36 @@ export default function ContactsPage() {
             onAction={canManage ? openAddForm : undefined}
           />
         ) : (
-          contacts.map((c) => (
-            <div
-              key={c.row}
-              className="flex items-center justify-between gap-4 rounded-xl border border-brand-200 bg-brand-50 p-4"
-            >
-              <div>
-                <p className="font-semibold text-brand-900">{c.fullName}</p>
-                <p className="text-sm text-brand-700">{c.position}</p>
-                {c.email && <p className="mt-1 text-sm text-brand-700">{c.email}</p>}
-              </div>
-              <div className="flex shrink-0 items-center gap-3">
-                <p className="text-right font-medium text-brand-800">{c.phone}</p>
-                {canManage && (
-                  <button
-                    onClick={() => openEditForm(c)}
-                    className="text-sm font-medium text-brand-900 hover:underline"
-                  >
-                    Edit
-                  </button>
-                )}
-              </div>
-            </div>
-          ))
+          <AnimatePresence initial={false}>
+            {contacts.map((c) => (
+              <motion.div
+                key={c.row}
+                layout
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+                className="flex items-center justify-between gap-4 rounded-xl border border-brand-200 bg-brand-50 p-4"
+              >
+                <div>
+                  <p className="font-semibold text-brand-900">{c.fullName}</p>
+                  <p className="text-sm text-brand-700">{c.position}</p>
+                  {c.email && <p className="mt-1 text-sm text-brand-700">{c.email}</p>}
+                </div>
+                <div className="flex shrink-0 items-center gap-3">
+                  <p className="text-right font-medium text-brand-800">{c.phone}</p>
+                  {canManage && (
+                    <button
+                      onClick={() => openEditForm(c)}
+                      className="text-sm font-medium text-brand-900 hover:underline"
+                    >
+                      Edit
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
         )}
       </div>
     </div>

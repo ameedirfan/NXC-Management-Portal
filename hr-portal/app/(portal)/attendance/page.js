@@ -8,8 +8,9 @@ import { toast } from '@/lib/toast';
 import { SkeletonTableRows } from '@/components/ui/Skeleton';
 import ErrorRetry from '@/components/ui/ErrorRetry';
 import { useRosterInfo } from '@/components/RosterInfoProvider';
-import { useTier1Reveal, useTier2Flash } from '@/lib/motion';
+import { useTier2Flash, useRowUpdateFlash, playTier1Success } from '@/lib/motion';
 import ChromeHeader from '@/components/motion/ChromeHeader';
+import { Tier1Group, Tier1Item } from '@/components/motion/Tier1Group';
 
 // Leaflet touches the DOM on init, so it can't be part of the server
 // render — see components/VenueMap.js.
@@ -101,8 +102,7 @@ function CreateMeetingSection({ portfolios, date, onCreated }) {
     <div className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
       <h2 className="font-serif text-lg font-semibold text-brand-900">Create a meeting</h2>
       <p className="text-sm text-brand-700">
-        Creates an Absent record for everyone in scope right away, marking a specific person
-        Present happens afterwards, on this page or via the QR code.
+        Marks everyone Absent by default. Mark people Present here or via the QR code.
       </p>
 
       <div className="mt-4 flex flex-wrap items-end gap-3">
@@ -191,6 +191,7 @@ function CheckinQrSection({ meeting }) {
   const [checkinUrl, setCheckinUrl] = useState('');
   const [expiresAt, setExpiresAt] = useState(null);
   const [error, setError] = useState('');
+  const qrRef = useRef(null);
 
   async function generate() {
     setState('generating');
@@ -209,6 +210,9 @@ function CheckinQrSection({ meeting }) {
     setCheckinUrl(`${window.location.origin}/checkin?token=${data.token}`);
     setExpiresAt(Date.now() + data.expiresInSeconds * 1000);
     setState('ready');
+    // Tier 1 success confirmation (spec 3.1: "generating a QR code") —
+    // fires once per generate() click, not on every render.
+    requestAnimationFrame(() => playTier1Success(qrRef.current));
   }
 
   return (
@@ -232,7 +236,7 @@ function CheckinQrSection({ meeting }) {
       {state === 'error' && <p className="mt-3 text-sm text-red-700">{error}</p>}
 
       {state === 'ready' && (
-        <div className="mt-4 flex flex-col items-center gap-3 sm:flex-row sm:items-start">
+        <div ref={qrRef} className="mt-4 flex flex-col items-center gap-3 sm:flex-row sm:items-start">
           <img
             src={qrImageUrl(checkinUrl)}
             alt="Meeting check in QR code"
@@ -268,10 +272,7 @@ export default function AttendancePage() {
   const [loadError, setLoadError] = useState('');
   const rowRefs = useRef(new Map());
   const flash = useTier2Flash();
-  const contentRef = useRef(null);
-  // Tier 1: opening the page for a new meeting date (spec 6.3) — fires
-  // once per newly-selected meeting, not on every row edit within it.
-  useTier1Reveal(contentRef, { selector: '[data-tier1]', deps: [meeting?.id] });
+  const rowUpdateFlash = useRowUpdateFlash();
 
   const canMark = role === 'admin' || role === 'manager';
   const canCreateMeeting = role === 'admin' || role === 'manager';
@@ -327,16 +328,22 @@ export default function AttendancePage() {
     setSelectedMeetingId(newMeetingId);
   }
 
-  // Tier 2 (spec 6.3): instant colour swap + sub-150ms scale pulse,
-  // nothing more. The state update below is always one map() over the
-  // array regardless of whether one row or all forty changed — the
-  // flash() calls just add a CSS pulse to each affected row's DOM node
-  // in the same synchronous pass, never a per-row delay.
+  // A direct click on one row's radio — gets the fuller single-row
+  // animation (useRowUpdateFlash), since a person only ever pays this
+  // cost once per click, not forty times in a row.
   function setStatus(cmsId, status) {
     setPeople((prev) => prev.map((p) => (p.cmsId === cmsId ? { ...p, status } : p)));
-    flash(rowRefs.current.get(cmsId));
+    rowUpdateFlash(rowRefs.current.get(cmsId));
   }
 
+  // Bulk action — must stay the instant, sub-150ms pulse (spec 6.3).
+  // The state update is always one map() over the array regardless of
+  // whether one row or all forty changed; the flash() calls just add a
+  // CSS pulse to each affected row's DOM node in the same synchronous
+  // pass, never a per-row delay. This is exactly the tier that broke
+  // the earlier Attendance prototype — never swap this for the richer
+  // single-row animation, and never call either flash in a loop with a
+  // delay between iterations.
   function markAll(status) {
     setPeople((prev) => prev.map((p) => ({ ...p, status })));
     rowRefs.current.forEach((el) => flash(el));
@@ -413,10 +420,10 @@ export default function AttendancePage() {
   }
 
   return (
-    <div ref={contentRef}>
+    <Tier1Group replayKey={meeting?.id}>
       <ChromeHeader title="Attendance" subtitle="Pick a date, then a meeting, to mark attendance." />
 
-      <div data-tier1 className="mt-6 max-w-xs">
+      <Tier1Item className="mt-6 max-w-xs">
         <label className="block text-sm font-medium text-brand-800">Meeting date</label>
         <input
           type="date"
@@ -424,7 +431,7 @@ export default function AttendancePage() {
           onChange={(e) => setDate(e.target.value)}
           className="mt-1 w-full rounded-lg border border-brand-300 bg-brand-50 px-3 py-2"
         />
-      </div>
+      </Tier1Item>
 
       {loadError && <ErrorRetry className="mt-6" message={loadError} onRetry={loadMeetings} />}
 
@@ -466,7 +473,7 @@ export default function AttendancePage() {
             </div>
           )}
 
-          <div data-tier1 className="mt-6 flex flex-wrap items-center justify-between gap-3">
+          <Tier1Item className="mt-6 flex flex-wrap items-center justify-between gap-3">
             <h2 className="flex flex-wrap items-center gap-2 font-serif text-lg font-semibold text-brand-900">
               {meetingLabel(meeting)}, {meeting.date}
               {meeting.status === 'Voided' && <Pill tone="voided">Voided</Pill>}
@@ -509,12 +516,12 @@ export default function AttendancePage() {
               </div>
               )}
             </div>
-          </div>
+          </Tier1Item>
 
           {canGenerateQr && (
-            <div data-tier1>
+            <Tier1Item>
               <CheckinQrSection meeting={meeting} />
-            </div>
+            </Tier1Item>
           )}
 
           {people.length > 0 && (
@@ -533,7 +540,7 @@ export default function AttendancePage() {
             </div>
           )}
 
-          <div data-tier1 className="mt-3 overflow-hidden rounded-xl border border-brand-200">
+          <Tier1Item className="mt-3 overflow-hidden rounded-xl border border-brand-200">
             <table className="w-full text-left">
               <thead className="bg-brand-100 text-xs font-medium uppercase tracking-wide text-brand-700">
                 <tr>
@@ -583,7 +590,7 @@ export default function AttendancePage() {
                 )}
               </tbody>
             </table>
-          </div>
+          </Tier1Item>
 
           <div className="mt-6 flex items-center gap-3">
             <button
@@ -604,6 +611,6 @@ export default function AttendancePage() {
           </div>
         </>
       )}
-    </div>
+    </Tier1Group>
   );
 }

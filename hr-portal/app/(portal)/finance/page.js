@@ -9,8 +9,9 @@ import AccessDenied from '@/components/ui/AccessDenied';
 import { toast } from '@/lib/toast';
 import AnimatedNumber from '@/components/ui/AnimatedNumber';
 import { useFabAction } from '@/components/FabProvider';
-import { useTier1Reveal } from '@/lib/motion';
+import { playTier1Success } from '@/lib/motion';
 import ChromeHeader, { chromeHeaderButtonClass, chromeHeaderPrimaryButtonClass } from '@/components/motion/ChromeHeader';
+import { Tier1Group, Tier1Item } from '@/components/motion/Tier1Group';
 
 const EMPTY_FORM = { date: '', description: '', amount: '', type: '' };
 
@@ -24,8 +25,7 @@ export default function FinancePage() {
   const [loading, setLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
   const [loadError, setLoadError] = useState('');
-  const contentRef = useRef(null);
-  useTier1Reveal(contentRef, { selector: '[data-tier1]', deps: [loading] });
+  const ledgerRef = useRef(null);
   const [formOpen, setFormOpen] = useState(false);
   const [modalState, setModalState] = useState('entering');
   const [editingRow, setEditingRow] = useState(null);
@@ -81,7 +81,7 @@ export default function FinancePage() {
     load();
   }, [load]);
 
-  useFabAction(!accessDenied ? '+ Row' : undefined, () => openAddForm());
+  useFabAction(!accessDenied ? 'Row' : undefined, () => openAddForm());
 
   function openAddForm() {
     setEditingRow(null);
@@ -150,6 +150,10 @@ export default function FinancePage() {
     toast(isEdit ? 'Entry updated' : 'Entry added');
     closeForm();
     load();
+    // Tier 1 success confirmation on the ledger, not the ledger's own
+    // row-level Tier 2 discipline — this is the deliberate once-off
+    // "your entry was recorded" moment (spec 6.7).
+    requestAnimationFrame(() => playTier1Success(ledgerRef.current));
   }
 
   function exportCSV() {
@@ -171,10 +175,10 @@ export default function FinancePage() {
   }
 
   return (
-    <div ref={contentRef}>
+    <Tier1Group replayKey={loading}>
       <ChromeHeader
         title="Finance"
-        subtitle="Income and expenses. The Google Sheet remains the record of truth."
+        subtitle="Income and expenses."
         actions={
           <>
             <button onClick={openAddForm} className={chromeHeaderPrimaryButtonClass}>
@@ -198,7 +202,7 @@ export default function FinancePage() {
       )}
 
       {summary && (
-        <div data-tier1 className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
+        <Tier1Item className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
           <p className="text-xs uppercase tracking-wide text-brand-700">Treasury Balance</p>
           <p className="mt-1 font-serif text-4xl font-bold tabular-nums text-brand-900">
             <AnimatedNumber value={summary.treasuryBalance} format={formatMoney} />
@@ -209,11 +213,9 @@ export default function FinancePage() {
             <span className="tabular-nums">{formatMoney(summary.totalExpense)}</span> expense.
           </p>
           <p className="mt-2 text-xs text-brand-700">
-            To set the opening balance, add a row directly in the Finance sheet with Type = "Opening
-            Balance" and Amount = the starting figure. There's no app-side field for it on purpose,
-            whatever's in that row is what every calculation starts from.
+            To set the opening balance, add a row in the Finance sheet with Type = "Opening Balance".
           </p>
-        </div>
+        </Tier1Item>
       )}
 
       {formOpen && (
@@ -308,7 +310,7 @@ export default function FinancePage() {
       )}
 
       {!loadError && (
-      <div data-tier1 className="mt-6 overflow-x-auto rounded-xl border border-brand-200">
+      <Tier1Item ref={ledgerRef} className="mt-6 overflow-x-auto rounded-xl border border-brand-200">
         <table className="w-full text-left text-sm">
           <thead className="bg-brand-100 text-xs font-medium uppercase tracking-wide text-brand-700">
             <tr>
@@ -365,8 +367,8 @@ export default function FinancePage() {
             )}
           </tbody>
         </table>
-      </div>
+      </Tier1Item>
       )}
-    </div>
+    </Tier1Group>
   );
 }

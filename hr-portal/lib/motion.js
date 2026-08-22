@@ -53,75 +53,20 @@ export async function initGsap() {
   if (gsapReady) return gsapReady;
 
   gsapReady = (async () => {
-    const [{ gsap }, { ScrollTrigger }, { CustomEase }] = await Promise.all([
+    const [{ gsap }, { ScrollTrigger }, { CustomEase }, { SplitText }] = await Promise.all([
       import('gsap'),
       import('gsap/ScrollTrigger'),
       import('gsap/CustomEase'),
+      import('gsap/SplitText'),
     ]);
-    gsap.registerPlugin(ScrollTrigger, CustomEase);
+    gsap.registerPlugin(ScrollTrigger, CustomEase, SplitText);
     if (!CustomEase.get('nxcEaseOut')) {
       CustomEase.create('nxcEaseOut', '0.23, 1, 0.32, 1');
     }
-    return { gsap, ScrollTrigger };
+    return { gsap, ScrollTrigger, SplitText };
   })();
 
   return gsapReady;
-}
-
-// Tier 1 — once-per-visit entrance for a group of elements (stat cards,
-// chart bars, a stagger-revealed list). Reduced motion jumps straight to
-// the resting state — content is never hidden or half-transformed
-// waiting on a library, per spec section 7's "survive its own dependency
-// failing" requirement.
-export function useTier1Reveal(containerRef, {
-  selector = '[data-tier1]',
-  y = 16,
-  stagger = 0.06,
-  duration = 0.6,
-  delay = 0,
-  // Extra dependency values that should re-fire the reveal — a ref
-  // alone doesn't retrigger an effect, so anything that conditionally
-  // mounts the target content (a `loading` flag flipping, data arriving)
-  // needs to be passed here or this only ever runs once, before the
-  // real container exists.
-  deps = [],
-} = {}) {
-  const reduced = usePrefersReducedMotion();
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    const targets = selector ? container.querySelectorAll(selector) : [container];
-    if (!targets.length) return;
-
-    if (reduced) {
-      targets.forEach((el) => {
-        el.style.opacity = '1';
-        el.style.transform = 'none';
-      });
-      return;
-    }
-
-    let cancelled = false;
-    let ctx;
-    initGsap().then((mod) => {
-      if (cancelled || !mod) return;
-      const { gsap } = mod;
-      ctx = gsap.context(() => {
-        gsap.fromTo(
-          targets,
-          { opacity: 0, y },
-          { opacity: 1, y: 0, duration, stagger, delay, ease: 'nxcEaseOut' }
-        );
-      }, container);
-    });
-
-    return () => {
-      cancelled = true;
-      ctx?.revert();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reduced, ...deps]);
 }
 
 // Tier 1 — a one-off scale-bounce confirmation (QR generated, announcement
@@ -137,26 +82,20 @@ export async function playTier1Success(el) {
   );
 }
 
-// Tier 2 — instant colour swap + sub-150ms scale pulse for a single row
-// changing state (attendance mark, recruitment status tick). Pure CSS
-// (.nxc-tier2-flash in globals.css), no GSAP, no per-row sequencing:
-// call flash() for every row in a bulk action and every row pulses in
-// the same frame, not one after another.
-export function useTier2Flash() {
+function useClassPulse(className, durationMs) {
   const timeouts = useRef(new Map());
 
-  function flash(el) {
+  function pulse(el) {
     if (!el) return;
-    el.classList.remove('nxc-tier2-flash');
+    el.classList.remove(className);
     // Force reflow so re-adding the class restarts the animation even
-    // if the same row is flashed twice in quick succession.
+    // if the same element is pulsed twice in quick succession.
     // eslint-disable-next-line no-unused-expressions
     el.offsetWidth;
-    el.classList.add('nxc-tier2-flash');
-    const key = el;
-    clearTimeout(timeouts.current.get(key));
-    const t = setTimeout(() => el.classList.remove('nxc-tier2-flash'), 200);
-    timeouts.current.set(key, t);
+    el.classList.add(className);
+    clearTimeout(timeouts.current.get(el));
+    const t = setTimeout(() => el.classList.remove(className), durationMs);
+    timeouts.current.set(el, t);
   }
 
   useEffect(() => {
@@ -164,5 +103,27 @@ export function useTier2Flash() {
     return () => map.forEach((t) => clearTimeout(t));
   }, []);
 
-  return flash;
+  return pulse;
+}
+
+// Tier 2 — instant colour swap + sub-150ms scale pulse. Pure CSS
+// (.nxc-tier2-flash in globals.css), no GSAP, no per-row sequencing:
+// call flash() for every row in a bulk action and every row pulses in
+// the same frame, not one after another. This is the ONLY primitive
+// bulk actions should ever call — see useRowUpdateFlash below for the
+// richer single-row version, which must never be used in a loop.
+export function useTier2Flash() {
+  return useClassPulse('nxc-tier2-flash', 200);
+}
+
+// A single row changed because of one direct click on that row, not a
+// bulk action — gets a fuller flash (real background-colour sweep +a
+// bigger scale bounce, ~450ms) than the bulk pulse above. Still pure
+// CSS, still instant to trigger, but visually richer since a single
+// click only ever pays this cost once, not forty times in a row. Never
+// call this inside a loop/bulk handler — that's exactly the "costs
+// real, measured seconds" failure mode the Tier 2 rule protects
+// against; bulk actions must keep using useTier2Flash.
+export function useRowUpdateFlash() {
+  return useClassPulse('nxc-row-update', 500);
 }

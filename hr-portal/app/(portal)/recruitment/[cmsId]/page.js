@@ -6,8 +6,9 @@ import Link from 'next/link';
 import { Skeleton } from '@/components/ui/Skeleton';
 import ErrorRetry from '@/components/ui/ErrorRetry';
 import { toast } from '@/lib/toast';
-import { useTier1Reveal, useTier2Flash } from '@/lib/motion';
+import { useRowUpdateFlash } from '@/lib/motion';
 import ChromeHeader from '@/components/motion/ChromeHeader';
+import { Tier1Group, Tier1Item } from '@/components/motion/Tier1Group';
 
 const STATUSES = ['Pending', 'Interviewed', 'Reserve', 'Not Recommended', 'Selected'];
 const RECOMMENDATIONS = ['Strong yes', 'Yes', 'Neutral', 'No', 'Strong no'];
@@ -24,12 +25,8 @@ export default function ApplicantPage() {
   const [reviewText, setReviewText] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [statusSaving, setStatusSaving] = useState(false);
-  const pageRef = useRef(null);
   const statusRowRef = useRef(null);
-  const flash = useTier2Flash();
-  // Tier 1: this page opens once per lookup, not forty times a session
-  // (spec 6.4/7) — a real staggered reveal is fine here.
-  useTier1Reveal(pageRef, { selector: '[data-tier1]', deps: [loading] });
+  const flash = useRowUpdateFlash();
 
   const load = useCallback(() => {
     setLoading(true);
@@ -58,7 +55,7 @@ export default function ApplicantPage() {
       body: JSON.stringify({ status }),
     });
     setStatusSaving(false);
-    flash(statusRowRef.current); // Tier 2: instant feedback, not a reveal
+    flash(statusRowRef.current); // single-row action — full flash, not the bulk pulse
     toast('Status updated');
     load();
   }
@@ -97,12 +94,12 @@ export default function ApplicantPage() {
   if (!applicant) return null;
 
   return (
-    <div ref={pageRef}>
+    <Tier1Group replayKey={loading}>
       <Link href="/recruitment" className="text-sm text-brand-700 hover:underline">
         Back to Recruitment
       </Link>
 
-      <div ref={statusRowRef} data-tier1 className="mt-2 rounded-2xl">
+      <Tier1Item ref={statusRowRef} className="mt-2 rounded-2xl">
         <ChromeHeader
           title={applicant.fullName}
           actions={
@@ -121,9 +118,9 @@ export default function ApplicantPage() {
             </select>
           }
         />
-      </div>
+      </Tier1Item>
 
-      <div data-tier1 className="mt-6 grid gap-4 rounded-xl border border-brand-200 bg-brand-50 p-6 sm:grid-cols-2">
+      <Tier1Item className="mt-6 grid gap-4 rounded-xl border border-brand-200 bg-brand-50 p-6 sm:grid-cols-2">
         <InfoRow label="CMS ID" value={applicant.cmsId} />
         <InfoRow label="Contact Number" value={applicant.contactNo} />
         <InfoRow label="Email" value={applicant.email} />
@@ -137,9 +134,9 @@ export default function ApplicantPage() {
         {applicant.extraFields.map(([key, value]) => (
           <InfoRow key={key} label={key} value={value} />
         ))}
-      </div>
+      </Tier1Item>
 
-      <div data-tier1 className="mt-8">
+      <Tier1Item className="mt-8">
         <h2 className="font-serif text-lg font-semibold text-brand-900">Status history</h2>
         <div className="mt-3 space-y-2">
           {statusHistory.length === 0 && (
@@ -161,9 +158,9 @@ export default function ApplicantPage() {
             </div>
           ))}
         </div>
-      </div>
+      </Tier1Item>
 
-      <div data-tier1 className="mt-8">
+      <Tier1Item className="mt-8">
         <h2 className="font-serif text-lg font-semibold text-brand-900">Reviews ({reviews.length})</h2>
         <div className="mt-3 space-y-3">
           {reviews.map((r, i) => (
@@ -213,8 +210,8 @@ export default function ApplicantPage() {
             {submitting ? 'Saving…' : 'Submit review'}
           </button>
         </form>
-      </div>
-    </div>
+      </Tier1Item>
+    </Tier1Group>
   );
 }
 

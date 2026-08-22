@@ -9,7 +9,8 @@ import ErrorRetry from '@/components/ui/ErrorRetry';
 import AccessDenied from '@/components/ui/AccessDenied';
 import { useFabAction } from '@/components/FabProvider';
 import { toast } from '@/lib/toast';
-import { useTier1Reveal } from '@/lib/motion';
+import { playTier1Success } from '@/lib/motion';
+import { Tier1Group, Tier1Item } from '@/components/motion/Tier1Group';
 import ChromeHeader, { chromeHeaderButtonClass } from '@/components/motion/ChromeHeader';
 import TiltCard, { glassCardClass } from '@/components/motion/TiltCard';
 
@@ -50,8 +51,7 @@ export default function RosterPage() {
   const [loading, setLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
   const [search, setSearch] = useState('');
-  const contentRef = useRef(null);
-  useTier1Reveal(contentRef, { selector: '[data-tier1]', deps: [loading] });
+  const tableRef = useRef(null);
   const [formOpen, setFormOpen] = useState(false);
   const [editingCmsId, setEditingCmsId] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -91,7 +91,7 @@ export default function RosterPage() {
     load();
   }, [load]);
 
-  useFabAction(!accessDenied ? '+ Member' : undefined, () => openAddForm());
+  useFabAction(!accessDenied ? 'Member' : undefined, () => openAddForm());
 
   const suggestions = useMemo(() => {
     const out = {};
@@ -175,6 +175,7 @@ export default function RosterPage() {
     toast(isEdit ? 'Member updated' : 'Member added');
     setFormOpen(false);
     load();
+    requestAnimationFrame(() => playTier1Success(tableRef.current));
   }
 
   function exportCSV() {
@@ -250,10 +251,10 @@ export default function RosterPage() {
   }
 
   return (
-    <div ref={contentRef}>
+    <Tier1Group replayKey={loading}>
       <ChromeHeader
         title="Roster"
-        subtitle="Add and edit members here. The Google Sheet stays fully in sync and remains the record of truth, nothing here replaces it."
+        subtitle="Add and edit members here."
         actions={
           (role === 'admin' || role === 'manager') && (
             <Link href="/roster/logins" className={chromeHeaderButtonClass}>
@@ -264,7 +265,7 @@ export default function RosterPage() {
       />
 
       {portfolioStats.length > 0 && (
-        <div data-tier1 className="mt-6 flex flex-wrap gap-3">
+        <Tier1Item className="mt-6 flex flex-wrap gap-3">
           {portfolioStats.map((p) => (
             <TiltCard key={p.portfolio} className={`rounded-lg px-4 py-2.5 ${glassCardClass}`}>
               <p className="text-sm font-medium text-brand-900">{p.portfolio}</p>
@@ -273,7 +274,7 @@ export default function RosterPage() {
               </p>
             </TiltCard>
           ))}
-        </div>
+        </Tier1Item>
       )}
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -434,8 +435,8 @@ export default function RosterPage() {
           </div>
           {editingCmsId !== null && (
             <p className="mt-2 text-xs text-brand-700">
-              CMS ID can't be changed here. It's how attendance, applications, and logins are
-              linked to this person. Fix a wrong CMS ID directly in the Roster tab.
+              CMS ID can't be changed here — it links attendance, applications, and logins to this
+              person. Fix it in the Roster sheet instead.
             </p>
           )}
           {formError && <p className="mt-3 text-sm text-red-700">{formError}</p>}
@@ -458,7 +459,7 @@ export default function RosterPage() {
         </form>
       )}
 
-      <div data-tier1 className="mt-6 overflow-x-auto rounded-xl border border-brand-200">
+      <Tier1Item ref={tableRef} className="mt-6 overflow-x-auto rounded-xl border border-brand-200">
         <table className="w-full text-left text-sm">
           <thead className="bg-brand-100 text-xs font-medium uppercase tracking-wide text-brand-700">
             <tr>
@@ -506,7 +507,7 @@ export default function RosterPage() {
             )}
           </tbody>
         </table>
-      </div>
-    </div>
+      </Tier1Item>
+    </Tier1Group>
   );
 }

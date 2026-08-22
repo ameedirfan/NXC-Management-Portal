@@ -1,6 +1,5 @@
 'use client';
 
-import Link from 'next/link';
 import Logo from '@/components/Logo';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -15,6 +14,7 @@ import {
   Command,
 } from 'lucide-react';
 import ThemeToggle from '@/components/ui/ThemeToggle';
+import DockNav from '@/components/DockNav';
 
 // One outline icon per tab, never mixed styles. Exported so the Command
 // Palette can render the same icons for the same destinations.
@@ -115,26 +115,7 @@ export default function NavBar({ session, supportsViewTransitions = false, onOpe
           </div>
         </div>
 
-        <nav className="flex flex-wrap gap-2">
-          {tabs.map((t) => {
-            const Icon = NAV_ICONS[t.href];
-            return (
-              <Link
-                key={t.href}
-                href={t.href}
-                onClick={(e) => handleNavClick(e, t.href)}
-                className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition active:scale-[0.97] ${
-                  pathname?.startsWith(t.href)
-                    ? 'bg-brand-900 text-brand-50'
-                    : 'text-brand-700 hover:bg-brand-100'
-                }`}
-              >
-                {Icon && <Icon size={16} strokeWidth={2} aria-hidden="true" />}
-                {t.label}
-              </Link>
-            );
-          })}
-        </nav>
+        <DockNav tabs={tabs} navIcons={NAV_ICONS} pathname={pathname} onNavClick={handleNavClick} />
 
         <div className="flex items-center gap-3">
           <button

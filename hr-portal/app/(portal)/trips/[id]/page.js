@@ -6,7 +6,7 @@ import { useParams } from 'next/navigation';
 import { Skeleton } from '@/components/ui/Skeleton';
 import ErrorRetry from '@/components/ui/ErrorRetry';
 import { toast } from '@/lib/toast';
-import { useTier1Reveal } from '@/lib/motion';
+import { Tier1Group, Tier1Item } from '@/components/motion/Tier1Group';
 import ChromeHeader from '@/components/motion/ChromeHeader';
 
 const SLOTS = [
@@ -34,8 +34,6 @@ export default function TripDetailPage() {
   const [trip, setTrip] = useState(null);
   const [canManage, setCanManage] = useState(false);
   const [loading, setLoading] = useState(true);
-  const contentRef = useRef(null);
-  useTier1Reveal(contentRef, { selector: '[data-tier1]', deps: [loading] });
   const [uploadingSlot, setUploadingSlot] = useState(null);
   const [uploadError, setUploadError] = useState('');
   const [loadError, setLoadError] = useState('');
@@ -99,7 +97,7 @@ export default function TripDetailPage() {
   if (!trip) return <p className="text-red-700">Trip not found.</p>;
 
   return (
-    <div ref={contentRef}>
+    <Tier1Group replayKey={loading}>
       <Link href="/trips" className="text-sm text-brand-700 hover:underline">
         Back to Trip Itineraries
       </Link>
@@ -112,7 +110,7 @@ export default function TripDetailPage() {
 
       {uploadError && <p className="mt-4 text-sm text-red-700">{uploadError}</p>}
 
-      <div data-tier1 className="mt-6 grid gap-6 lg:grid-cols-3">
+      <Tier1Item className="mt-6 grid gap-6 lg:grid-cols-3">
         {SLOTS.map((slot) => (
           <div key={slot.key} className="rounded-xl border border-brand-200 bg-brand-50 p-5">
             <div className="flex items-center justify-between gap-2">
@@ -143,7 +141,7 @@ export default function TripDetailPage() {
             </div>
           </div>
         ))}
-      </div>
-    </div>
+      </Tier1Item>
+    </Tier1Group>
   );
 }

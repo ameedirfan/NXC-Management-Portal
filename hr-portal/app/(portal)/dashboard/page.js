@@ -8,7 +8,7 @@ import AnimatedNumber from '@/components/ui/AnimatedNumber';
 import ErrorRetry from '@/components/ui/ErrorRetry';
 import TiltCard, { glassCardClass } from '@/components/motion/TiltCard';
 import ChromeHeader, { chromeHeaderButtonClass } from '@/components/motion/ChromeHeader';
-import { useTier1Reveal } from '@/lib/motion';
+import { Tier1Group, Tier1Item } from '@/components/motion/Tier1Group';
 
 const VIEWS = [
   { key: 'individual', label: 'Individual' },
@@ -282,11 +282,6 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
   const [loadError, setLoadError] = useState('');
-  const contentRef = useRef(null);
-  // Tier 1: cards stagger in once when the page's data finishes loading
-  // — this ref/selector pair re-fires each time the content section
-  // remounts (loading -> loaded), not on every unrelated re-render.
-  useTier1Reveal(contentRef, { selector: '[data-tier1]', deps: [loading] });
 
   const load = useCallback(() => {
     setLoading(true);
@@ -392,7 +387,7 @@ export default function DashboardPage() {
           </div>
         )
       ) : (
-        <div ref={contentRef} className="mt-6 space-y-6">
+        <Tier1Group replayKey={loading} className="mt-6 space-y-6">
           <div className="no-print flex flex-wrap gap-2">
             {VIEWS.map((v) => (
               <button
@@ -409,22 +404,25 @@ export default function DashboardPage() {
             ))}
           </div>
 
-          <div key={viewMode} data-tier1 className="nxc-page-in">
+          {/* Tier 2 crossfade on view switch (<200ms) — deliberately not
+              a Tier1Item, this replays on every view change, not once
+              per load. */}
+          <div key={viewMode} className="nxc-page-in">
             {viewMode === 'individual' && <IndividualView rosterMembers={rosterMembers} />}
             {viewMode === 'portfolio' && <PortfolioView portfolios={portfolios} />}
             {viewMode === 'council' && <CouncilView data={councilData} loading={loading} />}
           </div>
 
-          <div data-tier1 className="rounded-xl border border-brand-200 bg-brand-50 p-6">
+          <Tier1Item className="rounded-xl border border-brand-200 bg-brand-50 p-6">
             <h2 className="font-serif text-lg font-semibold text-brand-900">Applicant funnel</h2>
             <p className="text-sm text-brand-700">Every applicant, across every portfolio, grouped by status.</p>
             <BarChart data={applicants.funnel} labelKey="status" valueKey="count" color="rgb(var(--brand-600))" />
-          </div>
+          </Tier1Item>
 
           {/* Deliberately its own card, not merged into the funnel above:
               "where they are in the process" and "have we contacted them"
               are different questions, see spec section 3 and 6. */}
-          <div data-tier1 className="rounded-xl border border-brand-200 bg-brand-50 p-6">
+          <Tier1Item className="rounded-xl border border-brand-200 bg-brand-50 p-6">
             <h2 className="font-serif text-lg font-semibold text-brand-900">Applicants emailed</h2>
             <p className="text-sm text-brand-700">How many applicants have received at least one email.</p>
             <div className="mt-4 flex items-center gap-4">
@@ -441,17 +439,17 @@ export default function DashboardPage() {
                 />
               </div>
             </div>
-          </div>
+          </Tier1Item>
 
-          <div data-tier1 className="rounded-xl border border-brand-200 bg-brand-50 p-6">
+          <Tier1Item className="rounded-xl border border-brand-200 bg-brand-50 p-6">
             <h2 className="font-serif text-lg font-semibold text-brand-900">Applicants by portfolio</h2>
             <BarChart data={applicants.byPortfolio} labelKey="portfolio" valueKey="total" color="rgb(var(--brand-400))" />
-          </div>
+          </Tier1Item>
 
-          <div data-tier1>
+          <Tier1Item>
             <DataQualitySection dataQuality={dataQuality} />
-          </div>
-        </div>
+          </Tier1Item>
+        </Tier1Group>
       )}
     </div>
   );

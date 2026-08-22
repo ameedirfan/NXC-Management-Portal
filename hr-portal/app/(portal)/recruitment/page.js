@@ -10,7 +10,7 @@ import ErrorRetry from '@/components/ui/ErrorRetry';
 import AccessDenied from '@/components/ui/AccessDenied';
 import ComposePanel from './ComposePanel';
 import { useRosterInfo } from '@/components/RosterInfoProvider';
-import { useTier1Reveal } from '@/lib/motion';
+import { Tier1Group, Tier1Item } from '@/components/motion/Tier1Group';
 import ChromeHeader, { chromeHeaderButtonClass, chromeHeaderPrimaryButtonClass } from '@/components/motion/ChromeHeader';
 
 const STATUSES = ['Pending', 'Interviewed', 'Reserve', 'Not Recommended', 'Selected'];
@@ -43,8 +43,6 @@ export default function RecruitmentPage() {
   const [applicants, setApplicants] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
-  const contentRef = useRef(null);
-  useTier1Reveal(contentRef, { selector: '[data-tier1]', deps: [loading] });
 
   const [sendMode, setSendMode] = useState(false);
   // Map, not Set: keyed by CMS ID but storing the full applicant object at
@@ -179,7 +177,7 @@ export default function RecruitmentPage() {
   }
 
   return (
-    <div ref={contentRef}>
+    <Tier1Group replayKey={loading}>
       <ChromeHeader
         title="Recruitment"
         subtitle="Look up applicants, review interviews, and browse portfolio applications."
@@ -193,7 +191,7 @@ export default function RecruitmentPage() {
         }
       />
 
-      <div data-tier1 className="mt-6 flex flex-wrap gap-4">
+      <Tier1Item className="mt-6 flex flex-wrap gap-4">
         <div>
           <label className="block text-sm font-medium text-brand-800">Portfolio</label>
           <select
@@ -240,7 +238,7 @@ export default function RecruitmentPage() {
             </select>
           </div>
         )}
-      </div>
+      </Tier1Item>
 
       {!sendMode && (
         <div className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
@@ -297,7 +295,7 @@ export default function RecruitmentPage() {
           </div>
         )}
 
-        <div data-tier1 className="mt-4 overflow-x-auto">
+        <Tier1Item className="mt-4 overflow-x-auto">
           <table className="w-full text-left text-sm">
             <thead className="text-xs font-medium uppercase tracking-wide text-brand-700">
               <tr>
@@ -375,7 +373,7 @@ export default function RecruitmentPage() {
               )}
             </tbody>
           </table>
-        </div>
+        </Tier1Item>
       </div>
 
       {composeOpen && (
@@ -392,6 +390,6 @@ export default function RecruitmentPage() {
           }}
         />
       )}
-    </div>
+    </Tier1Group>
   );
 }
