@@ -10,10 +10,11 @@ import Fab from '@/components/ui/Fab';
 import { RosterInfoProvider } from '@/components/RosterInfoProvider';
 import AmbientBackground from '@/components/motion/AmbientBackground';
 import PortalCursorSpotlight from '@/components/motion/PortalCursorSpotlight';
+import WelcomeIntro from '@/components/WelcomeIntro';
 
 // Everything global and interactive for a signed-in page lives here, one
 // level below the server layout (which owns the session check).
-export default function PortalChrome({ session, children }) {
+export default function PortalChrome({ session, showWelcome = false, children }) {
   const pathname = usePathname();
   // Checked client-side only (matches server's false on first paint, then
   // updates), so NavBar knows whether to wrap navigation in the native

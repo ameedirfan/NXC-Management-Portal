@@ -53,16 +53,17 @@ export async function initGsap() {
   if (gsapReady) return gsapReady;
 
   gsapReady = (async () => {
-    const [{ gsap }, { ScrollTrigger }, { CustomEase }] = await Promise.all([
+    const [{ gsap }, { ScrollTrigger }, { CustomEase }, { SplitText }] = await Promise.all([
       import('gsap'),
       import('gsap/ScrollTrigger'),
       import('gsap/CustomEase'),
+      import('gsap/SplitText'),
     ]);
-    gsap.registerPlugin(ScrollTrigger, CustomEase);
+    gsap.registerPlugin(ScrollTrigger, CustomEase, SplitText);
     if (!CustomEase.get('nxcEaseOut')) {
       CustomEase.create('nxcEaseOut', '0.23, 1, 0.32, 1');
     }
-    return { gsap, ScrollTrigger };
+    return { gsap, ScrollTrigger, SplitText };
   })();
 
   return gsapReady;
