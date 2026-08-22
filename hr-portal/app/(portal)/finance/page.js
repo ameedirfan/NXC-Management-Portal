@@ -9,7 +9,7 @@ import AccessDenied from '@/components/ui/AccessDenied';
 import { toast } from '@/lib/toast';
 import AnimatedNumber from '@/components/ui/AnimatedNumber';
 import { useFabAction } from '@/components/FabProvider';
-import { useTier1Reveal } from '@/lib/motion';
+import { useTier1Reveal, playTier1Success } from '@/lib/motion';
 import ChromeHeader, { chromeHeaderButtonClass, chromeHeaderPrimaryButtonClass } from '@/components/motion/ChromeHeader';
 
 const EMPTY_FORM = { date: '', description: '', amount: '', type: '' };
@@ -25,6 +25,7 @@ export default function FinancePage() {
   const [accessDenied, setAccessDenied] = useState(false);
   const [loadError, setLoadError] = useState('');
   const contentRef = useRef(null);
+  const ledgerRef = useRef(null);
   useTier1Reveal(contentRef, { selector: '[data-tier1]', deps: [loading] });
   const [formOpen, setFormOpen] = useState(false);
   const [modalState, setModalState] = useState('entering');
@@ -150,6 +151,10 @@ export default function FinancePage() {
     toast(isEdit ? 'Entry updated' : 'Entry added');
     closeForm();
     load();
+    // Tier 1 success confirmation on the ledger, not the ledger's own
+    // row-level Tier 2 discipline — this is the deliberate once-off
+    // "your entry was recorded" moment (spec 6.7).
+    requestAnimationFrame(() => playTier1Success(ledgerRef.current));
   }
 
   function exportCSV() {
@@ -308,7 +313,7 @@ export default function FinancePage() {
       )}
 
       {!loadError && (
-      <div data-tier1 className="mt-6 overflow-x-auto rounded-xl border border-brand-200">
+      <div ref={ledgerRef} data-tier1 className="mt-6 overflow-x-auto rounded-xl border border-brand-200">
         <table className="w-full text-left text-sm">
           <thead className="bg-brand-100 text-xs font-medium uppercase tracking-wide text-brand-700">
             <tr>

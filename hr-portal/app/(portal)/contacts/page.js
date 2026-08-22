@@ -7,7 +7,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import ErrorRetry from '@/components/ui/ErrorRetry';
 import { toast } from '@/lib/toast';
 import { useFabAction } from '@/components/FabProvider';
-import { useTier1Reveal } from '@/lib/motion';
+import { useTier1Reveal, playTier1Success } from '@/lib/motion';
 import ChromeHeader, { chromeHeaderPrimaryButtonClass } from '@/components/motion/ChromeHeader';
 
 const EMPTY_FORM = { fullName: '', position: '', phone: '', email: '' };
@@ -17,6 +17,7 @@ export default function ContactsPage() {
   const [canManage, setCanManage] = useState(false);
   const [loading, setLoading] = useState(true);
   const contentRef = useRef(null);
+  const gridRef = useRef(null);
   useTier1Reveal(contentRef, { selector: '[data-tier1]', deps: [loading] });
   const [loadError, setLoadError] = useState('');
   const [formOpen, setFormOpen] = useState(false);
@@ -100,6 +101,7 @@ export default function ContactsPage() {
     toast(isEdit ? 'Contact updated' : 'Contact added');
     setFormOpen(false);
     load();
+    requestAnimationFrame(() => playTier1Success(gridRef.current));
   }
 
   return (
@@ -184,7 +186,7 @@ export default function ContactsPage() {
         </form>
       )}
 
-      <div data-tier1 className="mt-6 grid gap-3 sm:grid-cols-2">
+      <div ref={gridRef} data-tier1 className="mt-6 grid gap-3 sm:grid-cols-2">
         {loading ? (
           Array.from({ length: 4 }).map((_, i) => (
             <div key={i} className="flex items-center justify-between gap-4 rounded-xl border border-brand-200 bg-brand-50 p-4">

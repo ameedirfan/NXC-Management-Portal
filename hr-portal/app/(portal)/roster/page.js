@@ -9,7 +9,7 @@ import ErrorRetry from '@/components/ui/ErrorRetry';
 import AccessDenied from '@/components/ui/AccessDenied';
 import { useFabAction } from '@/components/FabProvider';
 import { toast } from '@/lib/toast';
-import { useTier1Reveal } from '@/lib/motion';
+import { useTier1Reveal, playTier1Success } from '@/lib/motion';
 import ChromeHeader, { chromeHeaderButtonClass } from '@/components/motion/ChromeHeader';
 import TiltCard, { glassCardClass } from '@/components/motion/TiltCard';
 
@@ -51,6 +51,7 @@ export default function RosterPage() {
   const [accessDenied, setAccessDenied] = useState(false);
   const [search, setSearch] = useState('');
   const contentRef = useRef(null);
+  const tableRef = useRef(null);
   useTier1Reveal(contentRef, { selector: '[data-tier1]', deps: [loading] });
   const [formOpen, setFormOpen] = useState(false);
   const [editingCmsId, setEditingCmsId] = useState(null);
@@ -175,6 +176,7 @@ export default function RosterPage() {
     toast(isEdit ? 'Member updated' : 'Member added');
     setFormOpen(false);
     load();
+    requestAnimationFrame(() => playTier1Success(tableRef.current));
   }
 
   function exportCSV() {
@@ -458,7 +460,7 @@ export default function RosterPage() {
         </form>
       )}
 
-      <div data-tier1 className="mt-6 overflow-x-auto rounded-xl border border-brand-200">
+      <div ref={tableRef} data-tier1 className="mt-6 overflow-x-auto rounded-xl border border-brand-200">
         <table className="w-full text-left text-sm">
           <thead className="bg-brand-100 text-xs font-medium uppercase tracking-wide text-brand-700">
             <tr>

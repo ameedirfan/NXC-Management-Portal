@@ -8,7 +8,7 @@ import EmptyState from '@/components/ui/EmptyState';
 import ErrorRetry from '@/components/ui/ErrorRetry';
 import { toast } from '@/lib/toast';
 import { useFabAction } from '@/components/FabProvider';
-import { useTier1Reveal } from '@/lib/motion';
+import { useTier1Reveal, playTier1Success } from '@/lib/motion';
 import ChromeHeader, { chromeHeaderPrimaryButtonClass } from '@/components/motion/ChromeHeader';
 
 const EMPTY_FORM = { location: '', days: '', participantCount: '' };
@@ -19,6 +19,7 @@ export default function TripsPage() {
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
   const contentRef = useRef(null);
+  const gridRef = useRef(null);
   useTier1Reveal(contentRef, { selector: '[data-tier1]', deps: [loading] });
   const [formOpen, setFormOpen] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -75,6 +76,7 @@ export default function TripsPage() {
     setForm(EMPTY_FORM);
     setFormOpen(false);
     load();
+    requestAnimationFrame(() => playTier1Success(gridRef.current));
   }
 
   return (
@@ -160,7 +162,7 @@ export default function TripsPage() {
         </form>
       )}
 
-      <div data-tier1 className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div ref={gridRef} data-tier1 className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {loading ? (
           <>
             <SkeletonCard />

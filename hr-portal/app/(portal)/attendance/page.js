@@ -8,7 +8,7 @@ import { toast } from '@/lib/toast';
 import { SkeletonTableRows } from '@/components/ui/Skeleton';
 import ErrorRetry from '@/components/ui/ErrorRetry';
 import { useRosterInfo } from '@/components/RosterInfoProvider';
-import { useTier1Reveal, useTier2Flash } from '@/lib/motion';
+import { useTier1Reveal, useTier2Flash, playTier1Success } from '@/lib/motion';
 import ChromeHeader from '@/components/motion/ChromeHeader';
 
 // Leaflet touches the DOM on init, so it can't be part of the server
@@ -191,6 +191,7 @@ function CheckinQrSection({ meeting }) {
   const [checkinUrl, setCheckinUrl] = useState('');
   const [expiresAt, setExpiresAt] = useState(null);
   const [error, setError] = useState('');
+  const qrRef = useRef(null);
 
   async function generate() {
     setState('generating');
@@ -209,6 +210,9 @@ function CheckinQrSection({ meeting }) {
     setCheckinUrl(`${window.location.origin}/checkin?token=${data.token}`);
     setExpiresAt(Date.now() + data.expiresInSeconds * 1000);
     setState('ready');
+    // Tier 1 success confirmation (spec 3.1: "generating a QR code") —
+    // fires once per generate() click, not on every render.
+    requestAnimationFrame(() => playTier1Success(qrRef.current));
   }
 
   return (
@@ -232,7 +236,7 @@ function CheckinQrSection({ meeting }) {
       {state === 'error' && <p className="mt-3 text-sm text-red-700">{error}</p>}
 
       {state === 'ready' && (
-        <div className="mt-4 flex flex-col items-center gap-3 sm:flex-row sm:items-start">
+        <div ref={qrRef} className="mt-4 flex flex-col items-center gap-3 sm:flex-row sm:items-start">
           <img
             src={qrImageUrl(checkinUrl)}
             alt="Meeting check in QR code"
