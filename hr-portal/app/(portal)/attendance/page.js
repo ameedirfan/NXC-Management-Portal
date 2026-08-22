@@ -8,7 +8,7 @@ import { toast } from '@/lib/toast';
 import { SkeletonTableRows } from '@/components/ui/Skeleton';
 import ErrorRetry from '@/components/ui/ErrorRetry';
 import { useRosterInfo } from '@/components/RosterInfoProvider';
-import { useTier1Reveal, useTier2Flash, playTier1Success } from '@/lib/motion';
+import { useTier1Reveal, useTier2Flash, useRowUpdateFlash, playTier1Success } from '@/lib/motion';
 import ChromeHeader from '@/components/motion/ChromeHeader';
 
 // Leaflet touches the DOM on init, so it can't be part of the server
@@ -272,6 +272,7 @@ export default function AttendancePage() {
   const [loadError, setLoadError] = useState('');
   const rowRefs = useRef(new Map());
   const flash = useTier2Flash();
+  const rowUpdateFlash = useRowUpdateFlash();
   const contentRef = useRef(null);
   // Tier 1: opening the page for a new meeting date (spec 6.3) — fires
   // once per newly-selected meeting, not on every row edit within it.
@@ -331,16 +332,22 @@ export default function AttendancePage() {
     setSelectedMeetingId(newMeetingId);
   }
 
-  // Tier 2 (spec 6.3): instant colour swap + sub-150ms scale pulse,
-  // nothing more. The state update below is always one map() over the
-  // array regardless of whether one row or all forty changed — the
-  // flash() calls just add a CSS pulse to each affected row's DOM node
-  // in the same synchronous pass, never a per-row delay.
+  // A direct click on one row's radio — gets the fuller single-row
+  // animation (useRowUpdateFlash), since a person only ever pays this
+  // cost once per click, not forty times in a row.
   function setStatus(cmsId, status) {
     setPeople((prev) => prev.map((p) => (p.cmsId === cmsId ? { ...p, status } : p)));
-    flash(rowRefs.current.get(cmsId));
+    rowUpdateFlash(rowRefs.current.get(cmsId));
   }
 
+  // Bulk action — must stay the instant, sub-150ms pulse (spec 6.3).
+  // The state update is always one map() over the array regardless of
+  // whether one row or all forty changed; the flash() calls just add a
+  // CSS pulse to each affected row's DOM node in the same synchronous
+  // pass, never a per-row delay. This is exactly the tier that broke
+  // the earlier Attendance prototype — never swap this for the richer
+  // single-row animation, and never call either flash in a loop with a
+  // delay between iterations.
   function markAll(status) {
     setPeople((prev) => prev.map((p) => ({ ...p, status })));
     rowRefs.current.forEach((el) => flash(el));

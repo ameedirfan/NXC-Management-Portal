@@ -313,6 +313,28 @@ button:not(:disabled):active {
   animation: nxc-tier2-flash 140ms var(--ease-out);
 }
 
+/* A single row changing because of one direct click on it — not a bulk
+   action, see lib/motion.js's useRowUpdateFlash. Real background-colour
+   sweep + a bigger scale bounce than the bulk pulse above, since one
+   click only ever pays this cost once. Never applied in a loop. */
+@keyframes nxc-row-update {
+  0% {
+    background-color: transparent;
+    transform: scale(1);
+  }
+  25% {
+    background-color: rgb(var(--brand-300) / 0.4);
+    transform: scale(1.02);
+  }
+  100% {
+    background-color: transparent;
+    transform: scale(1);
+  }
+}
+.nxc-row-update {
+  animation: nxc-row-update 500ms var(--ease-out);
+}
+
 /* Tier 3 — cursor spotlight. A soft radial glow following the pointer,
    confined to dark chrome zones (Dashboard header, hero). Pure CSS
    custom properties updated on mousemove by CursorSpotlight.js, which

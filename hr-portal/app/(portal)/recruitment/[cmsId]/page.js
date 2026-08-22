@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Skeleton } from '@/components/ui/Skeleton';
 import ErrorRetry from '@/components/ui/ErrorRetry';
 import { toast } from '@/lib/toast';
-import { useTier1Reveal, useTier2Flash } from '@/lib/motion';
+import { useTier1Reveal, useRowUpdateFlash } from '@/lib/motion';
 import ChromeHeader from '@/components/motion/ChromeHeader';
 
 const STATUSES = ['Pending', 'Interviewed', 'Reserve', 'Not Recommended', 'Selected'];
@@ -26,7 +26,7 @@ export default function ApplicantPage() {
   const [statusSaving, setStatusSaving] = useState(false);
   const pageRef = useRef(null);
   const statusRowRef = useRef(null);
-  const flash = useTier2Flash();
+  const flash = useRowUpdateFlash();
   // Tier 1: this page opens once per lookup, not forty times a session
   // (spec 6.4/7) — a real staggered reveal is fine here.
   useTier1Reveal(pageRef, { selector: '[data-tier1]', deps: [loading] });
@@ -58,7 +58,7 @@ export default function ApplicantPage() {
       body: JSON.stringify({ status }),
     });
     setStatusSaving(false);
-    flash(statusRowRef.current); // Tier 2: instant feedback, not a reveal
+    flash(statusRowRef.current); // single-row action — full flash, not the bulk pulse
     toast('Status updated');
     load();
   }
