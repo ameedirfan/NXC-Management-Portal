@@ -540,9 +540,9 @@ export default function AttendancePage() {
             </div>
           )}
 
-          <Tier1Item className="mt-3 overflow-hidden rounded-xl border border-brand-200">
+          <Tier1Item className="mt-3 overflow-hidden nxc-glass-table rounded-xl backdrop-blur-xl backdrop-saturate-150">
             <table className="w-full text-left">
-              <thead className="bg-brand-100 text-xs font-medium uppercase tracking-wide text-brand-700">
+              <thead className="nxc-glass-head text-xs font-medium uppercase tracking-wide text-brand-700">
                 <tr>
                   <th className="px-4 py-3">Name</th>
                   <th className="px-4 py-3">Designation</th>
@@ -566,7 +566,7 @@ export default function AttendancePage() {
                         if (el) rowRefs.current.set(p.cmsId, el);
                         else rowRefs.current.delete(p.cmsId);
                       }}
-                      className="border-t border-brand-100 hover:bg-brand-50"
+                      className="nxc-glass-row border-t border-brand-100/50"
                     >
                       <td className="px-4 py-3">{p.fullName}</td>
                       <td className="px-4 py-3 text-brand-700">{p.designation}</td>

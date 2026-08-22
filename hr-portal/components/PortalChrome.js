@@ -77,6 +77,11 @@ export default function PortalChrome({ session, showWelcome = false, children })
             sits ABOVE the ambient layer's negative z-index in the
             stacking order and hid it completely. */}
         <div className="min-h-screen">
+          {/* Renders over everything (fixed inset-0, z-400) and removes
+              itself once the person continues. Whether it shows at all
+              is decided server-side in app/(portal)/layout.js from a
+              session cookie. */}
+          {showWelcome && <WelcomeIntro session={session} />}
           <AmbientBackground />
           <PortalCursorSpotlight />
           {navigating && <div className="nxc-progress-bar no-print" aria-hidden="true" />}

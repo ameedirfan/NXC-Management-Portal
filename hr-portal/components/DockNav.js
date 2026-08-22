@@ -48,11 +48,19 @@ function DockIcon({ mouseX, href, label, Icon, active, onClick }) {
     >
       {(hovered || focused) && (
         <motion.span
-          initial={{ opacity: 0, y: 4, scale: 0.9 }}
+          // Label sits BELOW the icon, not above. This dock is mounted at
+          // the top of the page, so an upward label ran past the top of
+          // the viewport and got clipped in half on desktop — the header
+          // only has ~16px above the icons. (It looked fine on mobile
+          // purely because the nav wraps onto its own row there, leaving
+          // room above.) macOS puts labels above because its dock is at
+          // the bottom of the screen; a top-mounted dock wants the
+          // mirror of that.
+          initial={{ opacity: 0, y: -4, scale: 0.9 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.15 }}
-          className="pointer-events-none absolute -top-8 whitespace-nowrap rounded-lg bg-brand-900 px-2.5 py-1 text-xs font-medium text-brand-50 shadow-lg"
+          className="pointer-events-none absolute top-full z-50 mt-2 whitespace-nowrap rounded-lg bg-brand-900 px-2.5 py-1 text-xs font-medium text-brand-50 shadow-lg"
         >
           {label}
         </motion.span>

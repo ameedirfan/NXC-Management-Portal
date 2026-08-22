@@ -327,7 +327,7 @@ export default function LoginsPage() {
                   </thead>
                   <tbody>
                     {bulkCreated.results.map((r) => (
-                      <tr key={r.cmsId} className="border-t border-brand-100 hover:bg-brand-50">
+                      <tr key={r.cmsId} className="nxc-glass-row border-t border-brand-100/50">
                         <td className="py-1 pr-4">{r.fullName || r.cmsId}</td>
                         {r.ok ? (
                           <>
@@ -378,7 +378,7 @@ export default function LoginsPage() {
                   </thead>
                   <tbody>
                     {bulkPreview.results.map((r) => (
-                      <tr key={r.cmsId} className="border-t border-brand-100 hover:bg-brand-50">
+                      <tr key={r.cmsId} className="nxc-glass-row border-t border-brand-100/50">
                         <td className="py-1 pr-4">{r.fullName || r.cmsId}</td>
                         {r.ok ? (
                           <>
@@ -470,7 +470,7 @@ export default function LoginsPage() {
 
               <div className="mt-3 max-h-72 overflow-y-auto rounded-lg border border-brand-200">
                 <table className="w-full text-left text-sm">
-                  <thead className="sticky top-0 bg-brand-100 text-xs font-medium uppercase tracking-wide text-brand-700">
+                  <thead className="sticky top-0 nxc-glass-head text-xs font-medium uppercase tracking-wide text-brand-700">
                     <tr>
                       <th className="px-3 py-2"></th>
                       <th className="px-3 py-2">Name</th>
@@ -481,7 +481,7 @@ export default function LoginsPage() {
                   </thead>
                   <tbody>
                     {bulkFiltered.map((m) => (
-                      <tr key={m.cmsId} className="border-t border-brand-100 hover:bg-brand-50">
+                      <tr key={m.cmsId} className="nxc-glass-row border-t border-brand-100/50">
                         <td className="px-3 py-2">
                           <label className="inline-flex h-6 w-6 cursor-pointer items-center justify-center">
                             <input
@@ -637,9 +637,9 @@ export default function LoginsPage() {
         </form>
       )}
 
-      <Tier1Item className="mt-6 overflow-x-auto rounded-xl border border-brand-200">
+      <Tier1Item className="mt-6 overflow-x-auto nxc-glass-table rounded-xl backdrop-blur-xl backdrop-saturate-150">
         <table className="w-full text-left text-sm">
-          <thead className="bg-brand-100 text-xs font-medium uppercase tracking-wide text-brand-700">
+          <thead className="nxc-glass-head text-xs font-medium uppercase tracking-wide text-brand-700">
             <tr>
               <th className="px-4 py-3">Username</th>
               <th className="px-4 py-3">Full Name</th>
@@ -668,7 +668,7 @@ export default function LoginsPage() {
               </tr>
             ) : (
               logins.map((l) => (
-                <tr key={l.username} className="border-t border-brand-100 hover:bg-brand-50">
+                <tr key={l.username} className="nxc-glass-row border-t border-brand-100/50">
                   <td className="px-4 py-3 font-medium text-brand-900">{l.username}</td>
                   <td className="px-4 py-3">{l.fullName}</td>
                   <td className="px-4 py-3 text-brand-700">{l.cmsId}</td>

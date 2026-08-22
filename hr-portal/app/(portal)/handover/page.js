@@ -26,7 +26,7 @@ function DataTable({ columns, rows }) {
   if (rows.length === 0) return <p className="text-sm text-brand-700">Nothing on file.</p>;
   return (
     <table className="w-full text-left text-sm">
-      <thead className="bg-brand-100 text-xs font-medium uppercase tracking-wide text-brand-700">
+      <thead className="nxc-glass-head text-xs font-medium uppercase tracking-wide text-brand-700">
         <tr>
           {columns.map((c) => (
             <th key={c.key} className="px-3 py-2">
@@ -37,7 +37,7 @@ function DataTable({ columns, rows }) {
       </thead>
       <tbody>
         {rows.map((row, i) => (
-          <tr key={i} className="border-t border-brand-100 hover:bg-brand-50">
+          <tr key={i} className="nxc-glass-row border-t border-brand-100/50">
             {columns.map((c) => (
               <td key={c.key} className="px-3 py-2">
                 {row[c.key]}

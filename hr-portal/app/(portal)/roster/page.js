@@ -322,7 +322,7 @@ export default function RosterPage() {
               </thead>
               <tbody>
                 {importPreview.results.map((r) => (
-                  <tr key={r.row} className="border-t border-brand-100 hover:bg-brand-50">
+                  <tr key={r.row} className="nxc-glass-row border-t border-brand-100/50">
                     <td className="py-1 pr-4 text-brand-700">{r.row}</td>
                     <td className="py-1 pr-4">{r.fullName || 'None'}</td>
                     <td className="py-1 pr-4 text-brand-700">{r.cmsId || 'None'}</td>
@@ -459,9 +459,9 @@ export default function RosterPage() {
         </form>
       )}
 
-      <Tier1Item ref={tableRef} className="mt-6 overflow-x-auto rounded-xl border border-brand-200">
+      <Tier1Item ref={tableRef} className="mt-6 overflow-x-auto nxc-glass-table rounded-xl backdrop-blur-xl backdrop-saturate-150">
         <table className="w-full text-left text-sm">
-          <thead className="bg-brand-100 text-xs font-medium uppercase tracking-wide text-brand-700">
+          <thead className="nxc-glass-head text-xs font-medium uppercase tracking-wide text-brand-700">
             <tr>
               <th className="px-4 py-3">Name</th>
               <th className="px-4 py-3">CMS ID</th>
@@ -487,7 +487,7 @@ export default function RosterPage() {
               </tr>
             ) : (
               filtered.map((m) => (
-                <tr key={m.cmsId} className="border-t border-brand-100 hover:bg-brand-50">
+                <tr key={m.cmsId} className="nxc-glass-row border-t border-brand-100/50">
                   <td className="px-4 py-3 font-medium text-brand-900">{m.fullName}</td>
                   <td className="px-4 py-3 text-brand-700">{m.cmsId}</td>
                   <td className="px-4 py-3">{m.portfolio}</td>
