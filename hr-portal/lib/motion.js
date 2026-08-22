@@ -68,62 +68,6 @@ export async function initGsap() {
   return gsapReady;
 }
 
-// Tier 1 — once-per-visit entrance for a group of elements (stat cards,
-// chart bars, a stagger-revealed list). Reduced motion jumps straight to
-// the resting state — content is never hidden or half-transformed
-// waiting on a library, per spec section 7's "survive its own dependency
-// failing" requirement.
-export function useTier1Reveal(containerRef, {
-  selector = '[data-tier1]',
-  y = 16,
-  stagger = 0.06,
-  duration = 0.6,
-  delay = 0,
-  // Extra dependency values that should re-fire the reveal — a ref
-  // alone doesn't retrigger an effect, so anything that conditionally
-  // mounts the target content (a `loading` flag flipping, data arriving)
-  // needs to be passed here or this only ever runs once, before the
-  // real container exists.
-  deps = [],
-} = {}) {
-  const reduced = usePrefersReducedMotion();
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-    const targets = selector ? container.querySelectorAll(selector) : [container];
-    if (!targets.length) return;
-
-    if (reduced) {
-      targets.forEach((el) => {
-        el.style.opacity = '1';
-        el.style.transform = 'none';
-      });
-      return;
-    }
-
-    let cancelled = false;
-    let ctx;
-    initGsap().then((mod) => {
-      if (cancelled || !mod) return;
-      const { gsap } = mod;
-      ctx = gsap.context(() => {
-        gsap.fromTo(
-          targets,
-          { opacity: 0, y },
-          { opacity: 1, y: 0, duration, stagger, delay, ease: 'nxcEaseOut' }
-        );
-      }, container);
-    });
-
-    return () => {
-      cancelled = true;
-      ctx?.revert();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reduced, ...deps]);
-}
-
 // Tier 1 — a one-off scale-bounce confirmation (QR generated, announcement
 // sent). Call imperatively from an event handler, not on every render.
 export async function playTier1Success(el) {

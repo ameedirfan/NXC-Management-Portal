@@ -9,8 +9,9 @@ import { Skeleton } from '@/components/ui/Skeleton';
 import EmptyState from '@/components/ui/EmptyState';
 import ErrorRetry from '@/components/ui/ErrorRetry';
 import { useFabAction } from '@/components/FabProvider';
-import { useTier1Reveal, playTier1Success } from '@/lib/motion';
+import { playTier1Success } from '@/lib/motion';
 import ChromeHeader, { chromeHeaderPrimaryButtonClass } from '@/components/motion/ChromeHeader';
+import { motion, AnimatePresence } from 'motion/react';
 
 const AUDIENCES = ['All', 'Members', 'Managers', 'Admins'];
 
@@ -200,9 +201,7 @@ export default function AnnouncementsPage() {
   const [announcements, setAnnouncements] = useState([]);
   const [canManage, setCanManage] = useState(false);
   const [loading, setLoading] = useState(true);
-  const contentRef = useRef(null);
   const listRef = useRef(null);
-  useTier1Reveal(contentRef, { selector: '[data-tier1]', deps: [loading] });
   const [loadError, setLoadError] = useState('');
   const [composeOpen, setComposeOpen] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -271,7 +270,7 @@ export default function AnnouncementsPage() {
   }
 
   return (
-    <div ref={contentRef}>
+    <div>
       <ChromeHeader
         title="Announcements"
         subtitle="Only what's relevant to your role shows up here."
@@ -284,7 +283,7 @@ export default function AnnouncementsPage() {
         }
       />
 
-      <div ref={listRef} data-tier1 className="mt-6 space-y-4">
+      <div ref={listRef} className="mt-6 space-y-4">
         {loading ? (
           Array.from({ length: 3 }).map((_, i) => (
             <div key={i} className="rounded-xl border border-brand-200 bg-brand-50 p-5">
@@ -308,8 +307,17 @@ export default function AnnouncementsPage() {
             onAction={canManage ? openCompose : undefined}
           />
         ) : (
-          announcements.map((a) => (
-            <div key={a.id} className="rounded-xl border border-brand-200 bg-brand-50 p-5">
+          <AnimatePresence initial={false}>
+            {announcements.map((a) => (
+              <motion.div
+                key={a.id}
+                layout
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.97 }}
+                transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+                className="rounded-xl border border-brand-200 bg-brand-50 p-5"
+              >
               <div
                 className="text-brand-900"
                 dangerouslySetInnerHTML={{ __html: renderAnnouncementHtml(a.message) }}
@@ -354,8 +362,9 @@ export default function AnnouncementsPage() {
                   )}
                 </div>
               )}
-            </div>
-          ))
+              </motion.div>
+            ))}
+          </AnimatePresence>
         )}
       </div>
 

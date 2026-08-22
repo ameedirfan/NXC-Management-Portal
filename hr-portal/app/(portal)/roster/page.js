@@ -9,7 +9,8 @@ import ErrorRetry from '@/components/ui/ErrorRetry';
 import AccessDenied from '@/components/ui/AccessDenied';
 import { useFabAction } from '@/components/FabProvider';
 import { toast } from '@/lib/toast';
-import { useTier1Reveal, playTier1Success } from '@/lib/motion';
+import { playTier1Success } from '@/lib/motion';
+import { Tier1Group, Tier1Item } from '@/components/motion/Tier1Group';
 import ChromeHeader, { chromeHeaderButtonClass } from '@/components/motion/ChromeHeader';
 import TiltCard, { glassCardClass } from '@/components/motion/TiltCard';
 
@@ -50,9 +51,7 @@ export default function RosterPage() {
   const [loading, setLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
   const [search, setSearch] = useState('');
-  const contentRef = useRef(null);
   const tableRef = useRef(null);
-  useTier1Reveal(contentRef, { selector: '[data-tier1]', deps: [loading] });
   const [formOpen, setFormOpen] = useState(false);
   const [editingCmsId, setEditingCmsId] = useState(null);
   const [form, setForm] = useState(EMPTY_FORM);
@@ -252,7 +251,7 @@ export default function RosterPage() {
   }
 
   return (
-    <div ref={contentRef}>
+    <Tier1Group replayKey={loading}>
       <ChromeHeader
         title="Roster"
         subtitle="Add and edit members here."
@@ -266,7 +265,7 @@ export default function RosterPage() {
       />
 
       {portfolioStats.length > 0 && (
-        <div data-tier1 className="mt-6 flex flex-wrap gap-3">
+        <Tier1Item className="mt-6 flex flex-wrap gap-3">
           {portfolioStats.map((p) => (
             <TiltCard key={p.portfolio} className={`rounded-lg px-4 py-2.5 ${glassCardClass}`}>
               <p className="text-sm font-medium text-brand-900">{p.portfolio}</p>
@@ -275,7 +274,7 @@ export default function RosterPage() {
               </p>
             </TiltCard>
           ))}
-        </div>
+        </Tier1Item>
       )}
 
       <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -460,7 +459,7 @@ export default function RosterPage() {
         </form>
       )}
 
-      <div ref={tableRef} data-tier1 className="mt-6 overflow-x-auto rounded-xl border border-brand-200">
+      <Tier1Item ref={tableRef} className="mt-6 overflow-x-auto rounded-xl border border-brand-200">
         <table className="w-full text-left text-sm">
           <thead className="bg-brand-100 text-xs font-medium uppercase tracking-wide text-brand-700">
             <tr>
@@ -508,7 +507,7 @@ export default function RosterPage() {
             )}
           </tbody>
         </table>
-      </div>
-    </div>
+      </Tier1Item>
+    </Tier1Group>
   );
 }

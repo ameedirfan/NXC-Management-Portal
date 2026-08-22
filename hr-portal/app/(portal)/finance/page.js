@@ -9,8 +9,9 @@ import AccessDenied from '@/components/ui/AccessDenied';
 import { toast } from '@/lib/toast';
 import AnimatedNumber from '@/components/ui/AnimatedNumber';
 import { useFabAction } from '@/components/FabProvider';
-import { useTier1Reveal, playTier1Success } from '@/lib/motion';
+import { playTier1Success } from '@/lib/motion';
 import ChromeHeader, { chromeHeaderButtonClass, chromeHeaderPrimaryButtonClass } from '@/components/motion/ChromeHeader';
+import { Tier1Group, Tier1Item } from '@/components/motion/Tier1Group';
 
 const EMPTY_FORM = { date: '', description: '', amount: '', type: '' };
 
@@ -24,9 +25,7 @@ export default function FinancePage() {
   const [loading, setLoading] = useState(true);
   const [accessDenied, setAccessDenied] = useState(false);
   const [loadError, setLoadError] = useState('');
-  const contentRef = useRef(null);
   const ledgerRef = useRef(null);
-  useTier1Reveal(contentRef, { selector: '[data-tier1]', deps: [loading] });
   const [formOpen, setFormOpen] = useState(false);
   const [modalState, setModalState] = useState('entering');
   const [editingRow, setEditingRow] = useState(null);
@@ -176,7 +175,7 @@ export default function FinancePage() {
   }
 
   return (
-    <div ref={contentRef}>
+    <Tier1Group replayKey={loading}>
       <ChromeHeader
         title="Finance"
         subtitle="Income and expenses."
@@ -203,7 +202,7 @@ export default function FinancePage() {
       )}
 
       {summary && (
-        <div data-tier1 className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
+        <Tier1Item className="mt-6 rounded-xl border border-brand-200 bg-brand-50 p-6">
           <p className="text-xs uppercase tracking-wide text-brand-700">Treasury Balance</p>
           <p className="mt-1 font-serif text-4xl font-bold tabular-nums text-brand-900">
             <AnimatedNumber value={summary.treasuryBalance} format={formatMoney} />
@@ -216,7 +215,7 @@ export default function FinancePage() {
           <p className="mt-2 text-xs text-brand-700">
             To set the opening balance, add a row in the Finance sheet with Type = "Opening Balance".
           </p>
-        </div>
+        </Tier1Item>
       )}
 
       {formOpen && (
@@ -311,7 +310,7 @@ export default function FinancePage() {
       )}
 
       {!loadError && (
-      <div ref={ledgerRef} data-tier1 className="mt-6 overflow-x-auto rounded-xl border border-brand-200">
+      <Tier1Item ref={ledgerRef} className="mt-6 overflow-x-auto rounded-xl border border-brand-200">
         <table className="w-full text-left text-sm">
           <thead className="bg-brand-100 text-xs font-medium uppercase tracking-wide text-brand-700">
             <tr>
@@ -368,8 +367,8 @@ export default function FinancePage() {
             )}
           </tbody>
         </table>
-      </div>
+      </Tier1Item>
       )}
-    </div>
+    </Tier1Group>
   );
 }

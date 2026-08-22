@@ -9,7 +9,7 @@ import ErrorRetry from '@/components/ui/ErrorRetry';
 import AccessDenied from '@/components/ui/AccessDenied';
 import { toast } from '@/lib/toast';
 import { useFabAction } from '@/components/FabProvider';
-import { useTier1Reveal } from '@/lib/motion';
+import { Tier1Group, Tier1Item } from '@/components/motion/Tier1Group';
 import ChromeHeader, { chromeHeaderButtonClass, chromeHeaderPrimaryButtonClass } from '@/components/motion/ChromeHeader';
 
 const CUSTOM_OPTION = '__custom__';
@@ -27,8 +27,6 @@ export default function LoginsPage() {
   const [logins, setLogins] = useState([]);
   const [rosterMembers, setRosterMembers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const contentRef = useRef(null);
-  useTier1Reveal(contentRef, { selector: '[data-tier1]', deps: [loading] });
   const [accessDenied, setAccessDenied] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
   const [editingUsername, setEditingUsername] = useState(null);
@@ -277,7 +275,7 @@ export default function LoginsPage() {
   }
 
   return (
-    <div ref={contentRef}>
+    <Tier1Group replayKey={loading}>
       <Link href="/roster" className="text-sm text-brand-700 hover:underline">
         Back to roster
       </Link>
@@ -639,7 +637,7 @@ export default function LoginsPage() {
         </form>
       )}
 
-      <div data-tier1 className="mt-6 overflow-x-auto rounded-xl border border-brand-200">
+      <Tier1Item className="mt-6 overflow-x-auto rounded-xl border border-brand-200">
         <table className="w-full text-left text-sm">
           <thead className="bg-brand-100 text-xs font-medium uppercase tracking-wide text-brand-700">
             <tr>
@@ -689,7 +687,7 @@ export default function LoginsPage() {
             )}
           </tbody>
         </table>
-      </div>
-    </div>
+      </Tier1Item>
+    </Tier1Group>
   );
 }
