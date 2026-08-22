@@ -237,7 +237,7 @@ export default function FinancePage() {
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <div>
               <label className="block text-sm font-medium text-brand-800">
-                Date<span className="text-red-600"> Required</span>
+                Date<span className="nxc-error-text"> Required</span>
               </label>
               <input
                 type="date"
@@ -246,11 +246,11 @@ export default function FinancePage() {
                 aria-invalid={!!fieldErrors.date}
                 className={`mt-1 w-full rounded-lg border px-3 py-2 ${fieldErrors.date ? 'border-red-400' : 'border-brand-300'}`}
               />
-              {fieldErrors.date && <p className="mt-1 text-xs text-red-700">{fieldErrors.date}</p>}
+              {fieldErrors.date && <p className="mt-1 text-xs nxc-error-text">{fieldErrors.date}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-brand-800">
-                Description<span className="text-red-600"> Required</span>
+                Description<span className="nxc-error-text"> Required</span>
               </label>
               <input
                 value={form.description}
@@ -258,11 +258,11 @@ export default function FinancePage() {
                 aria-invalid={!!fieldErrors.description}
                 className={`mt-1 w-full rounded-lg border px-3 py-2 ${fieldErrors.description ? 'border-red-400' : 'border-brand-300'}`}
               />
-              {fieldErrors.description && <p className="mt-1 text-xs text-red-700">{fieldErrors.description}</p>}
+              {fieldErrors.description && <p className="mt-1 text-xs nxc-error-text">{fieldErrors.description}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-brand-800">
-                Amount<span className="text-red-600"> Required</span>
+                Amount<span className="nxc-error-text"> Required</span>
               </label>
               <input
                 type="number"
@@ -273,7 +273,7 @@ export default function FinancePage() {
                 aria-invalid={!!fieldErrors.amount}
                 className={`mt-1 w-full rounded-lg border px-3 py-2 ${fieldErrors.amount ? 'border-red-400' : 'border-brand-300'}`}
               />
-              {fieldErrors.amount && <p className="mt-1 text-xs text-red-700">{fieldErrors.amount}</p>}
+              {fieldErrors.amount && <p className="mt-1 text-xs nxc-error-text">{fieldErrors.amount}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-brand-800">Type</label>
@@ -288,7 +288,7 @@ export default function FinancePage() {
               </select>
             </div>
           </div>
-          {fieldErrors.form && <p className="mt-3 text-sm text-red-700">{fieldErrors.form}</p>}
+          {fieldErrors.form && <p className="mt-3 text-sm nxc-error-text">{fieldErrors.form}</p>}
           <div className="mt-4 flex items-center gap-3">
             <button
               type="submit"

@@ -204,6 +204,24 @@ button:not(:disabled):active {
   animation: nxc-confetti-fall 0.9s ease-out forwards;
 }
 
+/* The check-in success toast (app/checkin/page.js) referenced this class
+   but it was never defined, so the toast simply popped in. That page is
+   outside the (portal) group and uses a one-shot toast rather than
+   ToastHost's managed enter/exit below, so it gets its own keyframe. */
+@keyframes nxc-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.nxc-toast-in {
+  animation: nxc-toast-in 250ms var(--ease-out) both;
+}
+
 /* Transition-based (not @keyframes) so it's interruptible and has a real
    exit, not just an instant unmount — see ToastHost.js's data-state. */
 .nxc-toast {
@@ -384,6 +402,35 @@ button:not(:disabled):active {
   border-radius: 9999px;
   filter: blur(90px);
   animation: nxc-ambient-pulse 14s ease-in-out infinite;
+}
+
+/* Status text that flips with the theme, the same way the brand tokens
+   do.
+
+   Error and validation messages were using Tailwind's fixed red-600/700
+   palette on brand-* card backgrounds. Those backgrounds flip between
+   light and dark; the red does not. Measured, that left every
+   validation message and error string at 2.5-3.7:1 in dark mode —
+   below even WCAG AA's 4.5, let alone this project's 7:1 floor — while
+   only scraping 4.4-5.9:1 in light mode.
+
+   No single fixed red fixes both (red-400 reads well on the dark card
+   at 6.5:1 but collapses to 2.5:1 on the light one), so this has to be
+   theme-aware. Verified: 9.13 / 8.29 light and 9.52 / 8.51 dark against
+   the brand-50 and brand-100 card surfaces. */
+:root {
+  --status-error: 127 29 29;      /* red-900 */
+  --status-success: 6 78 59;      /* emerald-900 */
+}
+.dark {
+  --status-error: 252 165 165;    /* red-300 */
+  --status-success: 110 231 183;  /* emerald-300 */
+}
+.nxc-error-text {
+  color: rgb(var(--status-error));
+}
+.nxc-success-text {
+  color: rgb(var(--status-success));
 }
 
 /* Glossy glass for data tables.

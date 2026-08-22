@@ -111,7 +111,7 @@ export default function NavBar({ session, supportsViewTransitions = false, onOpe
           <div>
             <p className="font-serif text-lg font-bold leading-tight text-brand-900">NXC Portal</p>
             <p className="text-xs uppercase tracking-wide text-brand-700">Management Portal</p>
-            <p className="text-xs font-medium text-brand-600">Portal made by Ameed Irfan</p>
+            <p className="text-xs font-medium text-brand-700">Portal made by Ameed Irfan</p>
           </div>
         </div>
 
@@ -122,12 +122,12 @@ export default function NavBar({ session, supportsViewTransitions = false, onOpe
             onClick={onOpenPalette}
             title="Search (Ctrl+K)"
             aria-label="Open command palette"
-            className="flex items-center gap-1.5 rounded-lg border border-brand-300 bg-brand-50 px-2.5 py-1.5 text-xs font-medium text-brand-600 hover:bg-brand-100"
+            className="flex items-center gap-1.5 rounded-lg border border-brand-300 bg-brand-50 px-2.5 py-1.5 text-xs font-medium text-brand-700 hover:bg-brand-100"
           >
             <Command size={16} aria-hidden="true" />K
           </button>
           <ThemeToggle />
-          <p className="text-sm text-brand-600">
+          <p className="text-sm text-brand-700">
             {session.fullName || session.username} · {roleLabel(session.role) || session.portfolio}
           </p>
           <button

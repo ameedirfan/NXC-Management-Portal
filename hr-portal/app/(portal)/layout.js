@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { cookies } from 'next/headers';
 import { getSession } from '@/lib/auth';
 import PortalChrome from '@/components/PortalChrome';
-import { WELCOME_COOKIE } from '@/components/WelcomeIntro';
+import { WELCOME_COOKIE } from '@/lib/welcome';
 
 export default async function PortalLayout({ children }) {
   const session = await getSession();

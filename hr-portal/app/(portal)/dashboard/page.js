@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
 import { toCSV, downloadCSV } from '@/lib/csv';
 import { Skeleton } from '@/components/ui/Skeleton';
@@ -147,7 +147,7 @@ function IndividualView({ rosterMembers }) {
       {loading || !data ? (
         <StatBlockSkeleton tiles={4} />
       ) : data.error ? (
-        <p className="mt-4 text-sm text-red-700">{data.error}</p>
+        <p className="mt-4 text-sm nxc-error-text">{data.error}</p>
       ) : (
         <>
           <p className="mt-1 text-sm text-brand-700">
@@ -205,7 +205,7 @@ function PortfolioView({ portfolios }) {
       {loading || !data ? (
         <StatBlockSkeleton tiles={3} />
       ) : data.error ? (
-        <p className="mt-4 text-sm text-red-700">{data.error}</p>
+        <p className="mt-4 text-sm nxc-error-text">{data.error}</p>
       ) : (
         <>
           <div className="mt-4 grid grid-cols-3 gap-3">

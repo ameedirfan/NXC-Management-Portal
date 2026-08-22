@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import { toCSV, downloadCSV } from '@/lib/csv';
 import Pill from '@/components/ui/Pill';
@@ -154,7 +154,7 @@ function CreateMeetingSection({ portfolios, date, onCreated }) {
         Create meeting
       </button>
 
-      {error && <p className="mt-3 text-sm text-red-700">{error}</p>}
+      {error && <p className="mt-3 text-sm nxc-error-text">{error}</p>}
 
       {confirming && (
         <div className="mt-4 rounded-lg border border-brand-300 bg-brand-50 p-4">
@@ -233,7 +233,7 @@ function CheckinQrSection({ meeting }) {
         </button>
       </div>
 
-      {state === 'error' && <p className="mt-3 text-sm text-red-700">{error}</p>}
+      {state === 'error' && <p className="mt-3 text-sm nxc-error-text">{error}</p>}
 
       {state === 'ready' && (
         <div ref={qrRef} className="mt-4 flex flex-col items-center gap-3 sm:flex-row sm:items-start">
@@ -467,7 +467,7 @@ export default function AttendancePage() {
       {meeting && (
         <>
           {meeting.status === 'Voided' && (
-            <div className="mt-6 rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-700">
+            <div className="mt-6 rounded-xl border border-red-300 bg-red-50 p-4 text-sm nxc-error-text">
               This meeting has been voided. Its attendance is excluded from percentage
               calculations.
             </div>
@@ -494,7 +494,7 @@ export default function AttendancePage() {
                     <button
                       onClick={handleVoid}
                       disabled={voidBusy}
-                      className="rounded-lg border border-red-300 px-3 py-1.5 text-sm font-medium text-red-700 hover:bg-red-50 disabled:opacity-60"
+                      className="rounded-lg border border-red-300 px-3 py-1.5 text-sm font-medium nxc-error-text hover:bg-red-50 disabled:opacity-60"
                     >
                       {voidBusy ? 'Voiding…' : 'Confirm void'}
                     </button>
@@ -508,7 +508,7 @@ export default function AttendancePage() {
                 ) : (
                   <button
                     onClick={() => setVoidConfirming(true)}
-                    className="text-sm font-medium text-red-700 hover:underline"
+                    className="text-sm font-medium nxc-error-text hover:underline"
                   >
                     Void meeting
                   </button>

@@ -303,7 +303,7 @@ export default function RosterPage() {
         </button>
       </div>
 
-      {importError && <p className="mt-3 text-sm text-red-700">{importError}</p>}
+      {importError && <p className="mt-3 text-sm nxc-error-text">{importError}</p>}
 
       {importPreview && (
         <div className="mt-4 rounded-xl border border-brand-200 bg-brand-50 p-6">
@@ -326,7 +326,7 @@ export default function RosterPage() {
                     <td className="py-1 pr-4 text-brand-700">{r.row}</td>
                     <td className="py-1 pr-4">{r.fullName || 'None'}</td>
                     <td className="py-1 pr-4 text-brand-700">{r.cmsId || 'None'}</td>
-                    <td className={`py-1 pr-4 ${r.ok ? 'text-emerald-700' : 'text-red-700'}`}>
+                    <td className={`py-1 pr-4 ${r.ok ? 'nxc-success-text' : 'nxc-error-text'}`}>
                       {r.ok ? 'OK' : r.errors.join('. ')}
                     </td>
                   </tr>
@@ -371,7 +371,7 @@ export default function RosterPage() {
                 <div key={f.key}>
                   <label className="block text-sm font-medium text-brand-800">
                     {f.label}
-                    <span className="text-red-600"> Required</span>
+                    <span className="nxc-error-text"> Required</span>
                   </label>
                   {portfolioCustom ? (
                     <div className="mt-1 flex gap-2">
@@ -413,7 +413,7 @@ export default function RosterPage() {
                 <div key={f.key}>
                   <label className="block text-sm font-medium text-brand-800">
                     {f.label}
-                    {f.required && <span className="text-red-600"> Required</span>}
+                    {f.required && <span className="nxc-error-text"> Required</span>}
                   </label>
                   <input
                     value={form[f.key]}
@@ -439,7 +439,7 @@ export default function RosterPage() {
               person. Fix it in the Roster sheet instead.
             </p>
           )}
-          {formError && <p className="mt-3 text-sm text-red-700">{formError}</p>}
+          {formError && <p className="mt-3 text-sm nxc-error-text">{formError}</p>}
           <div className="mt-4 flex items-center gap-3">
             <button
               type="submit"

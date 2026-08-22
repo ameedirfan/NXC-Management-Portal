@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { toCSV, downloadCSV } from '@/lib/csv';
 import { Skeleton } from '@/components/ui/Skeleton';
 import AnimatedNumber from '@/components/ui/AnimatedNumber';

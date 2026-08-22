@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { dedupePortfolios } from '@/lib/portfolio';
 import { toCSV, downloadCSV } from '@/lib/csv';
@@ -311,7 +311,7 @@ export default function LoginsPage() {
                 Created {bulkCreated.created} login{bulkCreated.created === 1 ? '' : 's'}.
                 {bulkCreated.skipped > 0 && ` ${bulkCreated.skipped} were skipped.`}
               </p>
-              <p className="mt-1 text-sm font-medium text-red-700">
+              <p className="mt-1 text-sm font-medium nxc-error-text">
                 These passwords are shown once and are not stored anywhere in plain text. Copy
                 or export them now.
               </p>
@@ -336,7 +336,7 @@ export default function LoginsPage() {
                             <td className="py-1 pr-4 capitalize">{r.role}</td>
                           </>
                         ) : (
-                          <td className="py-1 pr-4 text-red-700" colSpan={3}>
+                          <td className="py-1 pr-4 nxc-error-text" colSpan={3}>
                             {r.errors.join('. ')}
                           </td>
                         )}
@@ -384,10 +384,10 @@ export default function LoginsPage() {
                           <>
                             <td className="py-1 pr-4 font-mono">{r.username}</td>
                             <td className="py-1 pr-4 font-mono">{r.password}</td>
-                            <td className="py-1 pr-4 text-emerald-700">Ready</td>
+                            <td className="py-1 pr-4 nxc-success-text">Ready</td>
                           </>
                         ) : (
-                          <td className="py-1 pr-4 text-red-700" colSpan={3}>
+                          <td className="py-1 pr-4 nxc-error-text" colSpan={3}>
                             {r.errors.join('. ')}
                           </td>
                         )}
@@ -396,7 +396,7 @@ export default function LoginsPage() {
                   </tbody>
                 </table>
               </div>
-              {bulkError && <p className="mt-3 text-sm text-red-700">{bulkError}</p>}
+              {bulkError && <p className="mt-3 text-sm nxc-error-text">{bulkError}</p>}
               <div className="mt-4 flex items-center gap-3">
                 <button
                   onClick={handleBulkConfirm}
@@ -502,7 +502,7 @@ export default function LoginsPage() {
                 </table>
               </div>
 
-              {bulkError && <p className="mt-3 text-sm text-red-700">{bulkError}</p>}
+              {bulkError && <p className="mt-3 text-sm nxc-error-text">{bulkError}</p>}
               <div className="mt-4">
                 <button
                   onClick={handleBulkPreview}
@@ -582,7 +582,7 @@ export default function LoginsPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-brand-800">
-                Portfolio {form.role !== 'admin' && <span className="text-red-600">Required</span>}
+                Portfolio {form.role !== 'admin' && <span className="nxc-error-text">Required</span>}
               </label>
               <input
                 value={form.portfolio}
@@ -617,7 +617,7 @@ export default function LoginsPage() {
             </div>
           </div>
 
-          {formError && <p className="mt-3 text-sm text-red-700">{formError}</p>}
+          {formError && <p className="mt-3 text-sm nxc-error-text">{formError}</p>}
           <div className="mt-4 flex items-center gap-3">
             <button
               type="submit"

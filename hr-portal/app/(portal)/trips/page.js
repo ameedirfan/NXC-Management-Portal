@@ -101,7 +101,7 @@ export default function TripsPage() {
           <div className="mt-4 grid gap-4 sm:grid-cols-3">
             <div>
               <label className="block text-sm font-medium text-brand-800">
-                Location<span className="text-red-600"> Required</span>
+                Location<span className="nxc-error-text"> Required</span>
               </label>
               <input
                 value={form.location}
@@ -110,11 +110,11 @@ export default function TripsPage() {
                 aria-invalid={!!fieldErrors.location}
                 className={`mt-1 w-full rounded-lg border px-3 py-2 ${fieldErrors.location ? 'border-red-400' : 'border-brand-300'}`}
               />
-              {fieldErrors.location && <p className="mt-1 text-xs text-red-700">{fieldErrors.location}</p>}
+              {fieldErrors.location && <p className="mt-1 text-xs nxc-error-text">{fieldErrors.location}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-brand-800">
-                Number of Days<span className="text-red-600"> Required</span>
+                Number of Days<span className="nxc-error-text"> Required</span>
               </label>
               <input
                 type="number"
@@ -124,11 +124,11 @@ export default function TripsPage() {
                 aria-invalid={!!fieldErrors.days}
                 className={`mt-1 w-full rounded-lg border px-3 py-2 ${fieldErrors.days ? 'border-red-400' : 'border-brand-300'}`}
               />
-              {fieldErrors.days && <p className="mt-1 text-xs text-red-700">{fieldErrors.days}</p>}
+              {fieldErrors.days && <p className="mt-1 text-xs nxc-error-text">{fieldErrors.days}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-brand-800">
-                Total Participant Count<span className="text-red-600"> Required</span>
+                Total Participant Count<span className="nxc-error-text"> Required</span>
               </label>
               <input
                 type="number"
@@ -138,10 +138,10 @@ export default function TripsPage() {
                 aria-invalid={!!fieldErrors.participantCount}
                 className={`mt-1 w-full rounded-lg border px-3 py-2 ${fieldErrors.participantCount ? 'border-red-400' : 'border-brand-300'}`}
               />
-              {fieldErrors.participantCount && <p className="mt-1 text-xs text-red-700">{fieldErrors.participantCount}</p>}
+              {fieldErrors.participantCount && <p className="mt-1 text-xs nxc-error-text">{fieldErrors.participantCount}</p>}
             </div>
           </div>
-          {fieldErrors.form && <p className="mt-3 text-sm text-red-700">{fieldErrors.form}</p>}
+          {fieldErrors.form && <p className="mt-3 text-sm nxc-error-text">{fieldErrors.form}</p>}
           <div className="mt-4 flex items-center gap-3">
             <button
               type="submit"

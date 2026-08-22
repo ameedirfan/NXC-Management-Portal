@@ -11,7 +11,13 @@ export default function ErrorRetry({ message, onRetry, className = '' }) {
       {onRetry && (
         <button
           onClick={onRetry}
-          className="rounded-lg border border-red-300 bg-brand-50 px-4 py-1.5 text-sm font-medium text-red-800 hover:bg-red-100"
+          // bg-red-100, not bg-brand-50: the brand tokens flip with the
+          // theme while Tailwind's red-* palette does not, so in dark
+          // mode this button became dark-red text on a near-black
+          // (rgb 28,21,13) background — measured 2.17:1, unreadable.
+          // Keeping the whole control on the fixed red palette makes it
+          // identical in both themes, at 8.2:1.
+          className="rounded-lg border border-red-300 bg-red-100 px-4 py-1.5 text-sm font-medium text-red-900 hover:bg-red-200"
         >
           Try again
         </button>

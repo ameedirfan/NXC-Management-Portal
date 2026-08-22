@@ -172,7 +172,7 @@ export default function ApplicantPage() {
                 </span>
               </div>
               <p className="mt-1 text-sm font-medium text-brand-700">{r.recommendation}</p>
-              {r.reviewText && <p className="mt-1 text-sm text-brand-600">{r.reviewText}</p>}
+              {r.reviewText && <p className="mt-1 text-sm text-brand-700">{r.reviewText}</p>}
             </div>
           ))}
         </div>

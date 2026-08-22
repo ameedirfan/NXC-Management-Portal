@@ -126,7 +126,7 @@ export default function ContactsPage() {
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <div>
               <label className="block text-sm font-medium text-brand-800">
-                Full Name<span className="text-red-600"> Required</span>
+                Full Name<span className="nxc-error-text"> Required</span>
               </label>
               <input
                 value={form.fullName}
@@ -134,11 +134,11 @@ export default function ContactsPage() {
                 aria-invalid={!!fieldErrors.fullName}
                 className={`mt-1 w-full rounded-lg border px-3 py-2 ${fieldErrors.fullName ? 'border-red-400' : 'border-brand-300'}`}
               />
-              {fieldErrors.fullName && <p className="mt-1 text-xs text-red-700">{fieldErrors.fullName}</p>}
+              {fieldErrors.fullName && <p className="mt-1 text-xs nxc-error-text">{fieldErrors.fullName}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-brand-800">
-                Position<span className="text-red-600"> Required</span>
+                Position<span className="nxc-error-text"> Required</span>
               </label>
               <input
                 value={form.position}
@@ -147,7 +147,7 @@ export default function ContactsPage() {
                 aria-invalid={!!fieldErrors.position}
                 className={`mt-1 w-full rounded-lg border px-3 py-2 ${fieldErrors.position ? 'border-red-400' : 'border-brand-300'}`}
               />
-              {fieldErrors.position && <p className="mt-1 text-xs text-red-700">{fieldErrors.position}</p>}
+              {fieldErrors.position && <p className="mt-1 text-xs nxc-error-text">{fieldErrors.position}</p>}
             </div>
             <div>
               <label className="block text-sm font-medium text-brand-800">Phone Number</label>
@@ -166,7 +166,7 @@ export default function ContactsPage() {
               />
             </div>
           </div>
-          {fieldErrors.form && <p className="mt-3 text-sm text-red-700">{fieldErrors.form}</p>}
+          {fieldErrors.form && <p className="mt-3 text-sm nxc-error-text">{fieldErrors.form}</p>}
           <div className="mt-4 flex items-center gap-3">
             <button
               type="submit"
