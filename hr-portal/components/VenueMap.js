@@ -135,7 +135,20 @@ export default function VenueMap({ value, onChange, className = '' }) {
 
       {locateError && <p className="mt-2 text-sm text-red-700">{locateError}</p>}
 
-      <div ref={containerRef} className="mt-3 h-72 w-full overflow-hidden rounded-lg border border-brand-300" />
+      {/* `isolate` matters more than it looks. Leaflet hard-codes a tall
+          z-index ladder on its own panes and controls (up to 1000), and
+          <main> creates no stacking context, so those numbers were
+          competing directly with the app's chrome instead of staying
+          inside the map — the venue map punched straight through the
+          welcome overlay (z-400), and would equally have covered the
+          toast (z-200) and the Command Palette (z-100). Isolating here
+          scopes Leaflet's whole ladder to this box, which fixes all
+          three at the source rather than escalating every overlay's
+          z-index to outrun a third-party stylesheet. */}
+      <div
+        ref={containerRef}
+        className="isolate mt-3 h-72 w-full overflow-hidden rounded-lg border border-brand-300"
+      />
 
       {value && (
         <p className="mt-2 text-xs text-brand-700">
