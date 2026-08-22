@@ -75,7 +75,7 @@ export default function LoginsPage() {
     load();
   }, [load]);
 
-  useFabAction(!accessDenied ? '+ Login' : undefined, () => openAddForm());
+  useFabAction(!accessDenied ? 'Login' : undefined, () => openAddForm());
 
   const rosterByCmsId = useMemo(
     () => Object.fromEntries(rosterMembers.map((m) => [m.cmsId, m])),

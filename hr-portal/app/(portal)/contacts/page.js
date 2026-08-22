@@ -47,7 +47,7 @@ export default function ContactsPage() {
     load();
   }, [load]);
 
-  useFabAction(canManage ? '+ Contact' : undefined, () => openAddForm());
+  useFabAction(canManage ? 'Contact' : undefined, () => openAddForm());
 
   function openAddForm() {
     setEditingRow(null);

@@ -49,7 +49,7 @@ export default function TripsPage() {
     load();
   }, [load]);
 
-  useFabAction(canManage ? '+ Trip' : undefined, () => setFormOpen(true));
+  useFabAction(canManage ? 'Trip' : undefined, () => setFormOpen(true));
 
   async function handleSubmit(e) {
     e.preventDefault();

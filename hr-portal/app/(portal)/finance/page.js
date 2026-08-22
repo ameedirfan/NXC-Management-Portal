@@ -81,7 +81,7 @@ export default function FinancePage() {
     load();
   }, [load]);
 
-  useFabAction(!accessDenied ? '+ Row' : undefined, () => openAddForm());
+  useFabAction(!accessDenied ? 'Row' : undefined, () => openAddForm());
 
   function openAddForm() {
     setEditingRow(null);

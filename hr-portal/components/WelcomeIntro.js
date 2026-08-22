@@ -357,8 +357,11 @@ export default function WelcomeIntro({ session }) {
             slot — plain CSS opacity keyed off `ready`, so it can't fight
             the GSAP-driven elements above for control of the same
             property. */}
+        {/* Keyboard-shortcut hint is hidden on phones — there's no Ctrl
+            key to press there, so it's just noise on the smallest
+            screen. */}
         <p
-          className={`mt-5 text-xs text-[#B9954F] transition-opacity duration-700 ${
+          className={`mt-5 hidden text-xs text-[#B9954F] transition-opacity duration-700 sm:block ${
             ready ? 'opacity-100' : 'opacity-0'
           }`}
         >

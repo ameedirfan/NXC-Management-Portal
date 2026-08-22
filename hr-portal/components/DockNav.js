@@ -34,7 +34,13 @@ function DockIcon({ mouseX, href, label, Icon, active, onClick }) {
       // of the floating tooltip below, which is purely a sighted-mouse
       // (and keyboard-focus) affordance.
       aria-label={label}
-      className="relative flex flex-col items-center"
+      // Vertical padding on small screens only: the icons are 38px,
+      // which clears WCAG 2.2's 24px minimum but is under the 44px
+      // that's comfortable for thumbs. Eight icons plus gaps already
+      // fill ~332px of a 375px screen, so there's no horizontal room to
+      // grow — but there's plenty vertically, so the tap target gets
+      // taller on the axis that can afford it.
+      className="relative flex flex-col items-center py-1.5 sm:py-0"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       onFocus={() => setFocused(true)}

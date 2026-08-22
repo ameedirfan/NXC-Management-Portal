@@ -91,7 +91,7 @@ export default function RosterPage() {
     load();
   }, [load]);
 
-  useFabAction(!accessDenied ? '+ Member' : undefined, () => openAddForm());
+  useFabAction(!accessDenied ? 'Member' : undefined, () => openAddForm());
 
   const suggestions = useMemo(() => {
     const out = {};

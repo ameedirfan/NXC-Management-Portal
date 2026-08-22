@@ -228,7 +228,7 @@ export default function AnnouncementsPage() {
     load();
   }, [load]);
 
-  useFabAction(canManage ? '+ Announcement' : undefined, () => openCompose());
+  useFabAction(canManage ? 'Announcement' : undefined, () => openCompose());
 
   function openCompose() {
     setEditing(null);
