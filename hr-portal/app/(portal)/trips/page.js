@@ -8,8 +8,11 @@ import EmptyState from '@/components/ui/EmptyState';
 import ErrorRetry from '@/components/ui/ErrorRetry';
 import { toast } from '@/lib/toast';
 import { useFabAction } from '@/components/FabProvider';
-import { useTier1Reveal, playTier1Success } from '@/lib/motion';
+import { playTier1Success } from '@/lib/motion';
 import ChromeHeader, { chromeHeaderPrimaryButtonClass } from '@/components/motion/ChromeHeader';
+import { motion, AnimatePresence } from 'motion/react';
+
+const MotionLink = motion.create(Link);
 
 const EMPTY_FORM = { location: '', days: '', participantCount: '' };
 
@@ -20,7 +23,6 @@ export default function TripsPage() {
   const [loadError, setLoadError] = useState('');
   const contentRef = useRef(null);
   const gridRef = useRef(null);
-  useTier1Reveal(contentRef, { selector: '[data-tier1]', deps: [loading] });
   const [formOpen, setFormOpen] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [fieldErrors, setFieldErrors] = useState({});
@@ -162,7 +164,7 @@ export default function TripsPage() {
         </form>
       )}
 
-      <div ref={gridRef} data-tier1 className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div ref={gridRef} className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {loading ? (
           <>
             <SkeletonCard />
@@ -184,25 +186,32 @@ export default function TripsPage() {
             onAction={canManage ? () => setFormOpen(true) : undefined}
           />
         ) : (
-          trips.map((t) => (
-            <Link
-              key={t.id}
-              href={`/trips/${encodeURIComponent(t.id)}`}
-              className="rounded-xl border border-brand-200 bg-brand-50 p-5 hover:border-brand-400"
-            >
-              {t.groupPhotoLink ? (
-                <img src={t.groupPhotoLink} alt={t.location} className="h-32 w-full rounded-lg object-cover" />
-              ) : (
-                <div className="flex h-32 w-full items-center justify-center rounded-lg bg-brand-100 text-sm text-brand-700">
-                  No photo yet
-                </div>
-              )}
-              <p className="mt-3 font-serif text-lg font-semibold text-brand-900">{t.location}</p>
-              <p className="text-sm tabular-nums text-brand-700">
-                {t.days} day{String(t.days) === '1' ? '' : 's'} · {t.participantCount} participants
-              </p>
-            </Link>
-          ))
+          <AnimatePresence initial={false}>
+            {trips.map((t) => (
+              <MotionLink
+                key={t.id}
+                href={`/trips/${encodeURIComponent(t.id)}`}
+                layout
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }}
+                className="rounded-xl border border-brand-200 bg-brand-50 p-5 hover:border-brand-400"
+              >
+                {t.groupPhotoLink ? (
+                  <img src={t.groupPhotoLink} alt={t.location} className="h-32 w-full rounded-lg object-cover" />
+                ) : (
+                  <div className="flex h-32 w-full items-center justify-center rounded-lg bg-brand-100 text-sm text-brand-700">
+                    No photo yet
+                  </div>
+                )}
+                <p className="mt-3 font-serif text-lg font-semibold text-brand-900">{t.location}</p>
+                <p className="text-sm tabular-nums text-brand-700">
+                  {t.days} day{String(t.days) === '1' ? '' : 's'} · {t.participantCount} participants
+                </p>
+              </MotionLink>
+            ))}
+          </AnimatePresence>
         )}
       </div>
     </div>
