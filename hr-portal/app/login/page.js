@@ -20,7 +20,10 @@ function LoginForm() {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        // Trimmed here as well as on the server: phone keyboards add a
+        // space after autocorrect accepts a word, and a password pasted
+        // out of a chat almost always brings one along.
+        body: JSON.stringify({ username: username.trim(), password }),
       });
       const data = await res.json();
 
@@ -70,6 +73,13 @@ function LoginForm() {
               onChange={(e) => setUsername(e.target.value)}
               className="mt-1 w-full rounded-lg border border-brand-300 bg-brand-50 px-3 py-2 focus:border-brand-700 focus:outline-hidden focus:ring-1 focus:ring-brand-700"
               autoComplete="username"
+              // Usernames are lowercase first.last. Left to itself a phone
+              // capitalises the first letter, autocorrects the name to a
+              // dictionary word, and appends a space — which read as
+              // "invalid username or password" with no clue why.
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
               required
             />
           </div>
@@ -84,6 +94,9 @@ function LoginForm() {
               onChange={(e) => setPassword(e.target.value)}
               className="mt-1 w-full rounded-lg border border-brand-300 bg-brand-50 px-3 py-2 focus:border-brand-700 focus:outline-hidden focus:ring-1 focus:ring-brand-700"
               autoComplete="current-password"
+              autoCapitalize="none"
+              autoCorrect="off"
+              spellCheck={false}
               required
             />
           </div>

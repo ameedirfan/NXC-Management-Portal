@@ -462,7 +462,8 @@ function DataQualitySection({ dataQuality }) {
     dataQuality.duplicateCmsIds.length +
     dataQuality.orphanedLogins.length +
     dataQuality.rosterWithoutLogin.length +
-    dataQuality.applicantsBadPortfolio.length;
+    dataQuality.applicantsBadPortfolio.length +
+    (dataQuality.brokenLogins?.length || 0);
 
   return (
     <div className="rounded-xl border border-brand-200 bg-brand-50 p-6">
@@ -473,6 +474,13 @@ function DataQualitySection({ dataQuality }) {
         <p className="mt-4 text-sm text-brand-700">No issues found.</p>
       ) : (
         <div className="mt-4 space-y-4">
+          <IssueList
+            title="Logins that cannot sign in"
+            items={dataQuality.brokenLogins || []}
+            render={(i) => `${i.username}, row ${i.row}, ${i.reason}`}
+            linkFor={() => `/roster/logins`}
+            linkLabel="Fix in Logins"
+          />
           <IssueList
             title="Duplicate CMS IDs in Roster"
             items={dataQuality.duplicateCmsIds}

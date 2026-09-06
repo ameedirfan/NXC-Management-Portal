@@ -76,10 +76,13 @@ export async function PATCH(request, { params: paramsPromise }) {
   }
 
   if (body.password) {
-    if (body.password.length < 8) {
+    // Trimmed for the same reason as account creation: a pasted trailing
+    // space would otherwise be part of the password nobody knows about.
+    const newPassword = String(body.password).trim();
+    if (newPassword.length < 8) {
       return NextResponse.json({ error: 'Password must be at least 8 characters.' }, { status: 400 });
     }
-    merged['Password'] = await bcrypt.hash(body.password, 10);
+    merged['Password'] = await bcrypt.hash(newPassword, 10);
   }
 
   await updateRow(TABS.login, record._row, headers, merged);
