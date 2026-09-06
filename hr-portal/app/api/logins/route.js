@@ -45,7 +45,10 @@ export async function POST(request) {
 
   const body = await request.json();
   const username = (body.username || '').trim();
-  const password = body.password || '';
+  // Trimmed before hashing. Untrimmed, an admin who pastes a password
+  // with a trailing space bakes that space into the hash, and the member
+  // typing the password they were told can never sign in.
+  const password = (body.password || '').trim();
   const fullName = (body.fullName || '').trim();
   const cmsId = (body.cmsId || '').trim();
   const portfolio = (body.portfolio || '').trim();

@@ -4,6 +4,7 @@ import { readSheet, TABS } from '@/lib/sheets';
 import { canViewDashboard } from '@/lib/authz';
 import { normalizePortfolio, dedupePortfolios } from '@/lib/portfolio';
 import { friendlyReadError } from '@/lib/apiError';
+import { normalizeUsername, isBcryptHash } from '@/lib/credentials';
 
 export const dynamic = 'force-dynamic';
 
@@ -56,5 +57,57 @@ export async function GET() {
       portfolio: a['Portfolio'] || 'Blank',
     }));
 
-  return NextResponse.json({ duplicateCmsIds, orphanedLogins, rosterWithoutLogin, applicantsBadPortfolio });
+  // Rows in Logins that cannot sign in no matter what the person types.
+  // Sign in itself now copes with stray whitespace and duplicate rows, but
+  // a password saved as plain text or a hash truncated on paste is a
+  // permanent lockout that only a password reset fixes — so surface which
+  // account it is. The password value itself is never read out or returned,
+  // only whether it has the shape of a bcrypt hash.
+  const usernameCounts = new Map();
+  for (const l of logins) {
+    const key = normalizeUsername(l['Username']);
+    if (!key) continue;
+    usernameCounts.set(key, (usernameCounts.get(key) || 0) + 1);
+  }
+
+  const brokenLogins = [];
+  const seenDuplicate = new Set();
+  for (const l of logins) {
+    const rawUsername = String(l['Username'] ?? '');
+    const key = normalizeUsername(rawUsername);
+    const label = key || `Row ${l._row}`;
+
+    if (!key) {
+      brokenLogins.push({ username: label, row: l._row, reason: 'No username in this row' });
+      continue;
+    }
+    if (rawUsername !== rawUsername.trim()) {
+      brokenLogins.push({ username: label, row: l._row, reason: 'Username cell has extra spaces around it' });
+    }
+    if (usernameCounts.get(key) > 1 && !seenDuplicate.has(key)) {
+      seenDuplicate.add(key);
+      brokenLogins.push({
+        username: label,
+        row: l._row,
+        reason: `Used by ${usernameCounts.get(key)} rows, delete the one that is out of date`,
+      });
+    }
+    if (!String(l['Password'] ?? '').trim()) {
+      brokenLogins.push({ username: label, row: l._row, reason: 'No password set, this account cannot sign in' });
+    } else if (!isBcryptHash(String(l['Password']).trim())) {
+      brokenLogins.push({
+        username: label,
+        row: l._row,
+        reason: 'Password is not a valid hash, set a new password from Logins',
+      });
+    }
+  }
+
+  return NextResponse.json({
+    duplicateCmsIds,
+    orphanedLogins,
+    rosterWithoutLogin,
+    applicantsBadPortfolio,
+    brokenLogins,
+  });
 }
