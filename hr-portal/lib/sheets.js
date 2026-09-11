@@ -95,6 +95,52 @@ function invalidateTab(tabName) {
   cache.delete(tabName);
 }
 
+// Header text typed into a spreadsheet by hand picks up things nobody can
+// see: a trailing space, a non-breaking space pasted from a doc, a double
+// space between words. Every column lookup in this file is by header text,
+// so one invisible character silently detached the app from that column —
+// reads came back blank and writes went nowhere. Cleaned once on read so
+// the rest of the app only ever sees tidy header names. Positions are
+// untouched, so `headers` stays valid for writing by column index.
+function cleanHeader(value) {
+  return String(value ?? '')
+    .replace(/[\u200b-\u200d\ufeff]/g, '') // zero width characters
+    .replace(/[\u00a0\s]+/g, ' ') // non-breaking space and runs of whitespace
+    .trim();
+}
+
+// Every header the app writes to by name. A sheet whose header differs
+// only in casing ("Last emailed at") is mapped back to the spelling the
+// code uses, so a cosmetic edit in Sheets cannot disconnect a column.
+const KNOWN_HEADERS = [
+  ...MEETING_ATTENDANCE_HEADERS,
+  ...MEETING_HEADERS,
+  ...CORE_APPLICANT_FIELDS,
+  ...EMAIL_LOG_HEADERS,
+  'CMS ID',
+  'From Status',
+  'To Status',
+  'Changed By',
+  'Timestamp',
+];
+const CANONICAL_HEADERS = new Map(KNOWN_HEADERS.map((h) => [h.toLowerCase(), h]));
+
+export function canonicalHeader(value) {
+  const cleaned = cleanHeader(value);
+  return CANONICAL_HEADERS.get(cleaned.toLowerCase()) ?? cleaned;
+}
+
+// Locates a column by header text. Exact match first, then a tolerant
+// match, so a lookup still succeeds against a sheet this app did not
+// create. Returns -1 when the column genuinely is not there — callers
+// must treat that as an error, never as "nothing to write".
+export function findColumnIndex(headers, fieldName) {
+  const exact = headers.indexOf(fieldName);
+  if (exact !== -1) return exact;
+  const wanted = cleanHeader(fieldName).toLowerCase();
+  return headers.findIndex((h) => cleanHeader(h).toLowerCase() === wanted);
+}
+
 function columnLetter(index) {
   let letter = '';
   let n = index + 1;
@@ -122,7 +168,10 @@ export async function readSheet(tabName, range = 'A:ZZ', options = {}) {
   });
 
   const rows = res.data.values || [];
-  const headers = rows[0] || [];
+  // Cleaned in place, so both the records below and every caller that
+  // writes by header name see the tidy spelling. Column order is
+  // preserved, which is what writes actually key off.
+  const headers = (rows[0] || []).map(canonicalHeader);
   const records = rows.slice(1).map((row, i) => {
     const record = { _row: i + 2 }; // +2: header row is row 1, data starts at row 2
     headers.forEach((h, colIdx) => {
@@ -155,7 +204,7 @@ export async function appendRow(tabName, headers, rowObject) {
 
 // Updates a single column's value on one existing row.
 export async function updateField(tabName, rowNumber, headers, fieldName, value) {
-  const colIndex = headers.indexOf(fieldName);
+  const colIndex = findColumnIndex(headers, fieldName);
   if (colIndex === -1) throw new Error(`Column "${fieldName}" not found in ${tabName}.`);
   const sheets = getSheetsClient();
   await sheets.spreadsheets.values.update({
@@ -215,12 +264,27 @@ export async function deleteRow(tabName, rowNumber) {
 export async function batchUpdateFields(tabName, headers, updates) {
   // updates: [{ row, fields: { 'Column Name': value, ... } }]
   const data = [];
+  const missing = new Set();
   for (const { row, fields } of updates) {
     for (const [fieldName, value] of Object.entries(fields)) {
-      const colIndex = headers.indexOf(fieldName);
-      if (colIndex === -1) continue;
+      const colIndex = findColumnIndex(headers, fieldName);
+      // Skipping a missing column silently is what made the recruitment
+      // bulk send look like it worked while never stamping Last Emailed
+      // At: no writes were produced, the empty batch returned early, and
+      // the route reported success. updateField() has always thrown here;
+      // this is the same contract, applied to the batch path.
+      if (colIndex === -1) {
+        missing.add(fieldName);
+        continue;
+      }
       data.push({ range: `${tabName}!${columnLetter(colIndex)}${row}`, values: [[value]] });
     }
+  }
+  if (missing.size > 0) {
+    const names = [...missing].map((n) => `"${n}"`).join(', ');
+    throw new Error(
+      `Column ${names} not found in ${tabName}. Add ${missing.size > 1 ? 'those columns' : 'that column'} as a header in the ${tabName} tab.`
+    );
   }
   if (data.length === 0) return;
   const sheets = getSheetsClient();
