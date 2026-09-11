@@ -125,9 +125,32 @@ const KNOWN_HEADERS = [
 ];
 const CANONICAL_HEADERS = new Map(KNOWN_HEADERS.map((h) => [h.toLowerCase(), h]));
 
+// Real spellings this sheet uses for a column the code names differently.
+// The live Applicants tab calls it "Last Email At", not "Last Emailed At",
+// which is a different word rather than a cosmetic difference — the
+// tolerant match above correctly refuses to guess at that, so it is listed
+// explicitly instead. The sheet is the record that predates the code, so
+// the code adapts to it rather than the other way round.
+const HEADER_ALIASES = new Map([['last email at', 'Last Emailed At']]);
+
 export function canonicalHeader(value) {
   const cleaned = cleanHeader(value);
   return CANONICAL_HEADERS.get(cleaned.toLowerCase()) ?? cleaned;
+}
+
+// Canonicalises a whole header row. Aliases are resolved only when the
+// column they point at is not already present, so a tab holding both
+// "Last Email At" and "Last Emailed At" keeps them as two distinct
+// columns instead of collapsing them onto one another.
+export function canonicalHeaders(rawHeaders) {
+  const headers = (rawHeaders || []).map(canonicalHeader);
+  const taken = new Set(headers);
+  return headers.map((h) => {
+    const alias = HEADER_ALIASES.get(h.toLowerCase());
+    if (!alias || taken.has(alias)) return h;
+    taken.add(alias);
+    return alias;
+  });
 }
 
 // Locates a column by header text. Exact match first, then a tolerant
@@ -171,7 +194,7 @@ export async function readSheet(tabName, range = 'A:ZZ', options = {}) {
   // Cleaned in place, so both the records below and every caller that
   // writes by header name see the tidy spelling. Column order is
   // preserved, which is what writes actually key off.
-  const headers = (rows[0] || []).map(canonicalHeader);
+  const headers = canonicalHeaders(rows[0]);
   const records = rows.slice(1).map((row, i) => {
     const record = { _row: i + 2 }; // +2: header row is row 1, data starts at row 2
     headers.forEach((h, colIdx) => {
