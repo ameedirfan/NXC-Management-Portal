@@ -5,6 +5,7 @@ import {
   readSheet,
   appendRow,
   batchUpdateFields,
+  findColumnIndex,
   TABS,
   APPLICANT_STATUSES,
   EMAIL_LOG_HEADERS,
@@ -82,6 +83,22 @@ export async function POST(request) {
   if (sendable.length === 0) {
     return NextResponse.json(
       { error: 'None of the selected recipients currently have a valid email on file.' },
+      { status: 400 }
+    );
+  }
+
+  // Checked before a single email goes out, not after. The stamping step
+  // runs once every batch has sent, so a missing column discovered there
+  // means the emails are already gone and there is no way to record them
+  // — and the natural next move, retrying, emails everyone a second time.
+  const requiredColumns = bulkStatus ? ['Last Emailed At', 'Status'] : ['Last Emailed At'];
+  const missingColumns = requiredColumns.filter((c) => findColumnIndex(headers, c) === -1);
+  if (missingColumns.length > 0) {
+    const names = missingColumns.map((c) => `"${c}"`).join(' and ');
+    return NextResponse.json(
+      {
+        error: `The ${TABS.applicants} tab has no ${names} column, so this send could not be recorded. Nothing was emailed. Add ${missingColumns.length > 1 ? 'those headers' : 'that header'} to the tab and try again.`,
+      },
       { status: 400 }
     );
   }
