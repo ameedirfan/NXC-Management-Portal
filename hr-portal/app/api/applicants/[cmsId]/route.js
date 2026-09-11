@@ -1,6 +1,13 @@
 import { NextResponse } from 'next/server';
 import { getSession } from '@/lib/auth';
-import { readSheet, updateField, appendRow, TABS, CORE_APPLICANT_FIELDS } from '@/lib/sheets';
+import {
+  readSheet,
+  updateField,
+  appendRow,
+  TABS,
+  CORE_APPLICANT_FIELDS,
+  APPLICANT_STATUSES,
+} from '@/lib/sheets';
 import { isManagerOrAdmin } from '@/lib/authz';
 import { friendlyReadError } from '@/lib/apiError';
 
@@ -92,6 +99,14 @@ export async function PATCH(request, { params: paramsPromise }) {
   if (!session) return NextResponse.json({ error: 'Not signed in.' }, { status: 401 });
 
   const { status } = await request.json();
+  // Validated here as well as in the bulk route. Without this any string
+  // reached the Status column, which then matches no dropdown option and
+  // no status filter — the applicant effectively disappears from every
+  // status-filtered view. '' is allowed and means "no status yet", which
+  // the applicant page offers so a status set by mistake can be undone.
+  if (status !== '' && !APPLICANT_STATUSES.includes(status)) {
+    return NextResponse.json({ error: 'Not a valid status.' }, { status: 400 });
+  }
   const { headers, records: applicants } = await readSheet(TABS.applicants);
   const applicant = applicants.find((a) => a['CMS ID'] === params.cmsId);
   if (!applicant) {
